@@ -45,16 +45,17 @@ public class Account {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
+			if(rlt != null)
 				try {
-					ps.close();
+					rlt.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			if(rlt != null)
+
+			if(ps != null)
 				try {
-					rlt.close();
+					ps.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

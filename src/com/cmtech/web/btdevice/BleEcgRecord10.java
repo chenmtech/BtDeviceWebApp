@@ -70,8 +70,12 @@ public class BleEcgRecord10 extends AbstractRecord{
 	public void setEcgData(List<Short> ecgData) {
 		this.ecgData = ecgData;
 	}
-
+	
 	public int getId() {
+		return getId(getCreateTime(), getDevAddress());
+	}
+
+	public static int getId(long createTime, String devAddress) {
 		Connection conn = MySQLUtil.getConnection();
 		if(conn == null) return INVALID_ID;
 		
@@ -81,8 +85,8 @@ public class BleEcgRecord10 extends AbstractRecord{
 		String sql = "select id from ecgrecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, getDevAddress());
-			ps.setLong(2, getCreateTime());
+			ps.setString(1, devAddress);
+			ps.setLong(2, createTime);
 			rlt = ps.executeQuery();
 			if(rlt.next()) {
 				id = rlt.getInt("id");
@@ -91,16 +95,17 @@ public class BleEcgRecord10 extends AbstractRecord{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
+			if(rlt != null)
 				try {
-					ps.close();
+					rlt.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			if(rlt != null)
+
+			if(ps != null)
 				try {
-					rlt.close();
+					ps.close();
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
