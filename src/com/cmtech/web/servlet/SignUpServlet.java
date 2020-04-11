@@ -16,6 +16,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.cmtech.web.dbop.Account;
+import com.cmtech.web.dbop.MySQLUtil;
 
 /**
  * ClassName: RecvEcgRecord
@@ -27,8 +31,8 @@ import javax.servlet.http.HttpServletResponse;
  * @version 
  * @since JDK 1.6
  */
-@WebServlet(name="RecvEcgRecServlet", urlPatterns="/UploadEcgRecord")
-public class RecvEcgRecServlet extends HttpServlet {
+@WebServlet(name="SignUpServlet", urlPatterns="/SignUp")
+public class SignUpServlet extends HttpServlet {
 
 	/**
 	 * serialVersionUID:TODO(��һ�仰�������������ʾʲô).
@@ -43,17 +47,39 @@ public class RecvEcgRecServlet extends HttpServlet {
 		resp.setCharacterEncoding("utf-8");
 		resp.setContentType("text/html;charset=utf-8");
 		PrintWriter out = resp.getWriter();
-		out.println("<HTML>");
+		HttpSession session = req.getSession();
+		out.println("<HTML>"); 
 		out.println("<HEAD>");
-		out.println("<TITLE> Hi, Im Chenm.</TITLE>");
+		out.println("<TITLE> Hi, Im Chenming.</TITLE>");
 		out.println("</HEAD>");
 		out.println("<BODY>");
-		out.println("hi, how are you."); 
+		if(session.isNew())
+			out.println("你好，初始见面。");
+		else {
+			out.println("你好，欢迎回来。");
+			session.invalidate();
+		}
 		out.println("</BODY>");
 		out.println("</HTML>");
 		out.flush();
 		out.close();
 		System.out.println("doGet");
+		
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				MySQLUtil.connect();
+				Account acnt = new Account("chenm", "ctl080512");
+				if(acnt.insert()) {
+					System.out.println("插入成功,id="+acnt.getId());
+				} else {
+					System.out.println("插入失败");
+				}
+				MySQLUtil.disconnect();
+			}			
+		}).start();
 	}
 
 	@Override
