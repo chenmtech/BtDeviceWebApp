@@ -1,10 +1,11 @@
-package com.cmtech.web.dbop;
+package com.cmtech.web.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class MySQLUtil {
+	public static final int INVALID_ID = -1;
 	private static final String DBURL = "jdbc:mysql://localhost:3306/btdevice";
 	private static final String USER = "root";
 	private static final String PASSWORD = "ctl080512";

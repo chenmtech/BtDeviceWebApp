@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.cmtech.web.dbop.Account;
-import com.cmtech.web.dbop.MySQLUtil;
+import com.cmtech.web.util.MySQLUtil;
 
 /**
  * ClassName: RecvEcgRecord

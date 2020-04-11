@@ -4,10 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+
+import com.cmtech.web.util.MySQLUtil;
 
 public class Account {
-	public static final int INVALID_ID = -1;
-	
 	private final String platName;
 	private final String platId;
 	
@@ -16,6 +17,14 @@ public class Account {
 		this.platId = platId;
 	}
 	
+	public String getPlatName() {
+		return platName;
+	}
+
+	public String getPlatId() {
+		return platId;
+	}
+
 	public int getId() {
 		Connection conn = MySQLUtil.getConnection();
 		if(conn == null) return INVALID_ID;
@@ -118,6 +127,6 @@ public class Account {
 	
 	@Override
 	public String toString() {
-		return "hi";
+		return "platName="+platName+",platId="+platId;
 	}
 }
