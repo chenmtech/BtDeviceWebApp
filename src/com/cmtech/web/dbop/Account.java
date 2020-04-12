@@ -24,8 +24,12 @@ public class Account {
 	public String getPlatId() {
 		return platId;
 	}
-
+	
 	public int getId() {
+		return getId(platName, platId);
+	}
+
+	public static int getId(String platName, String platId) {
 		Connection conn = MySQLUtil.getConnection();
 		if(conn == null) return INVALID_ID;
 		

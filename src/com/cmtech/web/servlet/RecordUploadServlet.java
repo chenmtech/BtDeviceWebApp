@@ -43,7 +43,7 @@ public class RecordUploadServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		// find the record using recordTypeCode, createTime and devAddress
 		MySQLUtil.connect();
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
 		int recordTypeCode = Integer.parseInt(strRecordTypeCode);
@@ -85,7 +85,7 @@ public class RecordUploadServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		// upload the record with json 
 		BufferedReader streamReader = null;
 		try {
 			String charEncoding = request.getCharacterEncoding();
@@ -100,11 +100,27 @@ public class RecordUploadServlet extends HttpServlet {
 			JSONObject jsonObject = new JSONObject(strBuilder.toString());
 			System.out.println(jsonObject.toString());
 			
+			//int recordId = INVALID_ID;
+			
+			String platName = jsonObject.getString("platName");
+			String platId = jsonObject.getString("platId");
+			int accountId = Account.getId(platName, platId);
+			if(accountId == INVALID_ID) {
+				System.out.println("用户未注册");
+				return;
+			}
+			
 			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
 			long createTime = jsonObject.getLong("createTime");
 			String devAddress = jsonObject.getString("devAddress");
-			if(type != RecordType.ECG) return;
-			if(BleEcgRecord10.getId(createTime, devAddress) != INVALID_ID) return;
+			if(type != RecordType.ECG) {
+				System.out.println("记录类型不支持");
+				return;
+			}
+			if(BleEcgRecord10.getId(createTime, devAddress) != INVALID_ID) {
+				System.out.println("记录已存在");
+				return;
+			}
 			
 			byte[] ver = (byte[]) jsonObject.get("ver");
 			String creatorPlat = jsonObject.getString("creatorPlat");
@@ -134,9 +150,9 @@ public class RecordUploadServlet extends HttpServlet {
 			}
 			record.setEcgData(ecgArr);
 			if(record.insert()) {
-				System.out.println("插入记录成功,id="+record.getId());
+				System.out.println("上传记录成功,id="+record.getId());
 			} else {
-				System.out.println("插入记录失败");
+				System.out.println("上传记录失败");
 			}
 			MySQLUtil.disconnect();
 		} catch (Exception e) {
