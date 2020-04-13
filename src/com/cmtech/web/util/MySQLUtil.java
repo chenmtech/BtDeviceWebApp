@@ -6,21 +6,17 @@ import java.sql.SQLException;
 
 public class MySQLUtil {
 	public static final int INVALID_ID = -1;
-	private static final String DBURL = "jdbc:mysql://localhost:3306/btdevice";
-	private static final String USER = "root";
-	private static final String PASSWORD = "ctl080512";
 	private static Connection conn = null;
 	
-	public static void connect() {
+	public static void connect(String DBURL, String DBUSER, String DBPASSWORD) {
 		try {
 			if(conn != null) return;
-			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection(DBURL, USER, PASSWORD);
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(DBURL, DBUSER, DBPASSWORD);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			
+			conn = null;
 		}
 	}
 	
@@ -28,10 +24,11 @@ public class MySQLUtil {
 		if(conn != null) {
 			try {
 				conn.close();
-				conn = null;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				conn = null;
 			}
 		}
 	}

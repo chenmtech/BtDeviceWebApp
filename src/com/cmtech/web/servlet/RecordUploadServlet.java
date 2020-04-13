@@ -18,9 +18,6 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.dbop.Account;
-import com.cmtech.web.util.MySQLUtil;
-
-
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 
@@ -44,7 +41,6 @@ public class RecordUploadServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// find the record using recordTypeCode, createTime and devAddress
-		MySQLUtil.connect();
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
 		int recordTypeCode = Integer.parseInt(strRecordTypeCode);
 		RecordType type = RecordType.getType(recordTypeCode);
@@ -78,7 +74,6 @@ public class RecordUploadServlet extends HttpServlet {
 				out.close();
 			}
 		}
-		MySQLUtil.disconnect();
 	}
 
 	/**
@@ -100,13 +95,18 @@ public class RecordUploadServlet extends HttpServlet {
 			JSONObject jsonObject = new JSONObject(strBuilder.toString());
 			System.out.println(jsonObject.toString());
 			
-			//int recordId = INVALID_ID;
+			int recordId = INVALID_ID;
 			
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
+			if(platName == null || platId == null) {
+				response(response, INVALID_ID);
+				return;
+			}
 			int accountId = Account.getId(platName, platId);
 			if(accountId == INVALID_ID) {
 				System.out.println("用户未注册");
+				response(response, INVALID_ID);
 				return;
 			}
 			
@@ -115,10 +115,13 @@ public class RecordUploadServlet extends HttpServlet {
 			String devAddress = jsonObject.getString("devAddress");
 			if(type != RecordType.ECG) {
 				System.out.println("记录类型不支持");
+				response(response, INVALID_ID);
 				return;
 			}
-			if(BleEcgRecord10.getId(createTime, devAddress) != INVALID_ID) {
+			recordId = BleEcgRecord10.getId(createTime, devAddress);
+			if(recordId != INVALID_ID) {
 				System.out.println("记录已存在");
+				response(response, recordId);
 				return;
 			}
 			
@@ -132,7 +135,6 @@ public class RecordUploadServlet extends HttpServlet {
 			String note = jsonObject.getString("note");
 			String ecgData = jsonObject.getString("ecgData");
 
-			MySQLUtil.connect();
 			BleEcgRecord10 record = new BleEcgRecord10();
 			record.setVer(ver);
 			record.setCreateTime(createTime);
@@ -150,11 +152,13 @@ public class RecordUploadServlet extends HttpServlet {
 			}
 			record.setEcgData(ecgArr);
 			if(record.insert()) {
-				System.out.println("上传记录成功,id="+record.getId());
+				recordId = record.getId();
+				System.out.println("上传记录成功,id="+recordId);
+				response(response, recordId);
 			} else {
 				System.out.println("上传记录失败");
+				response(response, INVALID_ID);
 			}
-			MySQLUtil.disconnect();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -162,7 +166,6 @@ public class RecordUploadServlet extends HttpServlet {
 		}
 		
 		
-//		MySQLUtil.connect();
 //		BleEcgRecord10 record = new BleEcgRecord10();
 //		record.setVer(new byte[] {0x01,0x00});
 //		record.setCreateTime(new Date().getTime());
@@ -175,7 +178,25 @@ public class RecordUploadServlet extends HttpServlet {
 //		} else {
 //			System.out.println("插入记录失败");
 //		}
-//		MySQLUtil.disconnect();
 	}
 
+	private void response(HttpServletResponse resp, int id) {
+		JSONObject json = new JSONObject();
+		json.put("id", id);
+		
+		resp.setCharacterEncoding("UTF-8");
+		resp.setContentType("application/json; charset=utf-8");
+		PrintWriter out = null;
+		try {
+			out = resp.getWriter();
+			out.append(json.toString());
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+	}
 }

@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbop.Account;
-import com.cmtech.web.util.MySQLUtil;
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 /**
@@ -44,10 +43,17 @@ public class SignUpServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		MySQLUtil.connect();
+		// Login or SignUp using platName and platId
+		// return the id of the account with json
+		// if failure, id = INVALID_ID
 		String platName = req.getParameter("platName");
 		String platId = req.getParameter("platId");
+		if(platName == null || platId == null) {
+			System.out.println("插入失败");
+			response(resp, INVALID_ID);
+			return;
+		}
+		
 		int id = Account.getId(platName, platId);
 		if(id == INVALID_ID) {
 			Account acnt = new Account(platName, platId);
@@ -61,6 +67,16 @@ public class SignUpServlet extends HttpServlet {
 			System.out.println("账户已存在");
 		}
 		
+		response(resp, id);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(req, resp);
+	}
+	
+	private void response(HttpServletResponse resp, int id) {
 		JSONObject json = new JSONObject();
 		json.put("id", id);
 		
@@ -78,14 +94,6 @@ public class SignUpServlet extends HttpServlet {
 				out.close();
 			}
 		}
-		
-		MySQLUtil.disconnect();
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(req, resp);
 	}
 
 	

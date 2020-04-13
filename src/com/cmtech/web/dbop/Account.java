@@ -30,7 +30,7 @@ public class Account {
 	}
 
 	public static int getId(String platName, String platId) {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.getConnection();		
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -69,11 +69,12 @@ public class Account {
 	}
 	
 	public boolean insert() {
+		Connection conn = MySQLUtil.getConnection();
+		if(conn == null) {
+			return false;
+		}
 		int id = getId();
 		if(id != INVALID_ID) return false;
-		
-		Connection conn = MySQLUtil.getConnection();
-		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		String sql = "insert into account (platName, platId) values (?, ?)";
@@ -101,11 +102,11 @@ public class Account {
 	}
 	
 	public boolean update() {
-		int id = getId();
-		if(id == INVALID_ID) return false;
-		
 		Connection conn = MySQLUtil.getConnection();
 		if(conn == null) return false;
+		
+		int id = getId();
+		if(id == INVALID_ID) return false;
 		
 		PreparedStatement ps = null;
 		String sql = "update account set platName=?, platId=? where id=?";
