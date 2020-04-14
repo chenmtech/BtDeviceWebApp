@@ -8,8 +8,11 @@
  */
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,10 +20,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
-
 import com.cmtech.web.dbop.Account;
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import com.cmtech.web.util.MyServletUtil;
 
 /**
  * ClassName: RecvEcgRecord
@@ -43,31 +44,23 @@ public class SignUpServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// Login or SignUp using platName and platId
-		// return the id of the account with json
-		// if failure, id = INVALID_ID
+		// SignUp using platName and platId
+		// return isSuccess and errStr with json
 		String platName = req.getParameter("platName");
 		String platId = req.getParameter("platId");
 		if(platName == null || platId == null) {
-			System.out.println("插入失败");
-			response(resp, INVALID_ID);
-			return;
-		}
-		
-		int id = Account.getId(platName, platId);
-		if(id == INVALID_ID) {
-			Account acnt = new Account(platName, platId);
-			if(acnt.insert()) {
-				id = acnt.getId();
-				System.out.println("插入成功,id="+id);
-			} else {
-				System.out.println("插入失败");
-			}
+			System.out.println("无效注册参数");
+			response(resp, false, "无效注册参数");
 		} else {
-			System.out.println("账户已存在");
+			Account acnt = new Account(platName, platId);
+			if(acnt.getId() == INVALID_ID && !acnt.insert()) {
+				System.out.println("注册失败");
+				response(resp, false, "注册失败");
+			} else {
+				System.out.println("注册成功,id="+acnt.getId());
+				response(resp, true, "");
+			}
 		}
-		
-		response(resp, id);
 	}
 
 	@Override
@@ -76,24 +69,12 @@ public class SignUpServlet extends HttpServlet {
 		doGet(req, resp);
 	}
 	
-	private void response(HttpServletResponse resp, int id) {
-		JSONObject json = new JSONObject();
-		json.put("id", id);
+	private void response(HttpServletResponse resp, boolean isSuccess, String errStr) {
+		Map<String, String> data = new HashMap<>();
+		data.put("isSuccess", String.valueOf(isSuccess));
+		data.put("errStr", errStr);
 		
-		resp.setCharacterEncoding("UTF-8");
-		resp.setContentType("application/json; charset=utf-8");
-		PrintWriter out = null;
-		try {
-			out = resp.getWriter();
-			out.append(json.toString());
-			out.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				out.close();
-			}
-		}
+		MyServletUtil.responseWithJson(resp, data);
 	}
 
 	

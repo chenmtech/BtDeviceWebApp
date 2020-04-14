@@ -1,11 +1,14 @@
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,7 +21,7 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.dbop.Account;
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import com.cmtech.web.util.MyServletUtil;
 
 
 /**
@@ -41,6 +44,8 @@ public class RecordUploadServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// find the record using recordTypeCode, createTime and devAddress
+		// return the id of the record with json
+		// if not exist, return INVALID_ID
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
 		int recordTypeCode = Integer.parseInt(strRecordTypeCode);
 		RecordType type = RecordType.getType(recordTypeCode);
@@ -57,30 +62,17 @@ public class RecordUploadServlet extends HttpServlet {
 			break;
 		}
 		
-		JSONObject json = new JSONObject();
-		json.put("id", id);
-		
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("application/json; charset=utf-8");
-		PrintWriter out = null;
-		try {
-			out = response.getWriter();
-			out.append(json.toString());
-			out.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				out.close();
-			}
-		}
+		Map<String, String> data = new HashMap<>();
+		data.put("id", String.valueOf(id));
+		MyServletUtil.responseWithJson(response, data);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// upload the record with json 
+		// receive the uploaded record with json 
+		// response isSuccess and errStr with json
 		BufferedReader streamReader = null;
 		try {
 			String charEncoding = request.getCharacterEncoding();
@@ -100,13 +92,13 @@ public class RecordUploadServlet extends HttpServlet {
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
 			if(platName == null || platId == null) {
-				response(response, INVALID_ID);
+				response(response, false, "上传无效参数");
 				return;
 			}
 			int accountId = Account.getId(platName, platId);
 			if(accountId == INVALID_ID) {
 				System.out.println("用户未注册");
-				response(response, INVALID_ID);
+				response(response, false, "用户未注册");
 				return;
 			}
 			
@@ -115,13 +107,13 @@ public class RecordUploadServlet extends HttpServlet {
 			String devAddress = jsonObject.getString("devAddress");
 			if(type != RecordType.ECG) {
 				System.out.println("记录类型不支持");
-				response(response, INVALID_ID);
+				response(response, false, "上传记录类型不支持");
 				return;
 			}
 			recordId = BleEcgRecord10.getId(createTime, devAddress);
 			if(recordId != INVALID_ID) {
 				System.out.println("记录已存在");
-				response(response, recordId);
+				response(response, false, "上传记录已存在");
 				return;
 			}
 			
@@ -154,10 +146,10 @@ public class RecordUploadServlet extends HttpServlet {
 			if(record.insert()) {
 				recordId = record.getId();
 				System.out.println("上传记录成功,id="+recordId);
-				response(response, recordId);
+				response(response, true, "上传记录成功");
 			} else {
 				System.out.println("上传记录失败");
-				response(response, INVALID_ID);
+				response(response, false, "上传记录失败");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -180,23 +172,11 @@ public class RecordUploadServlet extends HttpServlet {
 //		}
 	}
 
-	private void response(HttpServletResponse resp, int id) {
-		JSONObject json = new JSONObject();
-		json.put("id", id);
+	private void response(HttpServletResponse resp, boolean isSuccess, String errStr) {
+		Map<String, String> data = new HashMap<>();
+		data.put("isSuccess", String.valueOf(isSuccess));
+		data.put("errStr", errStr);
 		
-		resp.setCharacterEncoding("UTF-8");
-		resp.setContentType("application/json; charset=utf-8");
-		PrintWriter out = null;
-		try {
-			out = resp.getWriter();
-			out.append(json.toString());
-			out.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				out.close();
-			}
-		}
+		MyServletUtil.responseWithJson(resp, data);
 	}
 }
