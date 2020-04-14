@@ -107,13 +107,15 @@ public class RecordUploadServlet extends HttpServlet {
 			String devAddress = jsonObject.getString("devAddress");
 			if(type != RecordType.ECG) {
 				System.out.println("记录类型不支持");
-				response(response, false, "上传记录类型不支持");
+				response(response, false, "记录类型不支持");
 				return;
 			}
 			recordId = BleEcgRecord10.getId(createTime, devAddress);
 			if(recordId != INVALID_ID) {
 				System.out.println("记录已存在");
-				response(response, true, "记录已存在");
+				String note = jsonObject.getString("note");
+				BleEcgRecord10.updateNote(recordId, note);
+				response(response, true, "记录已更新");
 				return;
 			}
 			
@@ -143,10 +145,10 @@ public class RecordUploadServlet extends HttpServlet {
 			if(record.insert()) {
 				recordId = record.getId();
 				System.out.println("上传记录成功,id="+recordId);
-				response(response, true, "上传记录成功");
+				response(response, true, "记录上传成功");
 			} else {
 				System.out.println("上传记录失败");
-				response(response, false, "上传记录失败");
+				response(response, false, "记录上传失败");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
