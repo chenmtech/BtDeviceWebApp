@@ -5,9 +5,7 @@ import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -65,6 +63,8 @@ public class RecordUploadServlet extends HttpServlet {
 		Map<String, String> data = new HashMap<>();
 		data.put("id", String.valueOf(id));
 		MyServletUtil.responseWithJson(response, data);
+		
+		System.out.println("记录id="+id);
 	}
 
 	/**
@@ -113,11 +113,13 @@ public class RecordUploadServlet extends HttpServlet {
 			recordId = BleEcgRecord10.getId(createTime, devAddress);
 			if(recordId != INVALID_ID) {
 				System.out.println("记录已存在");
-				response(response, false, "上传记录已存在");
+				response(response, true, "记录已存在");
 				return;
 			}
 			
-			byte[] ver = (byte[]) jsonObject.get("ver");
+			String verStr = jsonObject.getString("ver");
+			String[] verStrs = verStr.split(",");
+			byte[] ver = new byte[] {Byte.parseByte(verStrs[0]), Byte.parseByte(verStrs[1])};
 			String creatorPlat = jsonObject.getString("creatorPlat");
 			String creatorId = jsonObject.getString("creatorId");
 			int sampleRate = jsonObject.getInt("sampleRate");
@@ -137,12 +139,7 @@ public class RecordUploadServlet extends HttpServlet {
 			record.setLeadTypeCode(leadTypeCode);
 			record.setRecordSecond(recordSecond);
 			record.setNote(note);
-			String[] ecgStrArr = ecgData.split(",");
-			List<Short> ecgArr = new ArrayList<>();
-			for(String str : ecgStrArr) {
-				ecgArr.add(Short.parseShort(str));
-			}
-			record.setEcgData(ecgArr);
+			record.setEcgData(ecgData);
 			if(record.insert()) {
 				recordId = record.getId();
 				System.out.println("上传记录成功,id="+recordId);
@@ -156,20 +153,6 @@ public class RecordUploadServlet extends HttpServlet {
 		} finally {
 			streamReader.close();
 		}
-		
-		
-//		BleEcgRecord10 record = new BleEcgRecord10();
-//		record.setVer(new byte[] {0x01,0x00});
-//		record.setCreateTime(new Date().getTime());
-//		record.setDevAddress("12:34:56:78");
-//		record.setCreator(new Account("chenm", "ctl080512"));
-//		record.setSampleRate(125);
-//		record.setCaliValue(164);
-//		if(record.insert()) {
-//			System.out.println("插入记录成功,id="+record.getId());
-//		} else {
-//			System.out.println("插入记录失败");
-//		}
 	}
 
 	private void response(HttpServletResponse resp, boolean isSuccess, String errStr) {

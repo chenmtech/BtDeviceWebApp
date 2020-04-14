@@ -1,14 +1,14 @@
 package com.cmtech.web.btdevice;
 
+import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 
 import com.cmtech.web.util.MySQLUtil;
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 public class BleEcgRecord10 extends AbstractRecord{
 	private int sampleRate; // sample rate
@@ -16,7 +16,7 @@ public class BleEcgRecord10 extends AbstractRecord{
     private int leadTypeCode; // lead type code
     private int recordSecond; // unit: s
     private String note; // record description
-    private List<Short> ecgData; // ecg data
+    private String ecgData; // ecg data
     
     public BleEcgRecord10() {
     	super();
@@ -42,7 +42,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 		return note;
 	}
 
-	public List<Short> getEcgData() {
+	public String getEcgData() {
 		return ecgData;
 	}
 	
@@ -67,7 +67,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 		this.note = note;
 	}
 
-	public void setEcgData(List<Short> ecgData) {
+	public void setEcgData(String ecgData) {
 		this.ecgData = ecgData;
 	}
 	
@@ -122,7 +122,8 @@ public class BleEcgRecord10 extends AbstractRecord{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue) values (?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, Arrays.toString(getVer()));
@@ -132,6 +133,40 @@ public class BleEcgRecord10 extends AbstractRecord{
 			ps.setString(5, getCreatorPlatId());
 			ps.setInt(6, sampleRate);
 			ps.setInt(7, caliValue);
+			ps.setInt(8, getLeadTypeCode());
+			ps.setInt(9, getRecordSecond());
+			ps.setString(10, getNote());
+			ps.setString(11, getEcgData());
+			
+			boolean rlt = ps.execute();
+			if(!rlt && ps.getUpdateCount() == 1)
+				return true;
+			return false;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(ps != null)
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return false;
+	}
+	
+	public static boolean updateNote(int id, String note) {
+		Connection conn = MySQLUtil.getConnection();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update ecgrecord set note = ? where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, note);
+			ps.setInt(2, id);
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
