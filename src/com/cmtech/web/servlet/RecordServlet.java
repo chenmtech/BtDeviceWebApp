@@ -25,14 +25,14 @@ import com.cmtech.web.util.MyServletUtil;
 /**
  * Servlet implementation class RecordUploadServlet
  */
-@WebServlet(name="RecordUploadServlet", urlPatterns="/RecordUpload")
-public class RecordUploadServlet extends HttpServlet {
+@WebServlet(name="RecordServlet", urlPatterns="/Record")
+public class RecordServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public RecordUploadServlet() {
+    public RecordServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -60,9 +60,9 @@ public class RecordUploadServlet extends HttpServlet {
 			break;
 		}
 		
-		Map<String, String> data = new HashMap<>();
-		data.put("id", String.valueOf(id));
-		MyServletUtil.responseWithJson(response, data);
+		JSONObject json = new JSONObject();
+		json.put("id", id);
+		MyServletUtil.responseWithJson(response, json);
 		
 		System.out.println("记录id="+id);
 	}
@@ -158,10 +158,10 @@ public class RecordUploadServlet extends HttpServlet {
 	}
 
 	private void response(HttpServletResponse resp, boolean isSuccess, String errStr) {
-		Map<String, String> data = new HashMap<>();
-		data.put("isSuccess", String.valueOf(isSuccess));
-		data.put("errStr", errStr);
+		JSONObject json = new JSONObject();
+		json.put("isSuccess", isSuccess);
+		json.put("errStr", errStr);
 		
-		MyServletUtil.responseWithJson(resp, data);
+		MyServletUtil.responseWithJson(resp, json);
 	}
 }

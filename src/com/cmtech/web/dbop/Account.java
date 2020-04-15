@@ -1,10 +1,11 @@
 package com.cmtech.web.dbop;
 
+import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 import com.cmtech.web.util.MySQLUtil;
 
@@ -23,6 +24,14 @@ public class Account {
 
 	public String getPlatId() {
 		return platId;
+	}
+	
+	public boolean login() {
+		return (getId() != INVALID_ID);
+	}
+	
+	public boolean signUp() {
+		return (getId() == INVALID_ID && insert());
 	}
 	
 	public int getId() {
@@ -73,8 +82,6 @@ public class Account {
 		if(conn == null) {
 			return false;
 		}
-		int id = getId();
-		if(id != INVALID_ID) return false;
 		
 		PreparedStatement ps = null;
 		String sql = "insert into account (platName, platId) values (?, ?)";
@@ -85,7 +92,6 @@ public class Account {
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
 				return true;
-			return false;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -9,12 +9,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 public class MyServletUtil {
-	public static void responseWithJson(HttpServletResponse resp, Map<String, String> data) {
-		if(data == null || data.isEmpty()) return;
-		
-		JSONObject json = new JSONObject();
-		for(Map.Entry<String, String> entry : data.entrySet()) {
-			json.put(entry.getKey(), entry.getValue());
+	
+	public static void responseWithJson(HttpServletResponse resp, JSONObject json) {
+		if(json == null) {
+			throw new NullPointerException();
 		}
 		
 		resp.setCharacterEncoding("UTF-8");
@@ -32,6 +30,4 @@ public class MyServletUtil {
 			}
 		}
 	}
-	
-
 }

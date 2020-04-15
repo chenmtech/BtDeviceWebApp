@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
 import com.cmtech.web.btdevice.BleEcgReport10;
 import com.cmtech.web.util.MyServletUtil;
 
@@ -28,10 +30,9 @@ public class ReportDownloadServlet extends HttpServlet {
 		int recordId = Integer.parseInt(recordIdStr);
 		
 		int id = BleEcgReport10.getId(recordId);
-		
-		Map<String, String> data = new HashMap<>();
-		data.put("id", String.valueOf(id));
-		MyServletUtil.responseWithJson(resp, data);
+		JSONObject json = new JSONObject();
+		json.put("id", id);
+		MyServletUtil.responseWithJson(resp, json);
 	}
 
 	@Override
