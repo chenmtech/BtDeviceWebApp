@@ -8,11 +8,11 @@
  */
 package com.cmtech.web.servlet;
 
-import static exception.MyExceptionCode.INVALID_PARA;
-import static exception.MyExceptionCode.LOGIN_ERR;
-import static exception.MyExceptionCode.OTHER_ERR;
-import static exception.MyExceptionCode.SIGNUP_ERR;
-import static exception.MyExceptionCode.SUCCESS;
+import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.LOGIN_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.SIGNUP_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
 
 import java.io.IOException;
 
@@ -24,10 +24,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.dbop.Account;
+import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.exception.MyException;
+import com.cmtech.web.util.AccountUtil;
 import com.cmtech.web.util.MyServletUtil;
-
-import exception.MyException;
 
 /**
  * ClassName: AccountServlet
@@ -50,42 +50,42 @@ public class AccountServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// SignUp using platName and platId
+		// SignUp or Login using platName and platId
 		// return isSuccess and errStr with json
 		String cmd = req.getParameter("cmd");
 		String platName = req.getParameter("platName");
 		String platId = req.getParameter("platId");
 		if(cmd == null || platName == null || platId == null) {
-			response(resp, new MyException(INVALID_PARA, "无效请求"));
+			response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 		} else {
 			Account acnt = new Account(platName, platId);
 			
 			if(cmd.equals("login")) {
-				if(acnt.login()) {
-					response(resp, new MyException(SUCCESS, "登录成功"));
+				if(AccountUtil.login(acnt)) {
+					response(resp, new MyException(NO_ERR, "登录成功"));
 				} else {
 					response(resp, new MyException(LOGIN_ERR, "账户不存在，登录错误"));
 				}
 			} 
 			
 			else if(cmd.equals("signUp")) {
-				if(acnt.signUp()) {
-					response(resp, new MyException(SUCCESS, "注册成功"));
+				if(AccountUtil.signUp(acnt)) {
+					response(resp, new MyException(NO_ERR, "注册成功"));
 				} else {
 					response(resp, new MyException(SIGNUP_ERR, "注册失败"));
 				}
 			}
 			
 			else if(cmd.equals("signUporLogin")) {
-				if(acnt.login() || acnt.signUp()) {
-					response(resp, new MyException(SUCCESS, "注册/登录成功"));
+				if(AccountUtil.login(acnt) || AccountUtil.signUp(acnt)) {
+					response(resp, new MyException(NO_ERR, "注册/登录成功"));
 				} else {
 					response(resp, new MyException(OTHER_ERR, "注册/登录失败"));
 				}
 			}
 			
 			else {
-				response(resp, new MyException(INVALID_PARA, "无效请求"));
+				response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 			}
 		}
 	}

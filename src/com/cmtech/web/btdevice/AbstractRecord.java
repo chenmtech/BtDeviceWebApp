@@ -1,7 +1,5 @@
 package com.cmtech.web.btdevice;
 
-import com.cmtech.web.dbop.Account;
-
 public abstract class AbstractRecord implements IRecord{
     private byte[] ver = new byte[2]; // record version
     private long createTime; //

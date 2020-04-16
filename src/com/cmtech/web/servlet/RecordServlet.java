@@ -1,12 +1,15 @@
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,10 +19,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
+import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.dbop.Account;
+import com.cmtech.web.exception.MyException;
 import com.cmtech.web.util.MyServletUtil;
+import com.cmtech.web.util.RecordUtil;
 
 
 /**
@@ -41,7 +46,7 @@ public class RecordServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// find the record using recordTypeCode, createTime and devAddress
+		// query the record using recordTypeCode, createTime and devAddress
 		// return the id of the record with json
 		// if not exist, return INVALID_ID
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
@@ -51,14 +56,7 @@ public class RecordServlet extends HttpServlet {
 		long createTime = Long.parseLong(strCreateTime);
 		String devAddress = request.getParameter("devAddress");
 		
-		int id = INVALID_ID;
-		switch(type) {
-		case ECG:
-			id = BleEcgRecord10.getId(createTime, devAddress);
-			break;
-		default:
-			break;
-		}
+		int id = RecordUtil.queryRecord(type, createTime, devAddress);
 		
 		JSONObject json = new JSONObject();
 		json.put("id", id);
@@ -87,68 +85,69 @@ public class RecordServlet extends HttpServlet {
 			JSONObject jsonObject = new JSONObject(strBuilder.toString());
 			System.out.println(jsonObject.toString());
 			
-			int recordId = INVALID_ID;
-			
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
 			if(platName == null || platId == null) {
-				response(response, false, "上传无效参数");
+				response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
 				return;
 			}
 			int accountId = Account.getId(platName, platId);
 			if(accountId == INVALID_ID) {
-				System.out.println("用户未注册");
-				response(response, false, "用户未注册");
+				response(response, new MyException(ACCOUNT_ERR, "无效用户"));
 				return;
-			}
-			
+			}			
+
+			String cmd = jsonObject.getString("cmd");
 			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
 			long createTime = jsonObject.getLong("createTime");
 			String devAddress = jsonObject.getString("devAddress");
-			if(type != RecordType.ECG) {
-				System.out.println("记录类型不支持");
-				response(response, false, "记录类型不支持");
-				return;
-			}
-			recordId = BleEcgRecord10.getId(createTime, devAddress);
-			if(recordId != INVALID_ID) {
-				System.out.println("记录已存在");
-				String note = jsonObject.getString("note");
-				BleEcgRecord10.updateNote(recordId, note);
-				response(response, true, "记录已更新");
+			String note = jsonObject.getString("note");
+			if(cmd.equals("updateNote")) {
+				boolean rlt = RecordUtil.updateNote(type, createTime, devAddress, note);
+				if(rlt) {
+					response(response, new MyException(NO_ERR, "更新成功"));
+				} else {
+					response(response, new MyException(UPDATE_ERR, "更新失败"));
+				}
 				return;
 			}
 			
-			String verStr = jsonObject.getString("ver");
-			String[] verStrs = verStr.split(",");
-			byte[] ver = new byte[] {Byte.parseByte(verStrs[0]), Byte.parseByte(verStrs[1])};
-			String creatorPlat = jsonObject.getString("creatorPlat");
-			String creatorId = jsonObject.getString("creatorId");
-			int sampleRate = jsonObject.getInt("sampleRate");
-			int caliValue = jsonObject.getInt("caliValue");
-			int leadTypeCode = jsonObject.getInt("leadTypeCode");
-			int recordSecond = jsonObject.getInt("recordSecond");
-			String note = jsonObject.getString("note");
-			String ecgData = jsonObject.getString("ecgData");
+			else if(cmd.equals("upload")) {
+				String verStr = jsonObject.getString("ver");
+				String[] verStrs = verStr.split(",");
+				byte[] ver = new byte[] {Byte.parseByte(verStrs[0]), Byte.parseByte(verStrs[1])};
+				String creatorPlat = jsonObject.getString("creatorPlat");
+				String creatorId = jsonObject.getString("creatorId");
+				int sampleRate = jsonObject.getInt("sampleRate");
+				int caliValue = jsonObject.getInt("caliValue");
+				int leadTypeCode = jsonObject.getInt("leadTypeCode");
+				int recordSecond = jsonObject.getInt("recordSecond");
+				String ecgData = jsonObject.getString("ecgData");
 
-			BleEcgRecord10 record = new BleEcgRecord10();
-			record.setVer(ver);
-			record.setCreateTime(createTime);
-			record.setDevAddress(devAddress);
-			record.setCreator(new Account(creatorPlat, creatorId));
-			record.setSampleRate(sampleRate);
-			record.setCaliValue(caliValue);
-			record.setLeadTypeCode(leadTypeCode);
-			record.setRecordSecond(recordSecond);
-			record.setNote(note);
-			record.setEcgData(ecgData);
-			if(record.insert()) {
-				recordId = record.getId();
-				System.out.println("上传记录成功,id="+recordId);
-				response(response, true, "记录上传成功");
-			} else {
-				System.out.println("上传记录失败");
-				response(response, false, "记录上传失败");
+				BleEcgRecord10 record = new BleEcgRecord10();
+				record.setVer(ver);
+				record.setCreateTime(createTime);
+				record.setDevAddress(devAddress);
+				record.setCreator(new Account(creatorPlat, creatorId));
+				record.setSampleRate(sampleRate);
+				record.setCaliValue(caliValue);
+				record.setLeadTypeCode(leadTypeCode);
+				record.setRecordSecond(recordSecond);
+				record.setNote(note);
+				record.setEcgData(ecgData);
+				
+				boolean rlt = RecordUtil.upload(record);
+				if(rlt) {
+					response(response, new MyException(NO_ERR, "上传成功"));
+				} else {
+					response(response, new MyException(UPLOAD_ERR, "上传失败"));
+				}
+				return;
+			}
+			
+			else {
+				response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+				return;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -157,10 +156,10 @@ public class RecordServlet extends HttpServlet {
 		}
 	}
 
-	private void response(HttpServletResponse resp, boolean isSuccess, String errStr) {
+	private void response(HttpServletResponse resp, MyException exception) {
 		JSONObject json = new JSONObject();
-		json.put("isSuccess", isSuccess);
-		json.put("errStr", errStr);
+		json.put("code", exception.getCode().ordinal());
+		json.put("errStr", exception.getDescription());
 		
 		MyServletUtil.responseWithJson(resp, json);
 	}

@@ -2,7 +2,6 @@ package com.cmtech.web.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,7 +10,7 @@ import org.json.JSONObject;
 public class MyServletUtil {
 	
 	public static void responseWithJson(HttpServletResponse resp, JSONObject json) {
-		if(json == null) {
+		if(resp == null || json == null) {
 			throw new NullPointerException();
 		}
 		

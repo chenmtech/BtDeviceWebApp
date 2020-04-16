@@ -1,4 +1,4 @@
-package exception;
+package com.cmtech.web.exception;
 
 public class MyException extends Exception{
 	/**

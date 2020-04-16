@@ -1,4 +1,4 @@
-package com.cmtech.web.dbop;
+package com.cmtech.web.btdevice;
 
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
@@ -24,14 +24,6 @@ public class Account {
 
 	public String getPlatId() {
 		return platId;
-	}
-	
-	public boolean login() {
-		return (getId() != INVALID_ID);
-	}
-	
-	public boolean signUp() {
-		return (getId() == INVALID_ID && insert());
 	}
 	
 	public int getId() {

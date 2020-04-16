@@ -141,7 +141,6 @@ public class BleEcgRecord10 extends AbstractRecord{
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
 				return true;
-			return false;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -157,33 +156,4 @@ public class BleEcgRecord10 extends AbstractRecord{
 		return false;
 	}
 	
-	public static boolean updateNote(int id, String note) {
-		Connection conn = MySQLUtil.getConnection();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "update ecgrecord set note = ? where id = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, note);
-			ps.setInt(2, id);
-			
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
-				return true;
-			return false;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		}
-		return false;
-	}
 }
