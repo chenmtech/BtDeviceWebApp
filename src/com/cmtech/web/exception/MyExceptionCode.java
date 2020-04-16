@@ -8,5 +8,6 @@ public enum MyExceptionCode {
 	ACCOUNT_ERR,
 	UPDATE_ERR,
 	UPLOAD_ERR,
+	DOWNLOAD_ERR,
 	OTHER_ERR
 }

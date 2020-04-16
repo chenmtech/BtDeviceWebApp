@@ -4,7 +4,10 @@ import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
@@ -32,6 +35,50 @@ public class RecordUtil {
 		if(id == INVALID_ID) return false;
 		
 		return updateNote(id, note);
+	}
+	
+	public static JSONObject getRecordToJson(int id) {
+		Connection conn = MySQLUtil.getConnection();		
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rlt = null;
+		String sql = "select createTime, devAddress, note from ecgrecord where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			rlt = ps.executeQuery();
+			if(rlt.next()) {
+				long createTime = rlt.getLong("createTime");
+				String devAddress = rlt.getString("devAddress");
+				String note = rlt.getString("note");
+				JSONObject json = new JSONObject();
+				json.put("createTime", createTime);
+				json.put("devAddress", devAddress);
+				json.put("note", note);
+				return json;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(rlt != null)
+				try {
+					rlt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			if(ps != null)
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return null;
 	}
 
 	private static boolean updateNote(int id, String note) {

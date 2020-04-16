@@ -5,6 +5,7 @@ import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 import java.io.BufferedReader;
@@ -69,8 +70,9 @@ public class RecordServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// receive the uploaded record with json 
-		// response isSuccess and errStr with json
+		// upload one record with json 
+		// update the note of a record with json 
+		// return the result with json
 		BufferedReader streamReader = null;
 		try {
 			String charEncoding = request.getCharacterEncoding();
@@ -101,8 +103,8 @@ public class RecordServlet extends HttpServlet {
 			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
 			long createTime = jsonObject.getLong("createTime");
 			String devAddress = jsonObject.getString("devAddress");
-			String note = jsonObject.getString("note");
 			if(cmd.equals("updateNote")) {
+				String note = jsonObject.getString("note");
 				boolean rlt = RecordUtil.updateNote(type, createTime, devAddress, note);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "更新成功"));
@@ -122,6 +124,7 @@ public class RecordServlet extends HttpServlet {
 				int caliValue = jsonObject.getInt("caliValue");
 				int leadTypeCode = jsonObject.getInt("leadTypeCode");
 				int recordSecond = jsonObject.getInt("recordSecond");
+				String note = jsonObject.getString("note");
 				String ecgData = jsonObject.getString("ecgData");
 
 				BleEcgRecord10 record = new BleEcgRecord10();
@@ -143,6 +146,18 @@ public class RecordServlet extends HttpServlet {
 					response(response, new MyException(UPLOAD_ERR, "上传失败"));
 				}
 				return;
+			}
+			
+			else if(cmd.equals("download")) {
+				int id = RecordUtil.queryRecord(type, createTime, devAddress);
+				if(id == INVALID_ID) {
+					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
+					return;
+				} else {
+					JSONObject json = RecordUtil.getRecordToJson(id);
+					MyServletUtil.responseWithJson(response, json);
+					return;
+				}
 			}
 			
 			else {
