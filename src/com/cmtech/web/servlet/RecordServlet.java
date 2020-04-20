@@ -154,10 +154,20 @@ public class RecordServlet extends HttpServlet {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
 					return;
 				} else {
-					JSONObject json = RecordUtil.getRecordToJson(id);
+					JSONObject json = RecordUtil.getRecord(id);
 					MyServletUtil.responseWithJson(response, json);
 					return;
 				}
+			}
+			
+			else if(cmd.equals("delete")) {
+				boolean rlt = RecordUtil.deleteRecord(type, createTime, devAddress);
+				if(rlt) {
+					response(response, new MyException(NO_ERR, "删除成功"));
+				} else {
+					response(response, new MyException(UPDATE_ERR, "删除失败"));
+				}
+				return;
 			}
 			
 			else {

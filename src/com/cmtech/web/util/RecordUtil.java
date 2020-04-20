@@ -37,7 +37,37 @@ public class RecordUtil {
 		return updateNote(id, note);
 	}
 	
-	public static JSONObject getRecordToJson(int id) {
+	public static boolean deleteRecord(RecordType type, long createTime, String devAddress) {
+		Connection conn = MySQLUtil.getConnection();		
+		if(conn == null) return false;
+		
+		int id = queryRecord(type, createTime, devAddress);
+		if(id == INVALID_ID) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "delete from ecgrecord where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			boolean rlt = ps.execute();
+			if(!rlt && ps.getUpdateCount() == 1)
+				return true;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(ps != null)
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return false;
+	}
+	
+	public static JSONObject getRecord(int id) {
 		Connection conn = MySQLUtil.getConnection();		
 		if(conn == null) return null;
 		
