@@ -12,7 +12,7 @@
   
   <context-param>
   	<param-name>DBURL</param-name>
-  	<param-value>jdbc:mysql://localhost:3306/btdevice</param-value>
+  	<param-value>jdbc:mysql://localhost:3306/btdevice?characterEncoding=utf-8</param-value>
   </context-param>
   
   <context-param>
