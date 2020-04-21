@@ -67,13 +67,62 @@ public class RecordUtil {
 		return false;
 	}
 	
+	public static  JSONObject getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
+		Connection conn = MySQLUtil.getConnection();		
+		if(conn == null) return null;
+		if(type != RecordType.ECG) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rlt = null;
+		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, creatorPlat);
+			ps.setString(2, creatorId);
+			ps.setLong(3, fromTime);
+			ps.setInt(4, num);
+			rlt = ps.executeQuery();
+			int id = -1;
+			while(rlt.next()) {
+				id = rlt.getInt("id");
+				System.out.println("id=" + id);
+			}
+			if(id == -1) return null;
+			return getRecord(id);
+			/*if(rlt.next()) {
+				int id = rlt.getInt("id");
+				return getRecord(id);
+			}*/
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(rlt != null)
+				try {
+					rlt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			if(ps != null)
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return null;
+	}
+	
 	public static JSONObject getRecord(int id) {
 		Connection conn = MySQLUtil.getConnection();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rlt = null;
-		String sql = "select createTime, devAddress, note from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData from ecgrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -81,11 +130,26 @@ public class RecordUtil {
 			if(rlt.next()) {
 				long createTime = rlt.getLong("createTime");
 				String devAddress = rlt.getString("devAddress");
+				String creatorPlat = rlt.getString("creatorPlat");
+				String creatorId = rlt.getString("creatorId");
+				int sampleRate = rlt.getInt("sampleRate");
+				int caliValue = rlt.getInt("caliValue");
+				int leadTypeCode = rlt.getInt("leadTypecode");
+				int recordSecond = rlt.getInt("recordSecond");
 				String note = rlt.getString("note");
+				String ecgData = rlt.getString("ecgData");
 				JSONObject json = new JSONObject();
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
+				json.put("creatorPlat", creatorPlat);
+				json.put("creatorId", creatorId);
+				json.put("sampleRate", sampleRate);
+				json.put("caliValue", caliValue);
+				json.put("leadTypecode", leadTypeCode);
+				json.put("recordSecond", recordSecond);
 				json.put("note", note);
+				json.put("ecgData", ecgData);
+			
 				return json;
 			}
 		} catch (SQLException e) {

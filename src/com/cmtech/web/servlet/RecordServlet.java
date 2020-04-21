@@ -101,9 +101,9 @@ public class RecordServlet extends HttpServlet {
 
 			String cmd = jsonObject.getString("cmd");
 			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
-			long createTime = jsonObject.getLong("createTime");
-			String devAddress = jsonObject.getString("devAddress");
 			if(cmd.equals("updateNote")) {
+				long createTime = jsonObject.getLong("createTime");
+				String devAddress = jsonObject.getString("devAddress");
 				String note = jsonObject.getString("note");
 				boolean rlt = RecordUtil.updateNote(type, createTime, devAddress, note);
 				if(rlt) {
@@ -115,6 +115,8 @@ public class RecordServlet extends HttpServlet {
 			}
 			
 			else if(cmd.equals("upload")) {
+				long createTime = jsonObject.getLong("createTime");
+				String devAddress = jsonObject.getString("devAddress");
 				String verStr = jsonObject.getString("ver");
 				String[] verStrs = verStr.split(",");
 				byte[] ver = new byte[] {Byte.parseByte(verStrs[0]), Byte.parseByte(verStrs[1])};
@@ -149,18 +151,27 @@ public class RecordServlet extends HttpServlet {
 			}
 			
 			else if(cmd.equals("download")) {
-				int id = RecordUtil.queryRecord(type, createTime, devAddress);
-				if(id == INVALID_ID) {
+				long fromTime = jsonObject.getLong("fromTime");
+				String creatorPlat = jsonObject.getString("creatorPlat");
+				String creatorId = jsonObject.getString("creatorId");
+				int num = jsonObject.getInt("num");
+				JSONObject json = RecordUtil.getRecord(type, fromTime, creatorPlat, creatorId, num);
+				
+				if(json == null) {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
 					return;
 				} else {
-					JSONObject json = RecordUtil.getRecord(id);
+					System.out.println(json.toString());
+					json.put("code", NO_ERR.ordinal());
+					json.put("errStr", "下载记录成功");
 					MyServletUtil.responseWithJson(response, json);
 					return;
 				}
 			}
 			
 			else if(cmd.equals("delete")) {
+				long createTime = jsonObject.getLong("createTime");
+				String devAddress = jsonObject.getString("devAddress");
 				boolean rlt = RecordUtil.deleteRecord(type, createTime, devAddress);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "删除成功"));
