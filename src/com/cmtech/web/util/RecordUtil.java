@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BleEcgRecord10;
@@ -67,28 +68,29 @@ public class RecordUtil {
 		return false;
 	}
 	
-	public static  JSONObject getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
+	public static  JSONArray getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId) {
 		Connection conn = MySQLUtil.getConnection();		
 		if(conn == null) return null;
 		if(type != RecordType.ECG) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rlt = null;
-		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime >= ? order by createTime desc";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, creatorPlat);
 			ps.setString(2, creatorId);
 			ps.setLong(3, fromTime);
-			ps.setInt(4, num);
 			rlt = ps.executeQuery();
 			int id = -1;
+			JSONArray jsonArray = new JSONArray();
+			int i = 0;
 			while(rlt.next()) {
 				id = rlt.getInt("id");
 				System.out.println("id=" + id);
+				jsonArray.put(i++, getRecord(id));
 			}
-			if(id == -1) return null;
-			return getRecord(id);
+			return jsonArray;
 			/*if(rlt.next()) {
 				int id = rlt.getInt("id");
 				return getRecord(id);
@@ -134,7 +136,7 @@ public class RecordUtil {
 				String creatorId = rlt.getString("creatorId");
 				int sampleRate = rlt.getInt("sampleRate");
 				int caliValue = rlt.getInt("caliValue");
-				int leadTypeCode = rlt.getInt("leadTypecode");
+				int leadTypeCode = rlt.getInt("leadTypeCode");
 				int recordSecond = rlt.getInt("recordSecond");
 				String note = rlt.getString("note");
 				String ecgData = rlt.getString("ecgData");
@@ -145,7 +147,7 @@ public class RecordUtil {
 				json.put("creatorId", creatorId);
 				json.put("sampleRate", sampleRate);
 				json.put("caliValue", caliValue);
-				json.put("leadTypecode", leadTypeCode);
+				json.put("leadTypeCode", leadTypeCode);
 				json.put("recordSecond", recordSecond);
 				json.put("note", note);
 				json.put("ecgData", ecgData);

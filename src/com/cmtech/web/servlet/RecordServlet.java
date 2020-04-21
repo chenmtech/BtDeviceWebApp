@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
@@ -155,15 +156,17 @@ public class RecordServlet extends HttpServlet {
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONObject json = RecordUtil.getRecord(type, fromTime, creatorPlat, creatorId, num);
+				JSONArray jsonArr = RecordUtil.getRecord(type, fromTime, creatorPlat, creatorId);
 				
-				if(json == null) {
+				if(jsonArr == null) {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
 					return;
 				} else {
-					System.out.println(json.toString());
+					System.out.println(jsonArr.toString());
+					JSONObject json = new JSONObject();
 					json.put("code", NO_ERR.ordinal());
 					json.put("errStr", "下载记录成功");
+					json.put("records", jsonArr);
 					MyServletUtil.responseWithJson(response, json);
 					return;
 				}
