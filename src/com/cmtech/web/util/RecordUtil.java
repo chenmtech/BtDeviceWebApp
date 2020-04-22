@@ -68,19 +68,20 @@ public class RecordUtil {
 		return false;
 	}
 	
-	public static  JSONArray getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId) {
+	public static  JSONArray getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
 		Connection conn = MySQLUtil.getConnection();		
 		if(conn == null) return null;
 		if(type != RecordType.ECG) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rlt = null;
-		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime >= ? order by createTime desc";
+		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, creatorPlat);
 			ps.setString(2, creatorId);
 			ps.setLong(3, fromTime);
+			ps.setInt(4, num);
 			rlt = ps.executeQuery();
 			int id = -1;
 			JSONArray jsonArray = new JSONArray();
@@ -91,10 +92,6 @@ public class RecordUtil {
 				jsonArray.put(i++, getRecord(id));
 			}
 			return jsonArray;
-			/*if(rlt.next()) {
-				int id = rlt.getInt("id");
-				return getRecord(id);
-			}*/
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
