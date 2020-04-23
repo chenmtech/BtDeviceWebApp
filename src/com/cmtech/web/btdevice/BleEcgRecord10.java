@@ -76,7 +76,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 	}
 
 	public static int getId(long createTime, String devAddress) {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -110,6 +110,8 @@ public class BleEcgRecord10 extends AbstractRecord{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return id;		
 	}
@@ -118,7 +120,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 		int id = getId();
 		if(id != INVALID_ID) return false;
 		
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
@@ -152,6 +154,8 @@ public class BleEcgRecord10 extends AbstractRecord{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return false;
 	}

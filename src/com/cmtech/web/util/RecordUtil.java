@@ -39,7 +39,7 @@ public class RecordUtil {
 	}
 	
 	public static boolean deleteRecord(RecordType type, long createTime, String devAddress) {
-		Connection conn = MySQLUtil.getConnection();		
+		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return false;
 		
 		int id = queryRecord(type, createTime, devAddress);
@@ -64,12 +64,14 @@ public class RecordUtil {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return false;
 	}
 	
 	public static  JSONArray getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
-		Connection conn = MySQLUtil.getConnection();		
+		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return null;
 		if(type != RecordType.ECG) return null;
 		
@@ -111,12 +113,14 @@ public class RecordUtil {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return null;
 	}
 	
 	public static JSONObject getRecord(int id) {
-		Connection conn = MySQLUtil.getConnection();		
+		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
@@ -170,12 +174,14 @@ public class RecordUtil {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return null;
 	}
 
 	private static boolean updateNote(int id, String note) {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
@@ -199,6 +205,8 @@ public class RecordUtil {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return false;
 	}

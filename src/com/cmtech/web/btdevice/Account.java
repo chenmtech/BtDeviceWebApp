@@ -31,7 +31,7 @@ public class Account {
 	}
 
 	public static int getId(String platName, String platId) {
-		Connection conn = MySQLUtil.getConnection();		
+		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -65,12 +65,14 @@ public class Account {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return id;		
 	}
 	
 	public boolean insert() {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) {
 			return false;
 		}
@@ -95,12 +97,14 @@ public class Account {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return false;
 	}
 	
 	public boolean update() {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) return false;
 		
 		int id = getId();
@@ -125,6 +129,8 @@ public class Account {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return false;
 	}

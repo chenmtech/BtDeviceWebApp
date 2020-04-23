@@ -47,7 +47,7 @@ public class BleEcgReport10 {
 	}
 	
 	public static int getId(int recordId) {
-		Connection conn = MySQLUtil.getConnection();
+		Connection conn = MySQLUtil.connect();
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -80,6 +80,8 @@ public class BleEcgReport10 {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			
+			MySQLUtil.disconnect(conn);
 		}
 		return id;		
 	}
