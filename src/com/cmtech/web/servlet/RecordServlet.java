@@ -25,7 +25,7 @@ import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.exception.MyException;
 import com.cmtech.web.util.MyServletUtil;
-import com.cmtech.web.util.RecordUtil;
+import com.cmtech.web.util.RecordDbUtil;
 
 
 /**
@@ -57,7 +57,7 @@ public class RecordServlet extends HttpServlet {
 		long createTime = Long.parseLong(strCreateTime);
 		String devAddress = request.getParameter("devAddress");
 		
-		int id = RecordUtil.query(type, createTime, devAddress);
+		int id = RecordDbUtil.query(type, createTime, devAddress);
 		
 		JSONObject json = new JSONObject();
 		json.put("id", id);
@@ -106,7 +106,7 @@ public class RecordServlet extends HttpServlet {
 				long createTime = jsonObject.getLong("createTime");
 				String devAddress = jsonObject.getString("devAddress");
 				String note = jsonObject.getString("note");
-				boolean rlt = RecordUtil.updateNote(type, createTime, devAddress, note);
+				boolean rlt = RecordDbUtil.updateNote(type, createTime, devAddress, note);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "更新成功"));
 				} else {
@@ -116,7 +116,7 @@ public class RecordServlet extends HttpServlet {
 			}
 			
 			else if(cmd.equals("upload")) { // upload one record
-				boolean rlt = RecordUtil.upload(type, jsonObject);
+				boolean rlt = RecordDbUtil.upload(type, jsonObject);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "上传成功"));
 				} else {
@@ -130,7 +130,7 @@ public class RecordServlet extends HttpServlet {
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONArray jsonArr = RecordUtil.download(type, fromTime, creatorPlat, creatorId, num);
+				JSONArray jsonArr = RecordDbUtil.download(type, fromTime, creatorPlat, creatorId, num);
 				
 				if(jsonArr == null) {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
@@ -149,7 +149,7 @@ public class RecordServlet extends HttpServlet {
 			else if(cmd.equals("delete")) { // delete one record
 				long createTime = jsonObject.getLong("createTime");
 				String devAddress = jsonObject.getString("devAddress");
-				boolean rlt = RecordUtil.delete(type, createTime, devAddress);
+				boolean rlt = RecordDbUtil.delete(type, createTime, devAddress);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "删除成功"));
 				} else {

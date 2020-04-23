@@ -10,50 +10,22 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleEcgRecord10;
+import com.cmtech.web.btdevice.BleHrRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
-public class EcgRecordUtil {
-	
-	private static BleEcgRecord10 parseJson(JSONObject jsonObject) {
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		String ver = jsonObject.getString("ver");
-		String creatorPlat = jsonObject.getString("creatorPlat");
-		String creatorId = jsonObject.getString("creatorId");
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String note = jsonObject.getString("note");
-		String ecgData = jsonObject.getString("ecgData");
-
-		BleEcgRecord10 record = new BleEcgRecord10();
-		record.setVer(ver);
-		record.setCreateTime(createTime);
-		record.setDevAddress(devAddress);
-		record.setCreator(new Account(creatorPlat, creatorId));
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setNote(note);
-		record.setEcgData(ecgData);
-		return record;
-	}
-	
+public class HrRecordDbUtil {
 	public static boolean upload(JSONObject json) {
-		BleEcgRecord10 record = parseJson(json);
+		BleHrRecord10 record = parseJson(json);
 		
-		int id = RecordUtil.query(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.query(RecordType.HR, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = MySQLUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData) "
-				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrMin, hrHist, recordSecond) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, record.getVer());
@@ -61,12 +33,11 @@ public class EcgRecordUtil {
 			ps.setString(3, record.getDevAddress());
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
-			ps.setInt(6, record.getSampleRate());
-			ps.setInt(7, record.getCaliValue());
-			ps.setInt(8, record.getLeadTypeCode());
-			ps.setInt(9, record.getRecordSecond());
-			ps.setString(10, record.getNote());
-			ps.setString(11, record.getEcgData());
+			ps.setString(6, record.getFilterHrList());
+			ps.setShort(7, record.getHrMax());
+			ps.setShort(8, record.getHrAve());
+			ps.setString(9, record.getHrHist());
+			ps.setInt(10, record.getRecordSecond());
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
@@ -87,14 +58,14 @@ public class EcgRecordUtil {
 		}
 		return false;
 	}
-	
+
 	public static JSONObject download(int id) {
 		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rlt = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -104,23 +75,21 @@ public class EcgRecordUtil {
 				String devAddress = rlt.getString("devAddress");
 				String creatorPlat = rlt.getString("creatorPlat");
 				String creatorId = rlt.getString("creatorId");
-				int sampleRate = rlt.getInt("sampleRate");
-				int caliValue = rlt.getInt("caliValue");
-				int leadTypeCode = rlt.getInt("leadTypeCode");
+				String filterHrList = rlt.getString("filterHrList");
+				short hrMax = rlt.getShort("hrMax");
+				short hrAve = rlt.getShort("hrAve");
+				String hrHist = rlt.getString("hrHist");
 				int recordSecond = rlt.getInt("recordSecond");
-				String note = rlt.getString("note");
-				String ecgData = rlt.getString("ecgData");
 				JSONObject json = new JSONObject();
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
-				json.put("sampleRate", sampleRate);
-				json.put("caliValue", caliValue);
-				json.put("leadTypeCode", leadTypeCode);
+				json.put("filterHrList", filterHrList);
+				json.put("hrMax", hrMax);
+				json.put("hrAve", hrAve);
+				json.put("hrHist", hrHist);
 				json.put("recordSecond", recordSecond);
-				json.put("note", note);
-				json.put("ecgData", ecgData);
 			
 				return json;
 			}
@@ -147,5 +116,30 @@ public class EcgRecordUtil {
 			MySQLUtil.disconnect(conn);
 		}
 		return null;
+	}
+	
+	private static BleHrRecord10 parseJson(JSONObject jsonObject) {
+		String ver = jsonObject.getString("ver");
+		long createTime = jsonObject.getLong("createTime");
+		String devAddress = jsonObject.getString("devAddress");
+		String creatorPlat = jsonObject.getString("creatorPlat");
+		String creatorId = jsonObject.getString("creatorId");
+		String filterHrList = jsonObject.getString("filterHrList");
+		short hrMax = (short) jsonObject.getInt("hrMax");
+		short hrAve = (short) jsonObject.getInt("hrAve");
+		String hrHist = jsonObject.getString("hrHist");
+		int recordSecond = jsonObject.getInt("recordSecond");
+
+		BleHrRecord10 record = new BleHrRecord10();
+		record.setVer(ver);
+		record.setCreateTime(createTime);
+		record.setDevAddress(devAddress);
+		record.setCreator(new Account(creatorPlat, creatorId));
+		record.setFilterHrList(filterHrList);
+		record.setHrMax(hrMax);
+		record.setHrAve(hrAve);
+		record.setHrHist(hrHist);
+		record.setRecordSecond(recordSecond);
+		return record;
 	}
 }

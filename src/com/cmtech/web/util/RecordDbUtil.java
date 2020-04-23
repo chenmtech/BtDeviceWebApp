@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.RecordType;
 
-public class RecordUtil {
+public class RecordDbUtil {
 	// QUERY
 	public static int query(RecordType type, long createTime, String devAddress) {
 		return getId(type, createTime, devAddress);
@@ -22,8 +22,12 @@ public class RecordUtil {
 	public static boolean upload(RecordType type, JSONObject json) {
 		switch(type) {
 		case ECG:
-			return EcgRecordUtil.upload(json);
+			return EcgRecordDbUtil.upload(json);
 			
+		case HR:
+			return HrRecordDbUtil.upload(json);
+		default:
+			break;
 		}
 		return false;
 	}
@@ -126,8 +130,12 @@ public class RecordUtil {
 	private static JSONObject download(RecordType type, int id) {
 		switch(type) {
 		case ECG:
-			return EcgRecordUtil.download(id);
-			
+			return EcgRecordDbUtil.download(id);
+		
+		case HR:
+			return HrRecordDbUtil.download(id);
+		default:
+			break;
 		}
 		return null;		
 	}
