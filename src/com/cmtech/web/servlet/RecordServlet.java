@@ -1,11 +1,11 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
 
 import java.io.BufferedReader;
@@ -22,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.exception.MyException;
 import com.cmtech.web.util.MyServletUtil;
@@ -58,7 +57,7 @@ public class RecordServlet extends HttpServlet {
 		long createTime = Long.parseLong(strCreateTime);
 		String devAddress = request.getParameter("devAddress");
 		
-		int id = RecordUtil.queryRecord(type, createTime, devAddress);
+		int id = RecordUtil.query(type, createTime, devAddress);
 		
 		JSONObject json = new JSONObject();
 		json.put("id", id);
@@ -90,6 +89,8 @@ public class RecordServlet extends HttpServlet {
 			
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
+			String cmd = jsonObject.getString("cmd");
+			
 			if(platName == null || platId == null) {
 				response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
 				return;
@@ -100,9 +101,8 @@ public class RecordServlet extends HttpServlet {
 				return;
 			}			
 
-			String cmd = jsonObject.getString("cmd");
 			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
-			if(cmd.equals("updateNote")) {
+			if(cmd.equals("updateNote")) { // update the note of a record
 				long createTime = jsonObject.getLong("createTime");
 				String devAddress = jsonObject.getString("devAddress");
 				String note = jsonObject.getString("note");
@@ -115,34 +115,8 @@ public class RecordServlet extends HttpServlet {
 				return;
 			}
 			
-			else if(cmd.equals("upload")) {
-				long createTime = jsonObject.getLong("createTime");
-				String devAddress = jsonObject.getString("devAddress");
-				String verStr = jsonObject.getString("ver");
-				String[] verStrs = verStr.split(",");
-				byte[] ver = new byte[] {Byte.parseByte(verStrs[0]), Byte.parseByte(verStrs[1])};
-				String creatorPlat = jsonObject.getString("creatorPlat");
-				String creatorId = jsonObject.getString("creatorId");
-				int sampleRate = jsonObject.getInt("sampleRate");
-				int caliValue = jsonObject.getInt("caliValue");
-				int leadTypeCode = jsonObject.getInt("leadTypeCode");
-				int recordSecond = jsonObject.getInt("recordSecond");
-				String note = jsonObject.getString("note");
-				String ecgData = jsonObject.getString("ecgData");
-
-				BleEcgRecord10 record = new BleEcgRecord10();
-				record.setVer(ver);
-				record.setCreateTime(createTime);
-				record.setDevAddress(devAddress);
-				record.setCreator(new Account(creatorPlat, creatorId));
-				record.setSampleRate(sampleRate);
-				record.setCaliValue(caliValue);
-				record.setLeadTypeCode(leadTypeCode);
-				record.setRecordSecond(recordSecond);
-				record.setNote(note);
-				record.setEcgData(ecgData);
-				
-				boolean rlt = RecordUtil.upload(record);
+			else if(cmd.equals("upload")) { // upload one record
+				boolean rlt = RecordUtil.upload(type, jsonObject);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "上传成功"));
 				} else {
@@ -151,12 +125,12 @@ public class RecordServlet extends HttpServlet {
 				return;
 			}
 			
-			else if(cmd.equals("download")) {
+			else if(cmd.equals("download")) { // download some records
 				long fromTime = jsonObject.getLong("fromTime");
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONArray jsonArr = RecordUtil.getRecord(type, fromTime, creatorPlat, creatorId, num);
+				JSONArray jsonArr = RecordUtil.download(type, fromTime, creatorPlat, creatorId, num);
 				
 				if(jsonArr == null) {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
@@ -172,10 +146,10 @@ public class RecordServlet extends HttpServlet {
 				}
 			}
 			
-			else if(cmd.equals("delete")) {
+			else if(cmd.equals("delete")) { // delete one record
 				long createTime = jsonObject.getLong("createTime");
 				String devAddress = jsonObject.getString("devAddress");
-				boolean rlt = RecordUtil.deleteRecord(type, createTime, devAddress);
+				boolean rlt = RecordUtil.delete(type, createTime, devAddress);
 				if(rlt) {
 					response(response, new MyException(NO_ERR, "删除成功"));
 				} else {
@@ -185,7 +159,7 @@ public class RecordServlet extends HttpServlet {
 			}
 			
 			else {
-				response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+				response(response, new MyException(INVALID_PARA_ERR, "无效命令"));
 				return;
 			}
 		} catch (Exception e) {

@@ -1,26 +1,26 @@
 package com.cmtech.web.btdevice;
 
 public abstract class AbstractRecord implements IRecord{
-    private byte[] ver = new byte[2]; // record version
+    private String ver; // record version
     private long createTime; //
     private String devAddress; //
     private String creatorPlat;
     private String creatorId;
 
     protected AbstractRecord() {
+    	ver = "";
         createTime = 0;
         devAddress = "";
         creatorPlat = "";
         creatorId = "";
     }
     
-    public byte[] getVer() {
+    public String getVer() {
     	return ver;
     }
     
-    public void setVer(byte[] ver) {
-        this.ver[0] = ver[0];
-        this.ver[1] = ver[1];
+    public void setVer(String ver) {
+        this.ver = ver;
     }
     @Override
     public long getCreateTime() {

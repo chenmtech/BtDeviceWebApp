@@ -1,15 +1,5 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-
-import com.cmtech.web.util.MySQLUtil;
-
 public class BleEcgRecord10 extends AbstractRecord{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
@@ -69,95 +59,6 @@ public class BleEcgRecord10 extends AbstractRecord{
 
 	public void setEcgData(String ecgData) {
 		this.ecgData = ecgData;
-	}
-	
-	public int getId() {
-		return getId(getCreateTime(), getDevAddress());
-	}
-
-	public static int getId(long createTime, String devAddress) {
-		Connection conn = MySQLUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		int id = INVALID_ID;
-		PreparedStatement ps = null;
-		ResultSet rlt = null;
-		String sql = "select id from ecgrecord where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				id = rlt.getInt("id");
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
-		}
-		return id;		
-	}
-	
-	public boolean insert() {
-		int id = getId();
-		if(id != INVALID_ID) return false;
-		
-		Connection conn = MySQLUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData) "
-				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, Arrays.toString(getVer()));
-			ps.setLong(2, getCreateTime());
-			ps.setString(3, getDevAddress());
-			ps.setString(4, getCreatorPlat());
-			ps.setString(5, getCreatorPlatId());
-			ps.setInt(6, sampleRate);
-			ps.setInt(7, caliValue);
-			ps.setInt(8, getLeadTypeCode());
-			ps.setInt(9, getRecordSecond());
-			ps.setString(10, getNote());
-			ps.setString(11, getEcgData());
-			
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
-				return true;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
-		}
-		return false;
 	}
 	
 }

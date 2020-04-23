@@ -10,43 +10,45 @@ import java.sql.SQLException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
 public class RecordUtil {
-	public static int queryRecord(RecordType type, long createTime, String devAddress) {
-		int id = INVALID_ID;
-		
+	// QUERY
+	public static int query(RecordType type, long createTime, String devAddress) {
+		return getId(type, createTime, devAddress);
+	}
+	
+	// UPLOAD
+	public static boolean upload(RecordType type, JSONObject json) {
 		switch(type) {
 		case ECG:
-			id = BleEcgRecord10.getId(createTime, devAddress);
-			break;
-		default:
-			break;
+			return EcgRecordUtil.upload(json);
+			
 		}
-		return id;
+		return false;
 	}
 	
-	public static boolean upload(BleEcgRecord10 record) {
-		return record.insert();
-	}
-	
+	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
-		int id = queryRecord(type, createTime, devAddress);
+		int id = query(type, createTime, devAddress);
 		if(id == INVALID_ID) return false;
 		
-		return updateNote(id, note);
+		return updateNote(type, id, note);
 	}
 	
-	public static boolean deleteRecord(RecordType type, long createTime, String devAddress) {
+	// DELETE
+	public static boolean delete(RecordType type, long createTime, String devAddress) {
 		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return false;
 		
-		int id = queryRecord(type, createTime, devAddress);
+		int id = query(type, createTime, devAddress);
 		if(id == INVALID_ID) return false;
 		
+		String tableName = getTableName(type);
+		if("".equals(tableName)) return false;
+		
 		PreparedStatement ps = null;
-		String sql = "delete from ecgrecord where id = ?";
+		String sql = "delete from " + tableName + " where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -70,14 +72,16 @@ public class RecordUtil {
 		return false;
 	}
 	
-	public static  JSONArray getRecord(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
+	// DOWNLOAD
+	public static JSONArray download(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
 		Connection conn = MySQLUtil.connect();		
 		if(conn == null) return null;
-		if(type != RecordType.ECG) return null;
+		
+		String tableName = getTableName(type);
 		
 		PreparedStatement ps = null;
 		ResultSet rlt = null;
-		String sql = "select id from ecgrecord where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+		String sql = "select id from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, creatorPlat);
@@ -85,13 +89,13 @@ public class RecordUtil {
 			ps.setLong(3, fromTime);
 			ps.setInt(4, num);
 			rlt = ps.executeQuery();
-			int id = -1;
+			int id = INVALID_ID;
 			JSONArray jsonArray = new JSONArray();
 			int i = 0;
 			while(rlt.next()) {
 				id = rlt.getInt("id");
 				System.out.println("id=" + id);
-				jsonArray.put(i++, getRecord(id));
+				jsonArray.put(i++, download(type, id));
 			}
 			return jsonArray;
 		} catch (SQLException e) {
@@ -119,73 +123,23 @@ public class RecordUtil {
 		return null;
 	}
 	
-	public static JSONObject getRecord(int id) {
-		Connection conn = MySQLUtil.connect();		
-		if(conn == null) return null;
-		
-		PreparedStatement ps = null;
-		ResultSet rlt = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData from ecgrecord where id = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, id);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				long createTime = rlt.getLong("createTime");
-				String devAddress = rlt.getString("devAddress");
-				String creatorPlat = rlt.getString("creatorPlat");
-				String creatorId = rlt.getString("creatorId");
-				int sampleRate = rlt.getInt("sampleRate");
-				int caliValue = rlt.getInt("caliValue");
-				int leadTypeCode = rlt.getInt("leadTypeCode");
-				int recordSecond = rlt.getInt("recordSecond");
-				String note = rlt.getString("note");
-				String ecgData = rlt.getString("ecgData");
-				JSONObject json = new JSONObject();
-				json.put("createTime", createTime);
-				json.put("devAddress", devAddress);
-				json.put("creatorPlat", creatorPlat);
-				json.put("creatorId", creatorId);
-				json.put("sampleRate", sampleRate);
-				json.put("caliValue", caliValue);
-				json.put("leadTypeCode", leadTypeCode);
-				json.put("recordSecond", recordSecond);
-				json.put("note", note);
-				json.put("ecgData", ecgData);
+	private static JSONObject download(RecordType type, int id) {
+		switch(type) {
+		case ECG:
+			return EcgRecordUtil.download(id);
 			
-				return json;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
 		}
-		return null;
+		return null;		
 	}
 
-	private static boolean updateNote(int id, String note) {
+	private static boolean updateNote(RecordType type, int id, String note) {
 		Connection conn = MySQLUtil.connect();
 		if(conn == null) return false;
 		
+		String tableName = getTableName(type);
+		
 		PreparedStatement ps = null;
-		String sql = "update ecgrecord set note = ? where id = ?";
+		String sql = "update " + tableName + " set note = ? where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, note);
@@ -209,5 +163,63 @@ public class RecordUtil {
 			MySQLUtil.disconnect(conn);
 		}
 		return false;
+	}
+	
+	private static int getId(RecordType type, long createTime, String devAddress) {
+		Connection conn = MySQLUtil.connect();
+		if(conn == null) return INVALID_ID;
+		
+		String tableName = getTableName(type);
+		if("".equals(tableName)) return INVALID_ID;
+		
+		int id = INVALID_ID;
+		PreparedStatement ps = null;
+		ResultSet rlt = null;
+		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, devAddress);
+			ps.setLong(2, createTime);
+			rlt = ps.executeQuery();
+			if(rlt.next()) {
+				id = rlt.getInt("id");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(rlt != null)
+				try {
+					rlt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			if(ps != null)
+				try {
+					ps.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+			MySQLUtil.disconnect(conn);
+		}
+		return id;		
+	}
+	
+	private static String getTableName(RecordType type) {
+		switch(type) {
+		case ECG:
+			return "ecgrecord";
+		case HR:
+			return "hrrecord";			
+		case THERMO:
+			return "thermorecord";
+		case TH:
+			return "threcord";
+		}
+		return "";
 	}
 }
