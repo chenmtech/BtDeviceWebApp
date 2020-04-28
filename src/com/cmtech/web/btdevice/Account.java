@@ -1,13 +1,13 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.cmtech.web.util.MySQLUtil;
+import com.cmtech.web.util.DbUtil;
 
 public class Account {
 	private final String platName;
@@ -31,7 +31,7 @@ public class Account {
 	}
 
 	public static int getId(String platName, String platId) {
-		Connection conn = MySQLUtil.connect();		
+		Connection conn = DbUtil.connect();		
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -66,13 +66,13 @@ public class Account {
 					e.printStackTrace();
 				}
 			
-			MySQLUtil.disconnect(conn);
+			DbUtil.disconnect(conn);
 		}
 		return id;		
 	}
 	
 	public boolean insert() {
-		Connection conn = MySQLUtil.connect();
+		Connection conn = DbUtil.connect();
 		if(conn == null) {
 			return false;
 		}
@@ -98,13 +98,13 @@ public class Account {
 					e.printStackTrace();
 				}
 			
-			MySQLUtil.disconnect(conn);
+			DbUtil.disconnect(conn);
 		}
 		return false;
 	}
 	
 	public boolean update() {
-		Connection conn = MySQLUtil.connect();
+		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		int id = getId();
@@ -130,7 +130,7 @@ public class Account {
 					e.printStackTrace();
 				}
 			
-			MySQLUtil.disconnect(conn);
+			DbUtil.disconnect(conn);
 		}
 		return false;
 	}

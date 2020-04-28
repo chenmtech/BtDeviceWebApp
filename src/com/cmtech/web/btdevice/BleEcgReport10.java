@@ -1,13 +1,13 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.cmtech.web.util.MySQLUtil;
+import com.cmtech.web.util.DbUtil;
 
 public class BleEcgReport10 {
 	private int recordId;
@@ -47,7 +47,7 @@ public class BleEcgReport10 {
 	}
 	
 	public static int getId(int recordId) {
-		Connection conn = MySQLUtil.connect();
+		Connection conn = DbUtil.connect();
 		if(conn == null) return INVALID_ID;
 		
 		int id = INVALID_ID;
@@ -81,7 +81,7 @@ public class BleEcgReport10 {
 					e.printStackTrace();
 				}
 			
-			MySQLUtil.disconnect(conn);
+			DbUtil.disconnect(conn);
 		}
 		return id;		
 	}

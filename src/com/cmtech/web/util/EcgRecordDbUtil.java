@@ -1,6 +1,6 @@
 package com.cmtech.web.util;
 
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,12 +16,13 @@ import com.cmtech.web.btdevice.RecordType;
 public class EcgRecordDbUtil {
 	
 	public static boolean upload(JSONObject json) {
-		BleEcgRecord10 record = parseJson(json);
+		BleEcgRecord10 record = createFromJson(json);
+		if(record == null) return false;
 		
 		int id = RecordDbUtil.query(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
-		Connection conn = MySQLUtil.connect();
+		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
@@ -48,41 +49,33 @@ public class EcgRecordDbUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
+			DbUtil.close(null, ps, conn);
 		}
 		return false;
 	}
 	
 	public static JSONObject download(int id) {
-		Connection conn = MySQLUtil.connect();		
+		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
-		ResultSet rlt = null;
+		ResultSet rs = null;
 		String sql = "select createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData from ecgrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				long createTime = rlt.getLong("createTime");
-				String devAddress = rlt.getString("devAddress");
-				String creatorPlat = rlt.getString("creatorPlat");
-				String creatorId = rlt.getString("creatorId");
-				int sampleRate = rlt.getInt("sampleRate");
-				int caliValue = rlt.getInt("caliValue");
-				int leadTypeCode = rlt.getInt("leadTypeCode");
-				int recordSecond = rlt.getInt("recordSecond");
-				String note = rlt.getString("note");
-				String ecgData = rlt.getString("ecgData");
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				String creatorPlat = rs.getString("creatorPlat");
+				String creatorId = rs.getString("creatorId");
+				int sampleRate = rs.getInt("sampleRate");
+				int caliValue = rs.getInt("caliValue");
+				int leadTypeCode = rs.getInt("leadTypeCode");
+				int recordSecond = rs.getInt("recordSecond");
+				String note = rs.getString("note");
+				String ecgData = rs.getString("ecgData");
 				JSONObject json = new JSONObject();
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
@@ -101,28 +94,12 @@ public class EcgRecordDbUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
+			DbUtil.close(rs, ps, conn);
 		}
 		return null;
 	}
 	
-	private static BleEcgRecord10 parseJson(JSONObject jsonObject) {
+	private static BleEcgRecord10 createFromJson(JSONObject jsonObject) {
 		String ver = jsonObject.getString("ver");
 		long createTime = jsonObject.getLong("createTime");
 		String devAddress = jsonObject.getString("devAddress");
@@ -135,17 +112,21 @@ public class EcgRecordDbUtil {
 		String note = jsonObject.getString("note");
 		String ecgData = jsonObject.getString("ecgData");
 
-		BleEcgRecord10 record = new BleEcgRecord10();
-		record.setVer(ver);
-		record.setCreateTime(createTime);
-		record.setDevAddress(devAddress);
-		record.setCreator(new Account(creatorPlat, creatorId));
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setNote(note);
-		record.setEcgData(ecgData);
-		return record;
+		if("1.0".equals(ver)) {
+			BleEcgRecord10 record = new BleEcgRecord10();
+			record.setVer(ver);
+			record.setCreateTime(createTime);
+			record.setDevAddress(devAddress);
+			record.setCreator(new Account(creatorPlat, creatorId));
+			record.setSampleRate(sampleRate);
+			record.setCaliValue(caliValue);
+			record.setLeadTypeCode(leadTypeCode);
+			record.setRecordSecond(recordSecond);
+			record.setNote(note);
+			record.setEcgData(ecgData);
+			return record;
+		}
+		
+		return null;
 	}
 }

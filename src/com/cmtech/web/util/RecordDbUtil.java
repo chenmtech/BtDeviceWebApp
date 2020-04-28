@@ -1,6 +1,6 @@
 package com.cmtech.web.util;
 
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,20 +18,6 @@ public class RecordDbUtil {
 		return getId(type, createTime, devAddress);
 	}
 	
-	// UPLOAD
-	public static boolean upload(RecordType type, JSONObject json) {
-		switch(type) {
-		case ECG:
-			return EcgRecordDbUtil.upload(json);
-			
-		case HR:
-			return HrRecordDbUtil.upload(json);
-		default:
-			break;
-		}
-		return false;
-	}
-	
 	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
 		int id = query(type, createTime, devAddress);
@@ -42,7 +28,7 @@ public class RecordDbUtil {
 	
 	// DELETE
 	public static boolean delete(RecordType type, long createTime, String devAddress) {
-		Connection conn = MySQLUtil.connect();		
+		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
 		int id = query(type, createTime, devAddress);
@@ -63,28 +49,38 @@ public class RecordDbUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+	}
+	
+	// UPLOAD
+	public static boolean upload(RecordType type, JSONObject json) {
+		switch(type) {
+		case ECG:
+			return EcgRecordDbUtil.upload(json);
 			
-			MySQLUtil.disconnect(conn);
+		case HR:
+			return HrRecordDbUtil.upload(json);
+			
+		default:
+			break;
 		}
 		return false;
 	}
 	
 	// DOWNLOAD
-	public static JSONArray download(RecordType type, long fromTime, String creatorPlat, String creatorId, int num) {
-		Connection conn = MySQLUtil.connect();		
+	// who: creatorPlat+creatorId
+	// when: later than fromTime
+	// howmuch: num
+	public static JSONArray download(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
+		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
 		String tableName = getTableName(type);
 		
 		PreparedStatement ps = null;
-		ResultSet rlt = null;
+		ResultSet rs = null;
 		String sql = "select id from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -92,12 +88,12 @@ public class RecordDbUtil {
 			ps.setString(2, creatorId);
 			ps.setLong(3, fromTime);
 			ps.setInt(4, num);
-			rlt = ps.executeQuery();
+			rs = ps.executeQuery();
 			int id = INVALID_ID;
 			JSONArray jsonArray = new JSONArray();
 			int i = 0;
-			while(rlt.next()) {
-				id = rlt.getInt("id");
+			while(rs.next()) {
+				id = rs.getInt("id");
 				System.out.println("id=" + id);
 				jsonArray.put(i++, download(type, id));
 			}
@@ -106,42 +102,41 @@ public class RecordDbUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
+			DbUtil.close(rs, ps, conn);
 		}
 		return null;
 	}
 	
-	private static JSONObject download(RecordType type, int id) {
-		switch(type) {
-		case ECG:
-			return EcgRecordDbUtil.download(id);
+	private static int getId(RecordType type, long createTime, String devAddress) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return INVALID_ID;
 		
-		case HR:
-			return HrRecordDbUtil.download(id);
-		default:
-			break;
+		String tableName = getTableName(type);
+		if("".equals(tableName)) return INVALID_ID;
+		
+		int id = INVALID_ID;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, devAddress);
+			ps.setLong(2, createTime);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				id = rs.getInt("id");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
 		}
-		return null;		
+		return id;		
 	}
-
+	
 	private static boolean updateNote(RecordType type, int id, String note) {
-		Connection conn = MySQLUtil.connect();
+		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		String tableName = getTableName(type);
@@ -160,61 +155,9 @@ public class RecordDbUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
+			DbUtil.close(null, ps, conn);
 		}
 		return false;
-	}
-	
-	private static int getId(RecordType type, long createTime, String devAddress) {
-		Connection conn = MySQLUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		String tableName = getTableName(type);
-		if("".equals(tableName)) return INVALID_ID;
-		
-		int id = INVALID_ID;
-		PreparedStatement ps = null;
-		ResultSet rlt = null;
-		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				id = rlt.getInt("id");
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			MySQLUtil.disconnect(conn);
-		}
-		return id;		
 	}
 	
 	private static String getTableName(RecordType type) {
@@ -229,5 +172,19 @@ public class RecordDbUtil {
 			return "threcord";
 		}
 		return "";
+	}
+	
+	private static JSONObject download(RecordType type, int id) {
+		switch(type) {
+		case ECG:
+			return EcgRecordDbUtil.download(id);
+		
+		case HR:
+			return HrRecordDbUtil.download(id);
+			
+		default:
+			break;
+		}
+		return null;		
 	}
 }

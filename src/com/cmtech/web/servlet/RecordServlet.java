@@ -6,7 +6,7 @@ import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
-import static com.cmtech.web.util.MySQLUtil.INVALID_ID;
+import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -130,7 +130,7 @@ public class RecordServlet extends HttpServlet {
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONArray jsonArr = RecordDbUtil.download(type, fromTime, creatorPlat, creatorId, num);
+				JSONArray jsonArr = RecordDbUtil.download(type, creatorPlat, creatorId, fromTime, num);
 				
 				if(jsonArr == null) {
 					response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
