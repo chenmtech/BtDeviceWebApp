@@ -36,37 +36,21 @@ public class Account {
 		
 		int id = INVALID_ID;
 		PreparedStatement ps = null;
-		ResultSet rlt = null;
+		ResultSet rs = null;
 		String sql = "select id from account where platName = ? and platId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, platName);
 			ps.setString(2, platId);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				id = rlt.getInt("id");
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				id = rs.getInt("id");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			DbUtil.disconnect(conn);
+			DbUtil.close(rs, ps, conn);
 		}
 		return id;		
 	}
@@ -90,15 +74,7 @@ public class Account {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			DbUtil.disconnect(conn);
+			DbUtil.close(null, ps, conn);
 		}
 		return false;
 	}
@@ -122,15 +98,7 @@ public class Account {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			DbUtil.disconnect(conn);
+			DbUtil.close(null, ps, conn);
 		}
 		return false;
 	}
@@ -138,5 +106,13 @@ public class Account {
 	@Override
 	public String toString() {
 		return "platName="+platName+",platId="+platId;
+	}
+	
+	public boolean login() {
+		return (getId() != INVALID_ID);
+	}
+	
+	public boolean signUp() {
+		return (getId() == INVALID_ID && insert());
 	}
 }

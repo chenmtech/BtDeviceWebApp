@@ -7,9 +7,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-public class MyServletUtil {
+import com.cmtech.web.exception.MyException;
+
+public class ServletUtil {
 	
-	public static void responseWithJson(HttpServletResponse resp, JSONObject json) {
+	public static void responseJson(HttpServletResponse resp, JSONObject json) {
 		if(resp == null || json == null) {
 			throw new NullPointerException();
 		}
@@ -28,5 +30,15 @@ public class MyServletUtil {
 				out.close();
 			}
 		}
+	}
+	
+	public static void response(HttpServletResponse resp, MyException exception) {
+		JSONObject json = new JSONObject();
+		json.put("code", exception.getCode().ordinal());
+		json.put("errStr", exception.getDescription());
+		
+		ServletUtil.responseJson(resp, json);
+		
+		System.out.println(exception.getDescription());
 	}
 }

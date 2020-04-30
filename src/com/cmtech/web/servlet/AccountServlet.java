@@ -12,7 +12,7 @@ import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.LOGIN_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SIGNUP_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.NO_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
 
 import java.io.IOException;
 
@@ -22,12 +22,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
-
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.exception.MyException;
-import com.cmtech.web.util.AccountUtil;
-import com.cmtech.web.util.MyServletUtil;
+import com.cmtech.web.util.ServletUtil;
 
 /**
  * ClassName: AccountServlet
@@ -56,36 +53,38 @@ public class AccountServlet extends HttpServlet {
 		String platName = req.getParameter("platName");
 		String platId = req.getParameter("platId");
 		if(cmd == null || platName == null || platId == null) {
-			response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+			ServletUtil.response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 		} else {
 			Account acnt = new Account(platName, platId);
 			
-			if(cmd.equals("login")) {
-				if(AccountUtil.login(acnt)) {
-					response(resp, new MyException(NO_ERR, "登录成功"));
+			switch(cmd) {
+			case "login":
+				if(acnt.login()) {
+					ServletUtil.response(resp, new MyException(SUCCESS, "登录成功"));
 				} else {
-					response(resp, new MyException(LOGIN_ERR, "账户不存在，登录错误"));
+					ServletUtil.response(resp, new MyException(LOGIN_ERR, "账户不存在，登录错误"));
 				}
-			} 
-			
-			else if(cmd.equals("signUp")) {
-				if(AccountUtil.signUp(acnt)) {
-					response(resp, new MyException(NO_ERR, "注册成功"));
+				break;
+				
+			case "signUp":
+				if(acnt.signUp()) {
+					ServletUtil.response(resp, new MyException(SUCCESS, "注册成功"));
 				} else {
-					response(resp, new MyException(SIGNUP_ERR, "注册失败"));
+					ServletUtil.response(resp, new MyException(SIGNUP_ERR, "注册失败"));
 				}
-			}
-			
-			else if(cmd.equals("signUporLogin")) {
-				if(AccountUtil.login(acnt) || AccountUtil.signUp(acnt)) {
-					response(resp, new MyException(NO_ERR, "注册/登录成功"));
+				break;
+				
+			case "signUporLogin":
+				if(acnt.login() || acnt.signUp()) {
+					ServletUtil.response(resp, new MyException(SUCCESS, "注册/登录成功"));
 				} else {
-					response(resp, new MyException(OTHER_ERR, "注册/登录失败"));
+					ServletUtil.response(resp, new MyException(OTHER_ERR, "注册/登录失败"));
 				}
-			}
-			
-			else {
-				response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+				break;
+				
+				default:
+					ServletUtil.response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+					break;
 			}
 		}
 	}
@@ -94,16 +93,6 @@ public class AccountServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(req, resp);
-	}
-	
-	private void response(HttpServletResponse resp, MyException exception) {
-		JSONObject json = new JSONObject();
-		json.put("code", exception.getCode().ordinal());
-		json.put("errStr", exception.getDescription());
-		
-		MyServletUtil.responseWithJson(resp, json);
-		
-		System.out.println(exception.getDescription());
 	}
 
 	

@@ -11,10 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BleEcgReport10;
-import com.cmtech.web.util.MyServletUtil;
+import com.cmtech.web.util.ServletUtil;
 
-@WebServlet(name="ReportDownloadServlet", urlPatterns="/ReportDownload")
-public class ReportDownloadServlet extends HttpServlet {
+@WebServlet(name="ReportServlet", urlPatterns="/Report")
+public class ReportServlet extends HttpServlet {
 
 	/**
 	 * 
@@ -30,7 +30,7 @@ public class ReportDownloadServlet extends HttpServlet {
 		int id = BleEcgReport10.getId(recordId);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
-		MyServletUtil.responseWithJson(resp, json);
+		ServletUtil.responseJson(resp, json);
 	}
 
 	@Override

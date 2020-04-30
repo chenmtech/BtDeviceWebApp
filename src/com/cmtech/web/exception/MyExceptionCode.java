@@ -1,7 +1,7 @@
 package com.cmtech.web.exception;
 
 public enum MyExceptionCode {
-	NO_ERR,
+	SUCCESS,
 	INVALID_PARA_ERR,
 	SIGNUP_ERR,
 	LOGIN_ERR,
