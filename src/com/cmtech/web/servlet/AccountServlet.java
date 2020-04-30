@@ -56,7 +56,7 @@ public class AccountServlet extends HttpServlet {
 			ServletUtil.response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 		} else {
 			Account acnt = new Account(platName, platId);
-			
+			System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
 				if(acnt.login()) {

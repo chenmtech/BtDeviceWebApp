@@ -15,6 +15,7 @@ import com.cmtech.web.btdevice.RecordType;
 
 public class HrRecordDbUtil {
 	public static boolean upload(JSONObject json) {
+		System.out.println("upload hr record");
 		BleHrRecord10 record = createFromJson(json);
 		if(record == null) return false;
 		
@@ -25,7 +26,7 @@ public class HrRecordDbUtil {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrMin, hrHist, recordSecond) "
+		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrAve, hrHist, recordSecond) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
