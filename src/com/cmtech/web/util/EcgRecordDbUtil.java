@@ -77,6 +77,7 @@ public class EcgRecordDbUtil {
 				String note = rs.getString("note");
 				String ecgData = rs.getString("ecgData");
 				JSONObject json = new JSONObject();
+				json.put("recordTypeCode", 1);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
