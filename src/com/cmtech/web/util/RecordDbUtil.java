@@ -69,11 +69,11 @@ public class RecordDbUtil {
 		return false;
 	}
 	
-	// DOWNLOAD
+	// DOWNLOAD RECORD INFO
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
 	// howmuch: num
-	public static JSONArray download(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
+	public static JSONArray downloadInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
@@ -95,7 +95,7 @@ public class RecordDbUtil {
 			while(rs.next()) {
 				id = rs.getInt("id");
 				System.out.println("id=" + id);
-				jsonArray.put(i++, download(type, id));
+				jsonArray.put(i++, downloadInfo(type, id));
 			}
 			return jsonArray;
 		} catch (SQLException e) {
@@ -105,6 +105,17 @@ public class RecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
+	}
+	
+	// DOWNLOAD RECORD
+	// who: creatorPlat+creatorId
+	// when: later than fromTime
+	// howmuch: num
+	public static JSONObject download(RecordType type, long createTime, String devAddress) {
+		int id = query(type, createTime, devAddress);
+		if(id == INVALID_ID) return null;
+		
+		return download(type, id);
 	}
 	
 	private static int getId(RecordType type, long createTime, String devAddress) {
@@ -172,6 +183,20 @@ public class RecordDbUtil {
 			return "threcord";
 		}
 		return "";
+	}
+	
+	private static JSONObject downloadInfo(RecordType type, int id) {
+		switch(type) {
+		case ECG:
+			return EcgRecordDbUtil.downloadInfo(id);
+		
+		case HR:
+			return HrRecordDbUtil.downloadInfo(id);
+			
+		default:
+			break;
+		}
+		return null;		
 	}
 	
 	private static JSONObject download(RecordType type, int id) {

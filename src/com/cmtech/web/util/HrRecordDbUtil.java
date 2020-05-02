@@ -53,6 +53,37 @@ public class HrRecordDbUtil {
 		return false;
 	}
 
+	public static JSONObject downloadInfo(int id) {
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select createTime, devAddress, recordSecond from hrrecord where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				int recordSecond = rs.getInt("recordSecond");
+				JSONObject json = new JSONObject();
+				json.put("createTime", createTime);
+				json.put("devAddress", devAddress);
+				json.put("recordSecond", recordSecond);
+			
+				return json;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;
+	}
+	
 	public static JSONObject download(int id) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;

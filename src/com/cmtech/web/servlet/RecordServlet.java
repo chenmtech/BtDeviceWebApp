@@ -127,22 +127,39 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "download":
+			case "downloadInfo":
 				long fromTime = jsonObject.getLong("fromTime");
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONArray jsonArr = RecordDbUtil.download(type, creatorPlat, creatorId, fromTime, num);
+				JSONArray jsonArr = RecordDbUtil.downloadInfo(type, creatorPlat, creatorId, fromTime, num);
 				
 				if(jsonArr == null) {
-					ServletUtil.response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
+					ServletUtil.response(response, new MyException(DOWNLOAD_ERR, "下载记录信息错误"));
 				} else {
 					System.out.println(jsonArr.toString());
 					JSONObject json = new JSONObject();
 					json.put("code", SUCCESS.ordinal());
-					json.put("errStr", "下载记录成功");
+					json.put("errStr", "下载记录信息成功");
 					json.put("records", jsonArr);
 					ServletUtil.responseJson(response, json);
+				}
+				break;
+				
+			case "download":
+				createTime = jsonObject.getLong("createTime");
+				devAddress = jsonObject.getString("devAddress");
+				JSONObject json = RecordDbUtil.download(type, createTime, devAddress);
+				
+				if(json == null) {
+					ServletUtil.response(response, new MyException(DOWNLOAD_ERR, "下载记录错误"));
+				} else {
+					System.out.println(json.toString());
+					JSONObject json1 = new JSONObject();
+					json1.put("code", SUCCESS.ordinal());
+					json1.put("errStr", "下载记录成功");
+					json1.put("record", json);
+					ServletUtil.responseJson(response, json1);
 				}
 				break;
 				
