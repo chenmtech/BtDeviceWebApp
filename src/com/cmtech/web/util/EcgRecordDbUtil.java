@@ -144,22 +144,21 @@ public class EcgRecordDbUtil {
 		int recordSecond = jsonObject.getInt("recordSecond");
 		String note = jsonObject.getString("note");
 		String ecgData = jsonObject.getString("ecgData");
-
-		if("1.0".equals(ver)) {
-			BleEcgRecord10 record = new BleEcgRecord10();
-			record.setVer(ver);
-			record.setCreateTime(createTime);
-			record.setDevAddress(devAddress);
-			record.setCreator(new Account(creatorPlat, creatorId));
-			record.setSampleRate(sampleRate);
-			record.setCaliValue(caliValue);
-			record.setLeadTypeCode(leadTypeCode);
-			record.setRecordSecond(recordSecond);
-			record.setNote(note);
-			record.setEcgData(ecgData);
-			return record;
-		}
 		
-		return null;
+		BleEcgRecord10 record = new BleEcgRecord10();
+		if("".equals(ver)) {
+			ver = "1.0";
+		}
+		record.setVer(ver);
+		record.setCreateTime(createTime);
+		record.setDevAddress(devAddress);
+		record.setCreator(new Account(creatorPlat, creatorId));
+		record.setSampleRate(sampleRate);
+		record.setCaliValue(caliValue);
+		record.setLeadTypeCode(leadTypeCode);
+		record.setRecordSecond(recordSecond);
+		record.setNote(note);
+		record.setEcgData(ecgData);
+		return record;
 	}
 }

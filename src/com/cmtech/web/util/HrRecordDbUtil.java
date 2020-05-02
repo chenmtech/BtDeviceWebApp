@@ -140,20 +140,19 @@ public class HrRecordDbUtil {
 		String hrHist = jsonObject.getString("hrHist");
 		int recordSecond = jsonObject.getInt("recordSecond");
 		
-		if("1.0".equals(ver)) {
-			BleHrRecord10 record = new BleHrRecord10();
-			record.setVer(ver);
-			record.setCreateTime(createTime);
-			record.setDevAddress(devAddress);
-			record.setCreator(new Account(creatorPlat, creatorId));
-			record.setFilterHrList(filterHrList);
-			record.setHrMax(hrMax);
-			record.setHrAve(hrAve);
-			record.setHrHist(hrHist);
-			record.setRecordSecond(recordSecond);
-			return record;
+		BleHrRecord10 record = new BleHrRecord10();
+		if("".equals(ver)) {
+			ver = "1.0";
 		}
-
-		return null;
+		record.setVer(ver);
+		record.setCreateTime(createTime);
+		record.setDevAddress(devAddress);
+		record.setCreator(new Account(creatorPlat, creatorId));
+		record.setFilterHrList(filterHrList);
+		record.setHrMax(hrMax);
+		record.setHrAve(hrAve);
+		record.setHrHist(hrHist);
+		record.setRecordSecond(recordSecond);
+		return record;
 	}
 }
