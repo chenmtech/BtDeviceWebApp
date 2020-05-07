@@ -51,14 +51,19 @@ public class RecordServlet extends HttpServlet {
 		// return the id of the record with json
 		// if not exist, return INVALID_ID
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
+		String strCreateTime = request.getParameter("createTime");
+		String devAddress = request.getParameter("devAddress");
+		if(strRecordTypeCode == null || strCreateTime == null || devAddress == null) {
+			JSONObject json = new JSONObject();
+			json.put("id", INVALID_ID);
+			ServletUtil.responseJson(response, json);
+			return;
+		}
+		
 		int recordTypeCode = Integer.parseInt(strRecordTypeCode);
 		RecordType type = RecordType.getType(recordTypeCode);
-		String strCreateTime = request.getParameter("createTime");
 		long createTime = Long.parseLong(strCreateTime);
-		String devAddress = request.getParameter("devAddress");
-		
 		int id = RecordDbUtil.query(type, createTime, devAddress);
-		
 		JSONObject json = new JSONObject();
 		json.put("id", id);
 		ServletUtil.responseJson(response, json);
