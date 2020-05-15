@@ -35,7 +35,6 @@ public class ServletUtil {
 	public static void response(HttpServletResponse resp, MyException exception) {
 		JSONObject json = new JSONObject();
 		json.put("code", exception.getCode().ordinal());
-		json.put("errStr", exception.getDescription());
 		
 		ServletUtil.responseJson(resp, json);
 		

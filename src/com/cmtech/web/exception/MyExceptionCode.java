@@ -2,6 +2,7 @@ package com.cmtech.web.exception;
 
 public enum MyExceptionCode {
 	SUCCESS,
+	WEB_ERR,
 	INVALID_PARA_ERR,
 	SIGNUP_ERR,
 	LOGIN_ERR,

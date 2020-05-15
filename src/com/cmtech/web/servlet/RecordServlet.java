@@ -54,9 +54,7 @@ public class RecordServlet extends HttpServlet {
 		String strCreateTime = request.getParameter("createTime");
 		String devAddress = request.getParameter("devAddress");
 		if(strRecordTypeCode == null || strCreateTime == null || devAddress == null) {
-			JSONObject json = new JSONObject();
-			json.put("id", INVALID_ID);
-			ServletUtil.responseJson(response, json);
+			ServletUtil.response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
 			return;
 		}
 		
@@ -65,6 +63,7 @@ public class RecordServlet extends HttpServlet {
 		long createTime = Long.parseLong(strCreateTime);
 		int id = RecordDbUtil.query(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
+		json.put("code", SUCCESS.ordinal());
 		json.put("id", id);
 		ServletUtil.responseJson(response, json);
 		
@@ -145,7 +144,6 @@ public class RecordServlet extends HttpServlet {
 					System.out.println(jsonArr.toString());
 					JSONObject json = new JSONObject();
 					json.put("code", SUCCESS.ordinal());
-					json.put("errStr", "下载记录信息成功");
 					json.put("records", jsonArr);
 					ServletUtil.responseJson(response, json);
 				}
@@ -162,7 +160,6 @@ public class RecordServlet extends HttpServlet {
 					System.out.println(json.toString());
 					JSONObject json1 = new JSONObject();
 					json1.put("code", SUCCESS.ordinal());
-					json1.put("errStr", "下载记录成功");
 					json1.put("record", json);
 					ServletUtil.responseJson(response, json1);
 				}
