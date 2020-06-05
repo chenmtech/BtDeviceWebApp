@@ -59,7 +59,7 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, recordSecond from hrrecord where id = ?";
+		String sql = "select createTime, devAddress, recordSecond, note from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -68,10 +68,12 @@ public class HrRecordDbUtil {
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
 				int recordSecond = rs.getInt("recordSecond");
+				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("recordSecond", recordSecond);
+				json.put("note", note);
 			
 				return json;
 			}
@@ -90,7 +92,7 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, filterHrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -100,6 +102,7 @@ public class HrRecordDbUtil {
 				String devAddress = rs.getString("devAddress");
 				String creatorPlat = rs.getString("creatorPlat");
 				String creatorId = rs.getString("creatorId");
+				String note = rs.getString("note");
 				String filterHrList = rs.getString("filterHrList");
 				short hrMax = rs.getShort("hrMax");
 				short hrAve = rs.getShort("hrAve");
@@ -111,6 +114,7 @@ public class HrRecordDbUtil {
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
+				json.put("note", note);
 				json.put("filterHrList", filterHrList);
 				json.put("hrMax", hrMax);
 				json.put("hrAve", hrAve);
@@ -134,6 +138,7 @@ public class HrRecordDbUtil {
 		String devAddress = jsonObject.getString("devAddress");
 		String creatorPlat = jsonObject.getString("creatorPlat");
 		String creatorId = jsonObject.getString("creatorId");
+		String note = jsonObject.getString("note");
 		String filterHrList = jsonObject.getString("filterHrList");
 		short hrMax = (short) jsonObject.getInt("hrMax");
 		short hrAve = (short) jsonObject.getInt("hrAve");
@@ -148,6 +153,7 @@ public class HrRecordDbUtil {
 		record.setCreateTime(createTime);
 		record.setDevAddress(devAddress);
 		record.setCreator(new Account(creatorPlat, creatorId));
+		record.setNote(note);
 		record.setFilterHrList(filterHrList);
 		record.setHrMax(hrMax);
 		record.setHrAve(hrAve);

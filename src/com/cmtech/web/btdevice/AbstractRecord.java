@@ -6,6 +6,7 @@ public abstract class AbstractRecord implements IRecord{
     private String devAddress; //
     private String creatorPlat;
     private String creatorId;
+    private String note;
 
     protected AbstractRecord() {
     	ver = "";
@@ -13,6 +14,7 @@ public abstract class AbstractRecord implements IRecord{
         devAddress = "";
         creatorPlat = "";
         creatorId = "";
+        note = "";
     }
     
     public String getVer() {
@@ -50,10 +52,16 @@ public abstract class AbstractRecord implements IRecord{
         this.creatorPlat = creator.getPlatName();
         this.creatorId = creator.getPlatId();
     }
+    public String getNote() {
+    	return note;
+    }
+    public void setNote(String note) {
+    	this.note = note;
+    }
 
     @Override
     public String toString() {
-        return createTime + "-" + devAddress + "-" + creatorPlat + "-" + creatorId;
+        return createTime + "-" + devAddress + "-" + creatorPlat + "-" + creatorId + "-" + note;
     }
 
     @Override

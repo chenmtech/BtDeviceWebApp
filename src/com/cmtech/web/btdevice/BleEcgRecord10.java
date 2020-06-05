@@ -5,7 +5,6 @@ public class BleEcgRecord10 extends AbstractRecord{
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     private int recordSecond; // unit: s
-    private String note; // record description
     private String ecgData; // ecg data
     
     public BleEcgRecord10() {
@@ -28,15 +27,10 @@ public class BleEcgRecord10 extends AbstractRecord{
 		return recordSecond;
 	}
 
-	public String getNote() {
-		return note;
-	}
-
 	public String getEcgData() {
 		return ecgData;
 	}
 	
-    
 	public void setSampleRate(int sampleRate) {
 		this.sampleRate = sampleRate;
 	}
@@ -51,10 +45,6 @@ public class BleEcgRecord10 extends AbstractRecord{
 
 	public void setRecordSecond(int recordSecond) {
 		this.recordSecond = recordSecond;
-	}
-
-	public void setNote(String note) {
-		this.note = note;
 	}
 
 	public void setEcgData(String ecgData) {

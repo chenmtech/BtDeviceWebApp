@@ -60,7 +60,7 @@ public class EcgRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, recordSecond from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, recordSecond, note from ecgrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -69,10 +69,12 @@ public class EcgRecordDbUtil {
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
 				int recordSecond = rs.getInt("recordSecond");
+				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("recordSecond", recordSecond);
+				json.put("note", note);
 			
 				return json;
 			}
@@ -91,7 +93,7 @@ public class EcgRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData from ecgrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -101,11 +103,11 @@ public class EcgRecordDbUtil {
 				String devAddress = rs.getString("devAddress");
 				String creatorPlat = rs.getString("creatorPlat");
 				String creatorId = rs.getString("creatorId");
+				String note = rs.getString("note");
 				int sampleRate = rs.getInt("sampleRate");
 				int caliValue = rs.getInt("caliValue");
 				int leadTypeCode = rs.getInt("leadTypeCode");
 				int recordSecond = rs.getInt("recordSecond");
-				String note = rs.getString("note");
 				String ecgData = rs.getString("ecgData");
 				JSONObject json = new JSONObject();
 				json.put("recordTypeCode", 1);
@@ -113,11 +115,11 @@ public class EcgRecordDbUtil {
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
+				json.put("note", note);
 				json.put("sampleRate", sampleRate);
 				json.put("caliValue", caliValue);
 				json.put("leadTypeCode", leadTypeCode);
 				json.put("recordSecond", recordSecond);
-				json.put("note", note);
 				json.put("ecgData", ecgData);
 			
 				return json;
@@ -138,11 +140,11 @@ public class EcgRecordDbUtil {
 		String devAddress = jsonObject.getString("devAddress");
 		String creatorPlat = jsonObject.getString("creatorPlat");
 		String creatorId = jsonObject.getString("creatorId");
+		String note = jsonObject.getString("note");
 		int sampleRate = jsonObject.getInt("sampleRate");
 		int caliValue = jsonObject.getInt("caliValue");
 		int leadTypeCode = jsonObject.getInt("leadTypeCode");
 		int recordSecond = jsonObject.getInt("recordSecond");
-		String note = jsonObject.getString("note");
 		String ecgData = jsonObject.getString("ecgData");
 		
 		BleEcgRecord10 record = new BleEcgRecord10();

@@ -5,4 +5,5 @@ public interface IRecord {
     public String getDevAddress();
     public String getRecordName() ;
     public String getCreatorPlat();
+    public String getNote();
 }
