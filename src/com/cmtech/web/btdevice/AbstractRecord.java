@@ -16,11 +16,12 @@ public abstract class AbstractRecord implements IRecord{
         creatorId = "";
         note = "";
     }
-    
+
+    @Override
     public String getVer() {
     	return ver;
     }
-    
+    @Override
     public void setVer(String ver) {
         this.ver = ver;
     }
@@ -28,6 +29,7 @@ public abstract class AbstractRecord implements IRecord{
     public long getCreateTime() {
         return createTime;
     }
+    @Override
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
@@ -35,6 +37,7 @@ public abstract class AbstractRecord implements IRecord{
     public String getDevAddress() {
         return devAddress;
     }
+    @Override
     public void setDevAddress(String devAddress) {
         this.devAddress = devAddress;
     }
@@ -42,19 +45,24 @@ public abstract class AbstractRecord implements IRecord{
     public String getRecordName() {
         return createTime + devAddress;
     }
+    @Override
     public String getCreatorPlat() {
         return creatorPlat;
     }
+    @Override
     public String getCreatorPlatId() {
     	return creatorId;
     }
+    @Override
     public void setCreator(Account creator) {
         this.creatorPlat = creator.getPlatName();
         this.creatorId = creator.getPlatId();
     }
+    @Override
     public String getNote() {
     	return note;
     }
+    @Override
     public void setNote(String note) {
     	this.note = note;
     }

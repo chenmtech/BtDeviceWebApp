@@ -15,7 +15,6 @@ import com.cmtech.web.btdevice.RecordType;
 
 public class HrRecordDbUtil {
 	public static boolean upload(JSONObject json) {
-		System.out.println("upload hr record");
 		BleHrRecord10 record = createFromJson(json);
 		if(record == null) return false;
 		
@@ -26,8 +25,8 @@ public class HrRecordDbUtil {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, filterHrList, hrMax, hrAve, hrHist, recordSecond) "
-				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, filterHrList, hrMax, hrAve, hrHist, recordSecond) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, record.getVer());
@@ -35,11 +34,12 @@ public class HrRecordDbUtil {
 			ps.setString(3, record.getDevAddress());
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
-			ps.setString(6, record.getFilterHrList());
-			ps.setShort(7, record.getHrMax());
-			ps.setShort(8, record.getHrAve());
-			ps.setString(9, record.getHrHist());
-			ps.setInt(10, record.getRecordSecond());
+			ps.setString(6, record.getNote());
+			ps.setString(7, record.getFilterHrList());
+			ps.setShort(8, record.getHrMax());
+			ps.setShort(9, record.getHrAve());
+			ps.setString(10, record.getHrHist());
+			ps.setInt(11, record.getRecordSecond());
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)

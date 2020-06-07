@@ -26,7 +26,7 @@ public class EcgRecordDbUtil {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, sampleRate, caliValue, leadTypeCode, recordSecond, note, ecgData) "
+		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -35,11 +35,11 @@ public class EcgRecordDbUtil {
 			ps.setString(3, record.getDevAddress());
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
-			ps.setInt(6, record.getSampleRate());
-			ps.setInt(7, record.getCaliValue());
-			ps.setInt(8, record.getLeadTypeCode());
-			ps.setInt(9, record.getRecordSecond());
-			ps.setString(10, record.getNote());
+			ps.setString(6, record.getNote());
+			ps.setInt(7, record.getSampleRate());
+			ps.setInt(8, record.getCaliValue());
+			ps.setInt(9, record.getLeadTypeCode());
+			ps.setInt(10, record.getRecordSecond());
 			ps.setString(11, record.getEcgData());
 			
 			boolean rlt = ps.execute();
@@ -155,11 +155,11 @@ public class EcgRecordDbUtil {
 		record.setCreateTime(createTime);
 		record.setDevAddress(devAddress);
 		record.setCreator(new Account(creatorPlat, creatorId));
+		record.setNote(note);
 		record.setSampleRate(sampleRate);
 		record.setCaliValue(caliValue);
 		record.setLeadTypeCode(leadTypeCode);
 		record.setRecordSecond(recordSecond);
-		record.setNote(note);
 		record.setEcgData(ecgData);
 		return record;
 	}

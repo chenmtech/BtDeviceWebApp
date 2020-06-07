@@ -67,7 +67,7 @@ public class RecordServlet extends HttpServlet {
 		json.put("id", id);
 		ServletUtil.responseJson(response, json);
 		
-		System.out.println("记录id="+id);
+		System.out.println("The found record id = "+id);
 	}
 
 	/**
