@@ -136,7 +136,7 @@ public class RecordServlet extends HttpServlet {
 				String creatorPlat = jsonObject.getString("creatorPlat");
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
-				JSONArray jsonArr = RecordDbUtil.downloadInfo(type, creatorPlat, creatorId, fromTime, num);
+				JSONArray jsonArr = RecordDbUtil.downloadBasicInfo(type, creatorPlat, creatorId, fromTime, num);
 				
 				if(jsonArr == null) {
 					ServletUtil.response(response, new MyException(DOWNLOAD_ERR, "下载记录信息错误"));

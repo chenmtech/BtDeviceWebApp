@@ -10,23 +10,23 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleEcgRecord10;
+import com.cmtech.web.btdevice.BleEegRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
-public class EcgRecordDbUtil {
+public class EegRecordDbUtil {
 	
 	public static boolean upload(JSONObject json) {
-		BleEcgRecord10 record = createFromJson(json);
+		BleEegRecord10 record = createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.query(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
+		String sql = "insert into eegrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -40,7 +40,7 @@ public class EcgRecordDbUtil {
 			ps.setInt(8, record.getCaliValue());
 			ps.setInt(9, record.getLeadTypeCode());
 			ps.setInt(10, record.getRecordSecond());
-			ps.setString(11, record.getEcgData());
+			ps.setString(11, record.getEegData());
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
@@ -60,7 +60,7 @@ public class EcgRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, recordSecond, note from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, recordSecond, note from eegrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -93,7 +93,7 @@ public class EcgRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from eegrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -108,7 +108,7 @@ public class EcgRecordDbUtil {
 				int caliValue = rs.getInt("caliValue");
 				int leadTypeCode = rs.getInt("leadTypeCode");
 				int recordSecond = rs.getInt("recordSecond");
-				String ecgData = rs.getString("ecgData");
+				String eegData = rs.getString("eegData");
 				JSONObject json = new JSONObject();
 				json.put("recordTypeCode", 1);
 				json.put("createTime", createTime);
@@ -120,7 +120,7 @@ public class EcgRecordDbUtil {
 				json.put("caliValue", caliValue);
 				json.put("leadTypeCode", leadTypeCode);
 				json.put("recordSecond", recordSecond);
-				json.put("ecgData", ecgData);
+				json.put("eegData", eegData);
 			
 				return json;
 			}
@@ -134,7 +134,7 @@ public class EcgRecordDbUtil {
 	}
 	
 	
-	private static BleEcgRecord10 createFromJson(JSONObject jsonObject) {
+	private static BleEegRecord10 createFromJson(JSONObject jsonObject) {
 		String ver = jsonObject.getString("ver");
 		long createTime = jsonObject.getLong("createTime");
 		String devAddress = jsonObject.getString("devAddress");
@@ -145,9 +145,9 @@ public class EcgRecordDbUtil {
 		int caliValue = jsonObject.getInt("caliValue");
 		int leadTypeCode = jsonObject.getInt("leadTypeCode");
 		int recordSecond = jsonObject.getInt("recordSecond");
-		String ecgData = jsonObject.getString("ecgData");
+		String eegData = jsonObject.getString("eegData");
 		
-		BleEcgRecord10 record = new BleEcgRecord10();
+		BleEegRecord10 record = new BleEegRecord10();
 		if("".equals(ver)) {
 			ver = "1.0";
 		}
@@ -160,7 +160,7 @@ public class EcgRecordDbUtil {
 		record.setCaliValue(caliValue);
 		record.setLeadTypeCode(leadTypeCode);
 		record.setRecordSecond(recordSecond);
-		record.setEcgData(ecgData);
+		record.setEegData(eegData);
 		return record;
 	}
 }

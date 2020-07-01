@@ -53,7 +53,7 @@ public class HrRecordDbUtil {
 		return false;
 	}
 
-	public static JSONObject downloadInfo(int id) {
+	public static JSONObject downloadBasicInfo(int id) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		

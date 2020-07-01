@@ -63,6 +63,12 @@ public class RecordDbUtil {
 		case HR:
 			return HrRecordDbUtil.upload(json);
 			
+		case THERMO:
+			return ThermoRecordDbUtil.upload(json);
+			
+		case EEG:
+			return EegRecordDbUtil.upload(json);
+			
 		default:
 			break;
 		}
@@ -73,7 +79,7 @@ public class RecordDbUtil {
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
 	// howmuch: num
-	public static JSONArray downloadInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
+	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
@@ -95,7 +101,7 @@ public class RecordDbUtil {
 			while(rs.next()) {
 				id = rs.getInt("id");
 				System.out.println("id=" + id);
-				jsonArray.put(i++, downloadInfo(type, id));
+				jsonArray.put(i++, downloadBasicInfo(type, id));
 			}
 			return jsonArray;
 		} catch (SQLException e) {
@@ -181,17 +187,25 @@ public class RecordDbUtil {
 			return "thermorecord";
 		case TH:
 			return "threcord";
+		case EEG:
+			return "eegrecord";
 		}
 		return "";
 	}
 	
-	private static JSONObject downloadInfo(RecordType type, int id) {
+	private static JSONObject downloadBasicInfo(RecordType type, int id) {
 		switch(type) {
 		case ECG:
-			return EcgRecordDbUtil.downloadInfo(id);
+			return EcgRecordDbUtil.downloadBasicInfo(id);
 		
 		case HR:
-			return HrRecordDbUtil.downloadInfo(id);
+			return HrRecordDbUtil.downloadBasicInfo(id);
+			
+		case THERMO:
+			return ThermoRecordDbUtil.downloadBasicInfo(id);
+			
+		case EEG:
+			return EegRecordDbUtil.downloadBasicInfo(id);
 			
 		default:
 			break;
@@ -206,6 +220,12 @@ public class RecordDbUtil {
 		
 		case HR:
 			return HrRecordDbUtil.download(id);
+			
+		case THERMO:
+			return ThermoRecordDbUtil.download(id);
+			
+		case EEG:
+			return EegRecordDbUtil.download(id);
 			
 		default:
 			break;
