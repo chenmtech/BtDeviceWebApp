@@ -109,7 +109,7 @@ public class HrRecordDbUtil {
 				String hrHist = rs.getString("hrHist");
 				int recordSecond = rs.getInt("recordSecond");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", 2);
+				json.put("recordTypeCode", RecordType.HR.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);

@@ -100,7 +100,7 @@ public class ThermoRecordDbUtil {
 				String note = rs.getString("note");
 				String temp = rs.getString("temp");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", 1);
+				json.put("recordTypeCode", RecordType.THERMO.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);

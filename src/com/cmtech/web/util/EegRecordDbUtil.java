@@ -110,7 +110,7 @@ public class EegRecordDbUtil {
 				int recordSecond = rs.getInt("recordSecond");
 				String eegData = rs.getString("eegData");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", 1);
+				json.put("recordTypeCode", RecordType.EEG.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);

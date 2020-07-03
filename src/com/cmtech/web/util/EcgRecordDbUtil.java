@@ -110,7 +110,7 @@ public class EcgRecordDbUtil {
 				int recordSecond = rs.getInt("recordSecond");
 				String ecgData = rs.getString("ecgData");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", 1);
+				json.put("recordTypeCode", RecordType.ECG.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
