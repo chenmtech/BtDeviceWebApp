@@ -56,16 +56,19 @@ public class ThermoRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, note from thermorecord where id = ?";
+		String sql = "select ver, createTime, devAddress, note from thermorecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			rs = ps.executeQuery();
 			if(rs.next()) {
+				String ver = rs.getString("ver");
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
 				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
+				json.put("recordTypeCode", RecordType.THERMO.getCode());
+				json.put("ver", ver);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("note", note);

@@ -59,17 +59,20 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, recordSecond, note from hrrecord where id = ?";
+		String sql = "select ver, createTime, devAddress, recordSecond, note from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			rs = ps.executeQuery();
 			if(rs.next()) {
+				String ver = rs.getString("ver");
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
 				int recordSecond = rs.getInt("recordSecond");
 				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
+				json.put("recordTypeCode", RecordType.HR.getCode());
+				json.put("ver", ver);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("recordSecond", recordSecond);
