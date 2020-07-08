@@ -1,7 +1,7 @@
 package com.cmtech.web.btdevice;
 
 public enum RecordType {
-	ECG("心电", 1), HR("心率", 2), THERMO("体温", 3), TH("温湿度", 4), EEG("脑电", 5);  
+	ALL("所有", 0), ECG("心电", 1), HR("心率", 2), THERMO("体温", 3), TH("温湿度", 4), EEG("脑电", 5);  
 
     private String name;  
     private int code;  

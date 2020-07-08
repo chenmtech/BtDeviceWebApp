@@ -6,11 +6,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.RecordType;
+import com.cmtech.web.btdevice.TmpRecord;
 
 public class RecordDbUtil {
 	// QUERY
@@ -83,25 +88,50 @@ public class RecordDbUtil {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
-		String tableName = getTableName(type);
+		List<RecordType> types = new ArrayList<>();
+		if(type == RecordType.ALL) {
+			RecordType[] allTypes = RecordType.values();
+			for(RecordType t1 : allTypes) {
+				if(t1 != RecordType.ALL && t1 != RecordType.TH) {
+					types.add(t1);
+				}
+			}
+		}
+		else
+			types.add(type);
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+		JSONArray jsonArray = new JSONArray();
 		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, creatorPlat);
-			ps.setString(2, creatorId);
-			ps.setLong(3, fromTime);
-			ps.setInt(4, num);
-			rs = ps.executeQuery();
-			int id = INVALID_ID;
-			JSONArray jsonArray = new JSONArray();
-			int i = 0;
-			while(rs.next()) {
-				id = rs.getInt("id");
-				System.out.println("id=" + id);
-				jsonArray.put(i++, downloadBasicInfo(type, id));
+			List<TmpRecord> findRecords = new ArrayList<>();
+			for(RecordType t2 : types) {
+				String tableName = getTableName(t2);
+				String sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+				ps = conn.prepareStatement(sql);
+				ps.setString(1, creatorPlat);
+				ps.setString(2, creatorId);
+				ps.setLong(3, fromTime);
+				ps.setInt(4, num);
+				rs = ps.executeQuery();
+				int id = INVALID_ID;
+				long createTime = -1;
+				while(rs.next()) {
+					id = rs.getInt("id");
+					createTime = rs.getLong("createTime");
+					findRecords.add(new TmpRecord(id, createTime, t2));
+				}
+			}
+			Collections.sort(findRecords, new Comparator<TmpRecord>() {
+                @Override
+                public int compare(TmpRecord o1, TmpRecord o2) {
+                    return (int)(o2.getCreateTime() - o1.getCreateTime());
+                }
+            });
+
+			int N = Math.min(num, findRecords.size());
+			for(int i = 0; i < N; i++) {
+				jsonArray.put(i, downloadBasicInfo(findRecords.get(i).getType(), findRecords.get(i).getId()));
 			}
 			return jsonArray;
 		} catch (SQLException e) {
@@ -189,6 +219,8 @@ public class RecordDbUtil {
 			return "threcord";
 		case EEG:
 			return "eegrecord";
+		default:
+			break;
 		}
 		return "";
 	}
