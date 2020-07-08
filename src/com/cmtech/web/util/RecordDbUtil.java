@@ -84,7 +84,7 @@ public class RecordDbUtil {
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
 	// howmuch: num
-	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, int num) {
+	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteFilterStr, int num) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
@@ -107,12 +107,19 @@ public class RecordDbUtil {
 			List<TmpRecord> findRecords = new ArrayList<>();
 			for(RecordType t2 : types) {
 				String tableName = getTableName(t2);
-				String sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+				String sql = "";
+				if("".equals(noteFilterStr)) 
+					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
+				else
+					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? and note REGEXP ? order by createTime desc limit ?";
+				
 				ps = conn.prepareStatement(sql);
 				ps.setString(1, creatorPlat);
 				ps.setString(2, creatorId);
 				ps.setLong(3, fromTime);
 				ps.setInt(4, num);
+				if(!"".equals(noteFilterStr))
+					ps.setString(5, noteFilterStr);
 				rs = ps.executeQuery();
 				int id = INVALID_ID;
 				long createTime = -1;
@@ -125,7 +132,10 @@ public class RecordDbUtil {
 			Collections.sort(findRecords, new Comparator<TmpRecord>() {
                 @Override
                 public int compare(TmpRecord o1, TmpRecord o2) {
-                    return (int)(o2.getCreateTime() - o1.getCreateTime());
+                	int rlt = 0;
+                    if(o2.getCreateTime() > o1.getCreateTime()) rlt = 1;
+                    else if(o2.getCreateTime() < o1.getCreateTime()) rlt = -1;
+                    return rlt;
                 }
             });
 
