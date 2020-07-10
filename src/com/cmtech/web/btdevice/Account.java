@@ -18,18 +18,18 @@ public class Account {
 	private final String platId;
 	private final String name;
 	private final String note;
-	private final String iconStr;
+	private final byte[] iconData;
 	
 	public Account(String platName, String platId) {
-		this(platName, platId, platId, "", "");
+		this(platName, platId, platId, "", null);
 	}
 	
-	public Account(String platName, String platId, String name, String note, String iconStr) {
+	public Account(String platName, String platId, String name, String note, byte[] iconData) {
 		this.platName = platName;
 		this.platId = platId;
 		this.name = name;
 		this.note = note;
-		this.iconStr = iconStr;
+		this.iconData = iconData;
 	}
 	
 	public String getPlatName() {
@@ -61,9 +61,13 @@ public class Account {
 				String name = rs.getString("name");
 				String note = rs.getString("note");
 				Blob b = rs.getBlob("icon");
-				byte[] iconData = b.getBytes(1, (int)b.length());
-				String iconStr = Base64.encodeToString(iconData, Base64.DEFAULT);
-				return new Account(platName, platId, name, note, iconStr);
+				byte[] iconData;
+				if(b == null || b.length() < 1) 
+					iconData = null;
+				else
+					iconData = b.getBytes(1, (int)b.length());
+				//String iconStr = Base64.encodeToString(iconData, Base64.DEFAULT);
+				return new Account(platName, platId, name, note, iconData);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -113,7 +117,7 @@ public class Account {
 			ps.setString(2, platId);
 			ps.setString(3, name);
 			ps.setString(4, note);
-			byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
+			//byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(5, b);
@@ -142,7 +146,7 @@ public class Account {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, name);
 			ps.setString(2, note);
-			byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
+			//byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(3, b);
@@ -165,14 +169,17 @@ public class Account {
 		json.put("platId", platId);
 		json.put("name", name);
 		json.put("note", note);
-		json.put("iconStr", iconStr);
+		if(iconData == null)
+			json.put("iconStr", "");
+		else
+			json.put("iconStr", Base64.encodeToString(iconData, Base64.DEFAULT));
 	
 		return json;
 	}
 	
 	@Override
 	public String toString() {
-		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconStr="+iconStr;
+		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconData="+iconData;
 	}
 	
 	public boolean login() {

@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.exception.MyException;
+import com.cmtech.web.util.Base64;
 import com.cmtech.web.util.ServletUtil;
 
 /**
@@ -129,7 +130,8 @@ public class AccountServlet extends HttpServlet {
 				String name = jsonObject.getString("name");
 				String note = jsonObject.getString("note");
 				String iconStr = jsonObject.getString("iconStr");
-				Account account = new Account(platName, platId, name, note, iconStr);
+				byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
+				Account account = new Account(platName, platId, name, note, iconData);
 				
 				accountId = Account.getId(platName, platId);
 				if(accountId == INVALID_ID) {
