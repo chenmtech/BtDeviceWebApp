@@ -21,7 +21,7 @@ public class Account {
 	private final String iconStr;
 	
 	public Account(String platName, String platId) {
-		this(platName, platId, "", "", "");
+		this(platName, platId, platId, "", "");
 	}
 	
 	public Account(String platName, String platId, String name, String note, String iconStr) {
@@ -147,8 +147,9 @@ public class Account {
 			b.setBytes(1, iconData);
 			ps.setBlob(3, b);
 			ps.setInt(4, id);
-			System.out.println("iconStr length = " + iconStr.length());
-			return ps.execute();
+			boolean rlt = ps.execute();
+			if(!rlt && ps.getUpdateCount() == 1)
+				return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
