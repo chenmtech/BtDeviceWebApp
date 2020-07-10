@@ -2,20 +2,34 @@ package com.cmtech.web.btdevice;
 
 import static com.cmtech.web.util.DbUtil.INVALID_ID;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.json.JSONObject;
+
+import com.cmtech.web.util.Base64;
 import com.cmtech.web.util.DbUtil;
 
 public class Account {
 	private final String platName;
 	private final String platId;
+	private final String name;
+	private final String note;
+	private final String iconStr;
 	
 	public Account(String platName, String platId) {
+		this(platName, platId, "", "", "");
+	}
+	
+	public Account(String platName, String platId, String name, String note, String iconStr) {
 		this.platName = platName;
 		this.platId = platId;
+		this.name = name;
+		this.note = note;
+		this.iconStr = iconStr;
 	}
 	
 	public String getPlatName() {
@@ -28,6 +42,36 @@ public class Account {
 	
 	public int getId() {
 		return getId(platName, platId);
+	}
+	
+	public static Account create(int id) {
+		Connection conn = DbUtil.connect();		
+		if(conn == null || id == INVALID_ID) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select platName, platId, name, note, icon from account where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				String platName = rs.getString("platName");
+				String platId = rs.getString("platId");
+				String name = rs.getString("name");
+				String note = rs.getString("note");
+				Blob b = rs.getBlob("icon");
+				byte[] iconData = b.getBytes(1, (int)b.length());
+				String iconStr = Base64.encodeToString(iconData, Base64.DEFAULT);
+				return new Account(platName, platId, name, note, iconStr);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;		
 	}
 
 	public static int getId(String platName, String platId) {
@@ -62,11 +106,17 @@ public class Account {
 		}
 		
 		PreparedStatement ps = null;
-		String sql = "insert into account (platName, platId) values (?, ?)";
+		String sql = "insert into account (platName, platId, name, note, icon) values (?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, platName);
 			ps.setString(2, platId);
+			ps.setString(3, name);
+			ps.setString(4, note);
+			byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
+			Blob b = conn.createBlob();
+			b.setBytes(1, iconData);
+			ps.setBlob(5, b);
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
 				return true;
@@ -87,12 +137,17 @@ public class Account {
 		if(id == INVALID_ID) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update account set platName=?, platId=? where id=?";
+		String sql = "update account set name=?, note=?, icon=? where id=?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, platName);
-			ps.setString(2, platId);
-			ps.setInt(3, id);
+			ps.setString(1, name);
+			ps.setString(2, note);
+			byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
+			Blob b = conn.createBlob();
+			b.setBytes(1, iconData);
+			ps.setBlob(3, b);
+			ps.setInt(4, id);
+			System.out.println("iconStr length = " + iconStr.length());
 			return ps.execute();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -103,9 +158,20 @@ public class Account {
 		return false;
 	}
 	
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("platName", platName);
+		json.put("platId", platId);
+		json.put("name", name);
+		json.put("note", note);
+		json.put("iconStr", iconStr);
+	
+		return json;
+	}
+	
 	@Override
 	public String toString() {
-		return "platName="+platName+",platId="+platId;
+		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconStr="+iconStr;
 	}
 	
 	public boolean login() {
