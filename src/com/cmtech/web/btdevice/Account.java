@@ -21,7 +21,7 @@ public class Account {
 	private final byte[] iconData;
 	
 	public Account(String platName, String platId) {
-		this(platName, platId, platId, "", null);
+		this(platName, platId, "", "", null);
 	}
 	
 	public Account(String platName, String platId, String name, String note, byte[] iconData) {
