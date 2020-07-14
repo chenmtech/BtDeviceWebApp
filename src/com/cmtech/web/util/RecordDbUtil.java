@@ -117,9 +117,12 @@ public class RecordDbUtil {
 				ps.setString(1, creatorPlat);
 				ps.setString(2, creatorId);
 				ps.setLong(3, fromTime);
-				ps.setInt(4, num);
-				if(!"".equals(noteFilterStr))
-					ps.setString(5, noteFilterStr);
+				if("".equals(noteFilterStr)) {
+					ps.setInt(4, num);
+				} else {
+					ps.setString(4, noteFilterStr);
+					ps.setInt(5, num);
+				}
 				rs = ps.executeQuery();
 				int id = INVALID_ID;
 				long createTime = -1;
