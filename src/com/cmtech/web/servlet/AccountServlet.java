@@ -137,7 +137,7 @@ public class AccountServlet extends HttpServlet {
 				if(accountId == INVALID_ID) {
 					rlt = account.insert();
 				} else {
-					rlt = account.update();
+					rlt = account.updateDb();
 				}
 				
 				if(rlt) {

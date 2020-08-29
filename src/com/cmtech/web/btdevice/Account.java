@@ -133,7 +133,7 @@ public class Account {
 		return false;
 	}
 	
-	public boolean update() {
+	public boolean updateDb() {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
