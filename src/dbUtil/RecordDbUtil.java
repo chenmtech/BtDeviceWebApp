@@ -1,6 +1,6 @@
-package com.cmtech.web.util;
+package dbUtil;
 
-import static com.cmtech.web.util.DbUtil.INVALID_ID;
+import static dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -84,7 +84,7 @@ public class RecordDbUtil {
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
 	// howmuch: num
-	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteFilterStr, int num) {
+	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
@@ -108,7 +108,7 @@ public class RecordDbUtil {
 			for(RecordType t2 : types) {
 				String tableName = getTableName(t2);
 				String sql = "";
-				if("".equals(noteFilterStr)) 
+				if("".equals(noteSearchStr)) 
 					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
 				else
 					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? and note REGEXP ? order by createTime desc limit ?";
@@ -117,10 +117,10 @@ public class RecordDbUtil {
 				ps.setString(1, creatorPlat);
 				ps.setString(2, creatorId);
 				ps.setLong(3, fromTime);
-				if("".equals(noteFilterStr)) {
+				if("".equals(noteSearchStr)) {
 					ps.setInt(4, num);
 				} else {
-					ps.setString(4, noteFilterStr);
+					ps.setString(4, noteSearchStr);
 					ps.setInt(5, num);
 				}
 				rs = ps.executeQuery();

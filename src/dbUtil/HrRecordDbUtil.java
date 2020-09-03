@@ -1,6 +1,6 @@
-package com.cmtech.web.util;
+package dbUtil;
 
-import static com.cmtech.web.util.DbUtil.INVALID_ID;
+import static dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,7 +25,7 @@ public class HrRecordDbUtil {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, filterHrList, hrMax, hrAve, hrHist, recordSecond) "
+		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -35,7 +35,7 @@ public class HrRecordDbUtil {
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
 			ps.setString(6, record.getNote());
-			ps.setString(7, record.getFilterHrList());
+			ps.setString(7, record.getHrList());
 			ps.setShort(8, record.getHrMax());
 			ps.setShort(9, record.getHrAve());
 			ps.setString(10, record.getHrHist());
@@ -95,7 +95,7 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, filterHrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -106,7 +106,7 @@ public class HrRecordDbUtil {
 				String creatorPlat = rs.getString("creatorPlat");
 				String creatorId = rs.getString("creatorId");
 				String note = rs.getString("note");
-				String filterHrList = rs.getString("filterHrList");
+				String hrList = rs.getString("hrList");
 				short hrMax = rs.getShort("hrMax");
 				short hrAve = rs.getShort("hrAve");
 				String hrHist = rs.getString("hrHist");
@@ -118,7 +118,7 @@ public class HrRecordDbUtil {
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
 				json.put("note", note);
-				json.put("filterHrList", filterHrList);
+				json.put("hrList", hrList);
 				json.put("hrMax", hrMax);
 				json.put("hrAve", hrAve);
 				json.put("hrHist", hrHist);
@@ -142,7 +142,7 @@ public class HrRecordDbUtil {
 		String creatorPlat = jsonObject.getString("creatorPlat");
 		String creatorId = jsonObject.getString("creatorId");
 		String note = jsonObject.getString("note");
-		String filterHrList = jsonObject.getString("filterHrList");
+		String hrList = jsonObject.getString("hrList");
 		short hrMax = (short) jsonObject.getInt("hrMax");
 		short hrAve = (short) jsonObject.getInt("hrAve");
 		String hrHist = jsonObject.getString("hrHist");
@@ -157,7 +157,7 @@ public class HrRecordDbUtil {
 		record.setDevAddress(devAddress);
 		record.setCreator(new Account(creatorPlat, creatorId));
 		record.setNote(note);
-		record.setFilterHrList(filterHrList);
+		record.setHrList(hrList);
 		record.setHrMax(hrMax);
 		record.setHrAve(hrAve);
 		record.setHrHist(hrHist);

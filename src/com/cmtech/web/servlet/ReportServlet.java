@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BleEcgReport10;
-import com.cmtech.web.util.ServletUtil;
 
 @WebServlet(name="ReportServlet", urlPatterns="/Report")
 public class ReportServlet extends HttpServlet {

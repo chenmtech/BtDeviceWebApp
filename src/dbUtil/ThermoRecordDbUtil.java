@@ -1,6 +1,6 @@
-package com.cmtech.web.util;
+package dbUtil;
 
-import static com.cmtech.web.util.DbUtil.INVALID_ID;
+import static dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,24 +10,24 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleEegRecord10;
+import com.cmtech.web.btdevice.BleThermoRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
-public class EegRecordDbUtil {
+public class ThermoRecordDbUtil {
 	
 	public static boolean upload(JSONObject json) {
-		BleEegRecord10 record = createFromJson(json);
+		BleThermoRecord10 record = createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.query(RecordType.THERMO, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into eegrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData) "
-				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into thermorecord (ver, createTime, devAddress, creatorPlat, creatorId, note, temp) "
+				+ "values (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, record.getVer());
@@ -36,11 +36,7 @@ public class EegRecordDbUtil {
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
 			ps.setString(6, record.getNote());
-			ps.setInt(7, record.getSampleRate());
-			ps.setInt(8, record.getCaliValue());
-			ps.setInt(9, record.getLeadTypeCode());
-			ps.setInt(10, record.getRecordSecond());
-			ps.setString(11, record.getEegData());
+			ps.setString(7, record.getTemp());
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
@@ -60,7 +56,7 @@ public class EegRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, createTime, devAddress, recordSecond, note from eegrecord where id = ?";
+		String sql = "select ver, createTime, devAddress, note from thermorecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -69,14 +65,12 @@ public class EegRecordDbUtil {
 				String ver = rs.getString("ver");
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
-				int recordSecond = rs.getInt("recordSecond");
 				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", RecordType.EEG.getCode());
+				json.put("recordTypeCode", RecordType.THERMO.getCode());
 				json.put("ver", ver);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
-				json.put("recordSecond", recordSecond);
 				json.put("note", note);
 			
 				return json;
@@ -96,7 +90,7 @@ public class EegRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from eegrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, temp from thermorecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -107,23 +101,15 @@ public class EegRecordDbUtil {
 				String creatorPlat = rs.getString("creatorPlat");
 				String creatorId = rs.getString("creatorId");
 				String note = rs.getString("note");
-				int sampleRate = rs.getInt("sampleRate");
-				int caliValue = rs.getInt("caliValue");
-				int leadTypeCode = rs.getInt("leadTypeCode");
-				int recordSecond = rs.getInt("recordSecond");
-				String eegData = rs.getString("eegData");
+				String temp = rs.getString("temp");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", RecordType.EEG.getCode());
+				json.put("recordTypeCode", RecordType.THERMO.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
 				json.put("note", note);
-				json.put("sampleRate", sampleRate);
-				json.put("caliValue", caliValue);
-				json.put("leadTypeCode", leadTypeCode);
-				json.put("recordSecond", recordSecond);
-				json.put("eegData", eegData);
+				json.put("temp", temp);
 			
 				return json;
 			}
@@ -136,21 +122,16 @@ public class EegRecordDbUtil {
 		return null;
 	}
 	
-	
-	private static BleEegRecord10 createFromJson(JSONObject jsonObject) {
+	private static BleThermoRecord10 createFromJson(JSONObject jsonObject) {
 		String ver = jsonObject.getString("ver");
 		long createTime = jsonObject.getLong("createTime");
 		String devAddress = jsonObject.getString("devAddress");
 		String creatorPlat = jsonObject.getString("creatorPlat");
 		String creatorId = jsonObject.getString("creatorId");
 		String note = jsonObject.getString("note");
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String eegData = jsonObject.getString("eegData");
+		String temp = jsonObject.getString("temp");
 		
-		BleEegRecord10 record = new BleEegRecord10();
+		BleThermoRecord10 record = new BleThermoRecord10();
 		if("".equals(ver)) {
 			ver = "1.0";
 		}
@@ -159,11 +140,7 @@ public class EegRecordDbUtil {
 		record.setDevAddress(devAddress);
 		record.setCreator(new Account(creatorPlat, creatorId));
 		record.setNote(note);
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setEegData(eegData);
+		record.setTemp(temp);
 		return record;
 	}
 }

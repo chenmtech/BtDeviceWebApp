@@ -2,7 +2,7 @@ package com.cmtech.web.btdevice;
 
 
 public class BleHrRecord10 extends AbstractRecord {
-	private String filterHrList; // list of the filtered HR
+	private String hrList; // list of the filtered HR
     private short hrMax;
     private short hrAve;
     private String hrHist; // HR histogram value
@@ -12,12 +12,12 @@ public class BleHrRecord10 extends AbstractRecord {
     	super();
     }
 
-	public String getFilterHrList() {
-		return filterHrList;
+	public String getHrList() {
+		return hrList;
 	}
 
-	public void setFilterHrList(String filterHrList) {
-		this.filterHrList = filterHrList;
+	public void setHrList(String hrList) {
+		this.hrList = hrList;
 	}
 
 	public short getHrMax() {

@@ -16,7 +16,7 @@ import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SIGNUP_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
 import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
-import static com.cmtech.web.util.DbUtil.INVALID_ID;
+import static dbUtil.DbUtil.INVALID_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +33,6 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.exception.MyException;
 import com.cmtech.web.util.Base64;
-import com.cmtech.web.util.ServletUtil;
 
 /**
  * ClassName: AccountServlet
@@ -54,50 +53,58 @@ public class AccountServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * 	SignUp or Login using platName and platId
+	 *  Return isSuccess and errStr with json
+	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		// SignUp or Login using platName and platId
-		// return isSuccess and errStr with json
 		String cmd = req.getParameter("cmd");
 		String platName = req.getParameter("platName");
 		String platId = req.getParameter("platId");
+		
 		if(cmd == null || platName == null || platId == null) {
-			ServletUtil.response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+			ServletUtil.responseException(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 		} else {
-			Account acnt = new Account(platName, platId);
+			Account acount = new Account(platName, platId);
 			System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
-				if(acnt.login()) {
-					ServletUtil.response(resp, new MyException(SUCCESS, "登录成功"));
+				if(acount.login()) {
+					ServletUtil.responseException(resp, new MyException(SUCCESS, "登录成功"));
 				} else {
-					ServletUtil.response(resp, new MyException(LOGIN_ERR, "账户不存在，登录错误"));
+					ServletUtil.responseException(resp, new MyException(LOGIN_ERR, "登录错误"));
 				}
 				break;
 				
 			case "signUp":
-				if(acnt.signUp()) {
-					ServletUtil.response(resp, new MyException(SUCCESS, "注册成功"));
+				if(acount.signUp()) {
+					ServletUtil.responseException(resp, new MyException(SUCCESS, "注册成功"));
 				} else {
-					ServletUtil.response(resp, new MyException(SIGNUP_ERR, "注册失败"));
+					ServletUtil.responseException(resp, new MyException(SIGNUP_ERR, "注册失败"));
 				}
 				break;
 				
 			case "signUporLogin":
-				if(acnt.login() || acnt.signUp()) {
-					ServletUtil.response(resp, new MyException(SUCCESS, "注册/登录成功"));
+				if(acount.login() || acount.signUp()) {
+					ServletUtil.responseException(resp, new MyException(SUCCESS, "注册/登录成功"));
 				} else {
-					ServletUtil.response(resp, new MyException(OTHER_ERR, "注册/登录失败"));
+					ServletUtil.responseException(resp, new MyException(OTHER_ERR, "注册/登录失败"));
 				}
 				break;
 				
 				default:
-					ServletUtil.response(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+					ServletUtil.responseException(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
 					break;
 			}
 		}
 	}
 
+	/**
+	 *  Upload a account
+	 *  Download a account
+	 *  Return the result with json object
+	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		BufferedReader streamReader = null;
@@ -116,14 +123,13 @@ public class AccountServlet extends HttpServlet {
 			
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
-			
 			if(platName == null || platId == null) {
-				ServletUtil.response(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+				ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效参数"));
 				return;
 			}
 					
 			String cmd = jsonObject.getString("cmd");
-			boolean rlt;
+			boolean result;
 			int accountId = INVALID_ID;
 			switch(cmd) {
 			case "upload":
@@ -135,46 +141,43 @@ public class AccountServlet extends HttpServlet {
 				
 				accountId = Account.getId(platName, platId);
 				if(accountId == INVALID_ID) {
-					rlt = account.insert();
+					result = account.insert();
 				} else {
-					rlt = account.updateDb();
+					result = account.updateDb();
 				}
 				
-				if(rlt) {
-					ServletUtil.response(response, new MyException(SUCCESS, "上传成功"));
+				if(result) {
+					ServletUtil.responseException(response, new MyException(SUCCESS, "上传成功"));
 				} else {
-					ServletUtil.response(response, new MyException(UPLOAD_ERR, "上传失败"));
+					ServletUtil.responseException(response, new MyException(UPLOAD_ERR, "上传失败"));
 				}
 				break;
 				
 			case "download":
 				accountId = Account.getId(platName, platId);
 				if(accountId == INVALID_ID) {
-					ServletUtil.response(response, new MyException(ACCOUNT_ERR, "无效用户"));
+					ServletUtil.responseException(response, new MyException(ACCOUNT_ERR, "无效账户"));
 					return;
 				}
 				
-				Account acnt = Account.create(accountId);
-				if(acnt != null) {
-					JSONObject json = acnt.toJson();
-					if(json != null) {
-						JSONObject json1 = new JSONObject();
-						json1.put("code", SUCCESS.ordinal());
-						json1.put("user", json);
-						ServletUtil.responseJson(response, json1);
-						return;
-					}
+				Account acount = Account.create(accountId);
+				if(acount != null) {
+					JSONObject json = new JSONObject();
+					json.put("code", SUCCESS.ordinal());
+					json.put("account", acount.toJson());
+					ServletUtil.responseJson(response, json);
+				} else {
+					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载错误"));
 				}
-				
-				ServletUtil.response(response, new MyException(DOWNLOAD_ERR, "下载错误"));
 				break;
 				
 				default:
-					ServletUtil.response(response, new MyException(INVALID_PARA_ERR, "无效命令"));
+					ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效命令"));
 					break;				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			ServletUtil.responseException(response, new MyException(OTHER_ERR, "执行命令错误"));
 		} finally {
 			streamReader.close();
 		}

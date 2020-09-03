@@ -1,13 +1,13 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.util.DbUtil.INVALID_ID;
+import static dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.cmtech.web.util.DbUtil;
+import dbUtil.DbUtil;
 
 public class BleEcgReport10 {
 	private int recordId;
