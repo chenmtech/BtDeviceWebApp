@@ -8,6 +8,7 @@
  */
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
@@ -16,7 +17,6 @@ import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SIGNUP_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
 import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
-import static dbUtil.DbUtil.INVALID_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;

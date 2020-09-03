@@ -1,7 +1,7 @@
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import static com.cmtech.web.exception.MyExceptionCode.*;
-import static dbUtil.DbUtil.INVALID_ID;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,9 +18,8 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
+import com.cmtech.web.dbUtil.RecordDbUtil;
 import com.cmtech.web.exception.MyException;
-
-import dbUtil.RecordDbUtil;
 
 
 /**

@@ -1,6 +1,6 @@
-package dbUtil;
+package com.cmtech.web.dbUtil;
 
-import static dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,22 +10,23 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleHrRecord10;
+import com.cmtech.web.btdevice.BleEegRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
-public class HrRecordDbUtil {
+public class EegRecordDbUtil {
+	
 	public static boolean upload(JSONObject json) {
-		BleHrRecord10 record = createFromJson(json);
+		BleEegRecord10 record = createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.HR, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.query(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond) "
+		String sql = "insert into eegrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -35,11 +36,11 @@ public class HrRecordDbUtil {
 			ps.setString(4, record.getCreatorPlat());
 			ps.setString(5, record.getCreatorPlatId());
 			ps.setString(6, record.getNote());
-			ps.setString(7, record.getHrList());
-			ps.setShort(8, record.getHrMax());
-			ps.setShort(9, record.getHrAve());
-			ps.setString(10, record.getHrHist());
-			ps.setInt(11, record.getRecordSecond());
+			ps.setInt(7, record.getSampleRate());
+			ps.setInt(8, record.getCaliValue());
+			ps.setInt(9, record.getLeadTypeCode());
+			ps.setInt(10, record.getRecordSecond());
+			ps.setString(11, record.getEegData());
 			
 			boolean rlt = ps.execute();
 			if(!rlt && ps.getUpdateCount() == 1)
@@ -52,14 +53,14 @@ public class HrRecordDbUtil {
 		}
 		return false;
 	}
-
+	
 	public static JSONObject downloadBasicInfo(int id) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, createTime, devAddress, recordSecond, note from hrrecord where id = ?";
+		String sql = "select ver, createTime, devAddress, recordSecond, note from eegrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -71,7 +72,7 @@ public class HrRecordDbUtil {
 				int recordSecond = rs.getInt("recordSecond");
 				String note = rs.getString("note");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", RecordType.HR.getCode());
+				json.put("recordTypeCode", RecordType.EEG.getCode());
 				json.put("ver", ver);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
@@ -95,7 +96,7 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where id = ?";
+		String sql = "select createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from eegrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -106,23 +107,23 @@ public class HrRecordDbUtil {
 				String creatorPlat = rs.getString("creatorPlat");
 				String creatorId = rs.getString("creatorId");
 				String note = rs.getString("note");
-				String hrList = rs.getString("hrList");
-				short hrMax = rs.getShort("hrMax");
-				short hrAve = rs.getShort("hrAve");
-				String hrHist = rs.getString("hrHist");
+				int sampleRate = rs.getInt("sampleRate");
+				int caliValue = rs.getInt("caliValue");
+				int leadTypeCode = rs.getInt("leadTypeCode");
 				int recordSecond = rs.getInt("recordSecond");
+				String eegData = rs.getString("eegData");
 				JSONObject json = new JSONObject();
-				json.put("recordTypeCode", RecordType.HR.getCode());
+				json.put("recordTypeCode", RecordType.EEG.getCode());
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("creatorPlat", creatorPlat);
 				json.put("creatorId", creatorId);
 				json.put("note", note);
-				json.put("hrList", hrList);
-				json.put("hrMax", hrMax);
-				json.put("hrAve", hrAve);
-				json.put("hrHist", hrHist);
+				json.put("sampleRate", sampleRate);
+				json.put("caliValue", caliValue);
+				json.put("leadTypeCode", leadTypeCode);
 				json.put("recordSecond", recordSecond);
+				json.put("eegData", eegData);
 			
 				return json;
 			}
@@ -135,20 +136,21 @@ public class HrRecordDbUtil {
 		return null;
 	}
 	
-	private static BleHrRecord10 createFromJson(JSONObject jsonObject) {
+	
+	private static BleEegRecord10 createFromJson(JSONObject jsonObject) {
 		String ver = jsonObject.getString("ver");
 		long createTime = jsonObject.getLong("createTime");
 		String devAddress = jsonObject.getString("devAddress");
 		String creatorPlat = jsonObject.getString("creatorPlat");
 		String creatorId = jsonObject.getString("creatorId");
 		String note = jsonObject.getString("note");
-		String hrList = jsonObject.getString("hrList");
-		short hrMax = (short) jsonObject.getInt("hrMax");
-		short hrAve = (short) jsonObject.getInt("hrAve");
-		String hrHist = jsonObject.getString("hrHist");
+		int sampleRate = jsonObject.getInt("sampleRate");
+		int caliValue = jsonObject.getInt("caliValue");
+		int leadTypeCode = jsonObject.getInt("leadTypeCode");
 		int recordSecond = jsonObject.getInt("recordSecond");
+		String eegData = jsonObject.getString("eegData");
 		
-		BleHrRecord10 record = new BleHrRecord10();
+		BleEegRecord10 record = new BleEegRecord10();
 		if("".equals(ver)) {
 			ver = "1.0";
 		}
@@ -157,11 +159,11 @@ public class HrRecordDbUtil {
 		record.setDevAddress(devAddress);
 		record.setCreator(new Account(creatorPlat, creatorId));
 		record.setNote(note);
-		record.setHrList(hrList);
-		record.setHrMax(hrMax);
-		record.setHrAve(hrAve);
-		record.setHrHist(hrHist);
+		record.setSampleRate(sampleRate);
+		record.setCaliValue(caliValue);
+		record.setLeadTypeCode(leadTypeCode);
 		record.setRecordSecond(recordSecond);
+		record.setEegData(eegData);
 		return record;
 	}
 }

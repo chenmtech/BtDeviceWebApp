@@ -1,6 +1,6 @@
-package dbUtil;
+package com.cmtech.web.dbUtil;
 
-import static dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

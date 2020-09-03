@@ -1,4 +1,4 @@
-package dbUtil;
+package com.cmtech.web.dbUtil;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -1,7 +1,5 @@
 package com.cmtech.web.btdevice;
 
-import static dbUtil.DbUtil.INVALID_ID;
-
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,9 +8,9 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+import com.cmtech.web.dbUtil.DbUtil;
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import com.cmtech.web.util.Base64;
-
-import dbUtil.DbUtil;
 
 public class Account {
 	private final String platName;
