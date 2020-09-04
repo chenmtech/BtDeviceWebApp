@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.BleHrRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
@@ -59,13 +58,15 @@ public class HrRecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, createTime, devAddress, recordSecond, note from hrrecord where id = ?";
+		String sql = "select ver, creatorPlat, creatorId, createTime, devAddress, recordSecond, note from hrrecord where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				String ver = rs.getString("ver");
+				String creatorPlat = rs.getString("creatorPlat");
+				String creatorId = rs.getString("creatorId");
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
 				int recordSecond = rs.getInt("recordSecond");
@@ -73,6 +74,8 @@ public class HrRecordDbUtil {
 				JSONObject json = new JSONObject();
 				json.put("recordTypeCode", RecordType.HR.getCode());
 				json.put("ver", ver);
+				json.put("creatorPlat", creatorPlat);
+				json.put("creatorId", creatorId);
 				json.put("createTime", createTime);
 				json.put("devAddress", devAddress);
 				json.put("recordSecond", recordSecond);
