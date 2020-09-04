@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordType;
 
