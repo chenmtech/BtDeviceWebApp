@@ -9,14 +9,22 @@ import java.sql.SQLException;
 public class DbUtil {
 	public static final int INVALID_ID = -1;
 	private static final String DBNAME = "com.mysql.cj.jdbc.Driver";
-	private static final String DBURL = "jdbc:mysql://localhost:3306/btdevice?characterEncoding=utf-8";
+	private static String dbAddress = "localhost:3306";
 	private static final String DBUSER = "root";
 	private static final String DBPASSWORD = "ctl080512";
+	
+	public static void setDbAddress(String dbAddress) {
+		DbUtil.dbAddress = dbAddress; 
+	}
+	
+	public static String getDbUrl() {
+		return "jdbc:mysql://" + dbAddress + "/btdevice?characterEncoding=utf-8";
+	}
 	
 	public static Connection connect() {
 		try {
 			Class.forName(DBNAME);
-			Connection conn = DriverManager.getConnection(DBURL, DBUSER, DBPASSWORD);
+			Connection conn = DriverManager.getConnection(getDbUrl(), DBUSER, DBPASSWORD);
 			return conn;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

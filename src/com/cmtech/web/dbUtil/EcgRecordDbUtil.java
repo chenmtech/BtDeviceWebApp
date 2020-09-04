@@ -16,7 +16,7 @@ import com.cmtech.web.btdevice.RecordType;
 public class EcgRecordDbUtil {
 	
 	public static boolean upload(JSONObject json) {
-		BleEcgRecord10 record = createFromJson(json);
+		BleEcgRecord10 record = BleEcgRecord10.createFromJson(json);
 		if(record == null) return false;
 		
 		int id = RecordDbUtil.query(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
@@ -134,36 +134,5 @@ public class EcgRecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
-	}
-	
-	
-	private static BleEcgRecord10 createFromJson(JSONObject jsonObject) {
-		String ver = jsonObject.getString("ver");
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		String creatorPlat = jsonObject.getString("creatorPlat");
-		String creatorId = jsonObject.getString("creatorId");
-		String note = jsonObject.getString("note");
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String ecgData = jsonObject.getString("ecgData");
-		
-		BleEcgRecord10 record = new BleEcgRecord10();
-		if("".equals(ver)) {
-			ver = "1.0";
-		}
-		record.setVer(ver);
-		record.setCreateTime(createTime);
-		record.setDevAddress(devAddress);
-		record.setCreator(new Account(creatorPlat, creatorId));
-		record.setNote(note);
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setEcgData(ecgData);
-		return record;
 	}
 }

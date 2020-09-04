@@ -16,7 +16,7 @@ import com.cmtech.web.btdevice.RecordType;
 public class EegRecordDbUtil {
 	
 	public static boolean upload(JSONObject json) {
-		BleEegRecord10 record = createFromJson(json);
+		BleEegRecord10 record = BleEegRecord10.createFromJson(json);
 		if(record == null) return false;
 		
 		int id = RecordDbUtil.query(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
@@ -134,36 +134,5 @@ public class EegRecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
-	}
-	
-	
-	private static BleEegRecord10 createFromJson(JSONObject jsonObject) {
-		String ver = jsonObject.getString("ver");
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		String creatorPlat = jsonObject.getString("creatorPlat");
-		String creatorId = jsonObject.getString("creatorId");
-		String note = jsonObject.getString("note");
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String eegData = jsonObject.getString("eegData");
-		
-		BleEegRecord10 record = new BleEegRecord10();
-		if("".equals(ver)) {
-			ver = "1.0";
-		}
-		record.setVer(ver);
-		record.setCreateTime(createTime);
-		record.setDevAddress(devAddress);
-		record.setCreator(new Account(creatorPlat, creatorId));
-		record.setNote(note);
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setEegData(eegData);
-		return record;
 	}
 }

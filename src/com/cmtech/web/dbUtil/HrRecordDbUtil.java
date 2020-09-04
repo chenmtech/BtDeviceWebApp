@@ -15,7 +15,7 @@ import com.cmtech.web.btdevice.RecordType;
 
 public class HrRecordDbUtil {
 	public static boolean upload(JSONObject json) {
-		BleHrRecord10 record = createFromJson(json);
+		BleHrRecord10 record = BleHrRecord10.createFromJson(json);
 		if(record == null) return false;
 		
 		int id = RecordDbUtil.query(RecordType.HR, record.getCreateTime(), record.getDevAddress());
@@ -133,35 +133,5 @@ public class HrRecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
-	}
-	
-	private static BleHrRecord10 createFromJson(JSONObject jsonObject) {
-		String ver = jsonObject.getString("ver");
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		String creatorPlat = jsonObject.getString("creatorPlat");
-		String creatorId = jsonObject.getString("creatorId");
-		String note = jsonObject.getString("note");
-		String hrList = jsonObject.getString("hrList");
-		short hrMax = (short) jsonObject.getInt("hrMax");
-		short hrAve = (short) jsonObject.getInt("hrAve");
-		String hrHist = jsonObject.getString("hrHist");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		
-		BleHrRecord10 record = new BleHrRecord10();
-		if("".equals(ver)) {
-			ver = "1.0";
-		}
-		record.setVer(ver);
-		record.setCreateTime(createTime);
-		record.setDevAddress(devAddress);
-		record.setCreator(new Account(creatorPlat, creatorId));
-		record.setNote(note);
-		record.setHrList(hrList);
-		record.setHrMax(hrMax);
-		record.setHrAve(hrAve);
-		record.setHrHist(hrHist);
-		record.setRecordSecond(recordSecond);
-		return record;
 	}
 }

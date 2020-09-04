@@ -88,12 +88,13 @@ public class RecordDbUtil {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
+		if(num <= 0) return null;
+		
 		List<RecordType> types = new ArrayList<>();
 		if(type == RecordType.ALL) {
-			RecordType[] allTypes = RecordType.values();
-			for(RecordType t1 : allTypes) {
-				if(t1 != RecordType.ALL && t1 != RecordType.TH) {
-					types.add(t1);
+			for(RecordType t : RecordType.values()) {
+				if(t != RecordType.ALL && t != RecordType.TH) {
+					types.add(t);
 				}
 			}
 		}
@@ -105,31 +106,42 @@ public class RecordDbUtil {
 		JSONArray jsonArray = new JSONArray();
 		try {
 			List<TmpRecord> findRecords = new ArrayList<>();
-			for(RecordType t2 : types) {
-				String tableName = getTableName(t2);
-				String sql = "";
-				if("".equals(noteSearchStr)) 
-					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? order by createTime desc limit ?";
-				else
-					sql = "select id, createTime from " + tableName + " where creatorPlat = ? and creatorId = ? and createTime < ? and note REGEXP ? order by createTime desc limit ?";
+			for(RecordType typeEle : types) {
+				String tableName = getTableName(typeEle);
+				String sql = "select id, createTime from " + tableName;
+				String where = " where ";
+				if(!"".equals(creatorPlat)) {
+					where += "creatorPlat = ? and ";
+				}
+				if(!"".equals(creatorId)) {
+					where += "creatorId = ? and "; 
+				}
+				if(!"".equals(noteSearchStr)) {
+					where += "note REGEXP ? and ";
+				}
+				where += "createTime < ? order by createTime desc limit ?";
+				sql += where;
 				
 				ps = conn.prepareStatement(sql);
-				ps.setString(1, creatorPlat);
-				ps.setString(2, creatorId);
-				ps.setLong(3, fromTime);
-				if("".equals(noteSearchStr)) {
-					ps.setInt(4, num);
-				} else {
-					ps.setString(4, noteSearchStr);
-					ps.setInt(5, num);
+				int i = 1;
+				if(!"".equals(creatorPlat)) {
+					ps.setString(i++, creatorPlat);
 				}
+				if(!"".equals(creatorId)) {
+					ps.setString(i++, creatorId);
+				}
+				if(!"".equals(noteSearchStr)) {
+					ps.setString(i++, noteSearchStr);
+				}
+				ps.setLong(i++, fromTime);
+				ps.setInt(i++, num);
 				rs = ps.executeQuery();
 				int id = INVALID_ID;
 				long createTime = -1;
 				while(rs.next()) {
 					id = rs.getInt("id");
 					createTime = rs.getLong("createTime");
-					findRecords.add(new TmpRecord(id, createTime, t2));
+					findRecords.add(new TmpRecord(id, createTime, typeEle));
 				}
 			}
 			Collections.sort(findRecords, new Comparator<TmpRecord>() {
@@ -146,6 +158,7 @@ public class RecordDbUtil {
 			for(int i = 0; i < N; i++) {
 				jsonArray.put(i, downloadBasicInfo(findRecords.get(i).getType(), findRecords.get(i).getId()));
 			}
+			
 			return jsonArray;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
