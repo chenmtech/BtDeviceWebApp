@@ -10,8 +10,8 @@ public class DbUtil {
 	public static final int INVALID_ID = -1;
 	private static final String DBNAME = "com.mysql.cj.jdbc.Driver";
 	private static String dbAddress = "localhost:3306";
-	private static final String DBUSER = "root";
-	private static final String DBPASSWORD = "ctl080512";
+	private static String DBUSER = "root";
+	private static String DBPASSWORD = "ctl080512";
 	
 	public static void setDbAddress(String dbAddress) {
 		DbUtil.dbAddress = dbAddress; 
@@ -19,6 +19,11 @@ public class DbUtil {
 	
 	public static String getDbUrl() {
 		return "jdbc:mysql://" + dbAddress + "/btdevice?characterEncoding=utf-8";
+	}
+	
+	public static void setUserInfo(String name, String password) {
+		DBUSER = name;
+		DBPASSWORD = password;
 	}
 	
 	public static Connection connect() {
