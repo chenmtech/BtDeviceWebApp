@@ -10,8 +10,8 @@ public class DbUtil {
 	public static final int INVALID_ID = -1;
 	private static final String DBNAME = "com.mysql.cj.jdbc.Driver";
 	private static String dbAddress = "localhost:3306";
-	private static String DBUSER = "root";
-	private static String DBPASSWORD = "ctl080512";
+	private static String dbUser = "root";
+	private static String dbPassword = "ctl080512";
 	
 	public static void setDbAddress(String dbAddress) {
 		DbUtil.dbAddress = dbAddress; 
@@ -22,14 +22,14 @@ public class DbUtil {
 	}
 	
 	public static void setUserInfo(String name, String password) {
-		DBUSER = name;
-		DBPASSWORD = password;
+		dbUser = name;
+		dbPassword = password;
 	}
 	
 	public static Connection connect() {
 		try {
 			Class.forName(DBNAME);
-			Connection conn = DriverManager.getConnection(getDbUrl(), DBUSER, DBPASSWORD);
+			Connection conn = DriverManager.getConnection(getDbUrl(), dbUser, dbPassword);
 			return conn;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
