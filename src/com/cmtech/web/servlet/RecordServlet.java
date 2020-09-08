@@ -50,7 +50,7 @@ public class RecordServlet extends HttpServlet {
 			ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效参数"));
 			return;
 		}
-		RecordType type = RecordType.getType( Integer.parseInt(strRecordTypeCode) );
+		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
 		long createTime = Long.parseLong(strCreateTime);
 		
 		int id = RecordDbUtil.query(type, createTime, devAddress);
@@ -100,7 +100,7 @@ public class RecordServlet extends HttpServlet {
 
 			// 执行命令
 			String cmd = jsonObject.getString("cmd");
-			RecordType type = RecordType.getType(jsonObject.getInt("recordTypeCode"));
+			RecordType type = RecordType.fromCode(jsonObject.getInt("recordTypeCode"));
 			boolean cmdResult = false;
 			JSONObject jsonResult = null;
 			long createTime;
