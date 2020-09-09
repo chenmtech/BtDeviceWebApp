@@ -2,11 +2,9 @@ package com.cmtech.web.servlet;
 
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
-import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,16 +16,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BleEcgReport10;
-import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.dbUtil.EcgReportDbUtil;
-import com.cmtech.web.dbUtil.RecordDbUtil;
 import com.cmtech.web.exception.MyException;
-import com.cmtech.web.util.Base64;
 
 @WebServlet(name="ReportServlet", urlPatterns="/Report")
 public class ReportServlet extends HttpServlet {
@@ -82,13 +75,13 @@ public class ReportServlet extends HttpServlet {
 		        long createTime = jsonObject.getLong("createTime");
 		        String content = jsonObject.getString("content");
 		        
-		        JSONObject report = EcgReportDbUtil.requestReport(recordCreateTime, recordDevAddress, createTime, content);
+		        JSONObject reportResult = EcgReportDbUtil.requestReport(recordCreateTime, recordDevAddress, createTime, content);
 				
-		        System.out.println(report.toString());
+		        System.out.println(reportResult.toString());
 		        
 				jsonResult = new JSONObject();
 				jsonResult.put("code", SUCCESS.ordinal());
-				jsonResult.put("report", report);
+				jsonResult.put("reportResult", reportResult);
 				ServletUtil.responseJson(response, jsonResult);
 				break;
 				
