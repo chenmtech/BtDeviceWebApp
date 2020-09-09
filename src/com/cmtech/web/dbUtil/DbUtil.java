@@ -9,9 +9,9 @@ import java.sql.SQLException;
 public class DbUtil {
 	public static final int INVALID_ID = -1;
 	private static final String DBNAME = "com.mysql.cj.jdbc.Driver";
-	private static String dbAddress = "localhost:3306";
-	private static String dbUser = "root";
-	private static String dbPassword = "ctl080512";
+	private static String dbAddress = "203.195.137.198:3306";
+	private static String dbUser = "normaluser";
+	private static String dbPassword = "chenm740216";
 	
 	public static void setDbAddress(String dbAddress) {
 		DbUtil.dbAddress = dbAddress; 
