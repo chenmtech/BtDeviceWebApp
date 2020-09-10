@@ -64,21 +64,24 @@ public class ReportServlet extends HttpServlet {
 					
 			// 执行命令
 			String cmd = jsonObject.getString("cmd");
-			boolean cmdResult = false;
 			JSONObject jsonResult = null;
+	        long recordCreateTime = jsonObject.getLong("recordCreateTime");
+	        String recordDevAddress = jsonObject.getString("recordDevAddress");
+	        String ver = jsonObject.getString("ver");
+	        long createTime = jsonObject.getLong("createTime");
+	        String content = jsonObject.getString("content");
+	        JSONObject reportResult;
 			switch(cmd) {
-			
 			case "request":
-		        long recordCreateTime = jsonObject.getLong("recordCreateTime");
-		        String recordDevAddress = jsonObject.getString("recordDevAddress");
-		        String ver = jsonObject.getString("ver");
-		        long createTime = jsonObject.getLong("createTime");
-		        String content = jsonObject.getString("content");
-		        
-		        JSONObject reportResult = EcgReportDbUtil.requestReport(recordCreateTime, recordDevAddress, createTime, content);
+		        reportResult = EcgReportDbUtil.requestReport(recordCreateTime, recordDevAddress, createTime, content);		        
+				jsonResult = new JSONObject();
+				jsonResult.put("code", SUCCESS.ordinal());
+				jsonResult.put("reportResult", reportResult);
+				ServletUtil.responseJson(response, jsonResult);
+				break;
 				
-		        System.out.println(reportResult.toString());
-		        
+			case "getNew":
+		        reportResult = EcgReportDbUtil.getNewReport(recordCreateTime, recordDevAddress, createTime, content);		        
 				jsonResult = new JSONObject();
 				jsonResult.put("code", SUCCESS.ordinal());
 				jsonResult.put("reportResult", reportResult);
