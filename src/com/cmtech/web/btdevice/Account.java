@@ -47,13 +47,13 @@ public class Account {
 		Connection conn = DbUtil.connect();		
 		if(conn == null || id == INVALID_ID) return null;
 		
-		PreparedStatement ps = null;
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		String sql = "select platName, platId, name, note, icon from account where id = ?";
 		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, id);
-			rs = ps.executeQuery();
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
 			if(rs.next()) {
 				String platName = rs.getString("platName");
 				String platId = rs.getString("platId");
@@ -72,7 +72,7 @@ public class Account {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			DbUtil.close(rs, ps, conn);
+			DbUtil.close(rs, stmt, conn);
 		}
 		return null;		
 	}

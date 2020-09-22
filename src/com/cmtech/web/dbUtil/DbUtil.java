@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DbUtil {
 	public static final int INVALID_ID = -1;
@@ -59,7 +60,7 @@ public class DbUtil {
 			}
 	}
 	
-	public static void closePS(PreparedStatement ps) {
+	public static void closeSTMT(Statement ps) {
 		if(ps != null)
 			try {
 				ps.close();
@@ -69,30 +70,14 @@ public class DbUtil {
 			}
 	}
 	
-	public static void close(ResultSet rs, PreparedStatement ps, Connection conn) {
-		if(rs != null)
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		if(ps != null)
-			try {
-				ps.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		if(conn != null) {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	public static void close(ResultSet rs, Statement stmt) {
+		closeRS(rs);
+		closeSTMT(stmt);
+	}
+	
+	public static void close(ResultSet rs, Statement stmt, Connection conn) {
+		closeRS(rs);
+		closeSTMT(stmt);
+		disconnect(conn);
 	}
 }
