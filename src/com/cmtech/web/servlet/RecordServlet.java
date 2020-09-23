@@ -108,7 +108,7 @@ public class RecordServlet extends HttpServlet {
 			switch(cmd) {
 			
 			case "upload":
-				cmdResult = RecordDbUtil.upload(type, jsonObject);
+				cmdResult = RecordDbUtil.insert(type, jsonObject);
 				if(cmdResult) {
 					ServletUtil.responseException(response, new MyException(SUCCESS, "上传成功"));
 				} else {

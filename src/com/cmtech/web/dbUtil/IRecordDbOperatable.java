@@ -4,10 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public interface IRecordDbOperatable {
-	int retrieveId(long createTime, String devAddress);
-	boolean upload(JSONObject json);
+	int retrieveId();
+	boolean insert();
 	JSONObject download(long createTime, String devAddress);
-	boolean delete(long createTime, String devAddress);
-	boolean updateNote(long createTime, String devAddress, String note);
+	boolean delete();
+	boolean updateNote();
 	JSONArray downloadBasicInfo(String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num);
 }

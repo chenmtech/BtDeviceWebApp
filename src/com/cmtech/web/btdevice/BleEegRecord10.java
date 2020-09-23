@@ -10,7 +10,11 @@ public class BleEegRecord10 extends AbstractRecord{
     private String eegData; // ecg data
     
     public BleEegRecord10() {
-    	super();
+    	this(0, "");
+    }
+    
+    public BleEegRecord10(long createTime, String devAddress) {
+    	super(RecordType.EEG, createTime, devAddress);
     }
 
 	public int getSampleRate() {

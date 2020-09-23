@@ -14,97 +14,40 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.cmtech.web.btdevice.AbstractRecord;
+import com.cmtech.web.btdevice.BleEcgRecord10;
+import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.btdevice.TmpRecord;
 
 public class RecordDbUtil {
 	// QUERY
 	public static int getRecordId(RecordType type, long createTime, String devAddress) {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		String tableName = getTableName(type);
-		if("".equals(tableName)) return INVALID_ID;
-		
-		int id = INVALID_ID;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				id = rs.getInt("id");
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return id;	
+		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		return record.retrieveId();
 	}
 	
 	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		String tableName = getTableName(type);
-		if("".equals(tableName)) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set note = ? where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, note);
-			ps.setString(2, devAddress);
-			ps.setLong(3, createTime);
-			
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;
+		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		record.setNote(note);
+		return record.updateNote();
 	}
 	
 	// DELETE
 	public static boolean delete(RecordType type, long createTime, String devAddress) {
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return false;
-		
-		String tableName = getTableName(type);
-		if("".equals(tableName)) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "delete from " + tableName + " where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
-			if(ps.executeUpdate() != 0)
-				return true;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;
+		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		return record.delete();
 	}
 	
-	// UPLOAD
-	public static boolean upload(RecordType type, JSONObject json) {
+	// INSERT
+	public static boolean insert(RecordType type, JSONObject json) {
 		switch(type) {
 		case ECG:
-			return EcgRecordDbUtil.upload(json);
+			BleEcgRecord10 record = BleEcgRecord10.createFromJson(json);
+			if(record == null) return false;
+			
+			return record.insert();
 			
 		case HR:
 			return HrRecordDbUtil.upload(json);

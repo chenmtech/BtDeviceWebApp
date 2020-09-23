@@ -1,6 +1,14 @@
 package com.cmtech.web.btdevice;
 
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import org.json.JSONObject;
+
+import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgRecord10 extends AbstractRecord{
 	private int sampleRate; // sample rate
@@ -10,7 +18,11 @@ public class BleEcgRecord10 extends AbstractRecord{
     private String ecgData; // ecg data
     
     public BleEcgRecord10() {
-    	super();
+    	this(0, "");
+    }
+    
+    public BleEcgRecord10(long createTime, String devAddress) {
+    	super(RecordType.ECG, createTime, devAddress);
     }
 
 	public int getSampleRate() {
@@ -81,6 +93,41 @@ public class BleEcgRecord10 extends AbstractRecord{
 		record.setRecordSecond(recordSecond);
 		record.setEcgData(ecgData);
 		return record;
+	}
+	
+	@Override
+	public boolean insert() {
+		int id = retrieveId();
+		if(id != INVALID_ID) return false;
+		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, getVer());
+			ps.setLong(2, getCreateTime());
+			ps.setString(3, getDevAddress());
+			ps.setString(4, getCreatorPlat());
+			ps.setString(5, getCreatorPlatId());
+			ps.setString(6, getNote());
+			ps.setInt(7, getSampleRate());
+			ps.setInt(8, getCaliValue());
+			ps.setInt(9, getLeadTypeCode());
+			ps.setInt(10, getRecordSecond());
+			ps.setString(11, getEcgData());
+			if(ps.executeUpdate() != 0)
+				return true;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
 	}
 	
 }

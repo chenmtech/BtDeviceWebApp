@@ -3,6 +3,7 @@ package com.cmtech.web.btdevice;
 public interface IRecord {
 	String getVer();
 	void setVer(String ver);
+	RecordType getType();
     long getCreateTime();
     void setCreateTime(long createTime);
     String getDevAddress();

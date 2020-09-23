@@ -6,7 +6,11 @@ public class BleThermoRecord10 extends AbstractRecord {
     private String temp;
     
     public BleThermoRecord10() {
-    	super();
+    	this(0, "");
+    }
+    
+    public BleThermoRecord10(long createTime, String devAddress) {
+    	super(RecordType.THERMO, createTime, devAddress);
     }
     
 	public String getTemp() {

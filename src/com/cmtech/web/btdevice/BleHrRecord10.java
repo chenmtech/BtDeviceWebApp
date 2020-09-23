@@ -10,7 +10,11 @@ public class BleHrRecord10 extends AbstractRecord {
     private int recordSecond; // unit: s
 	
 	public BleHrRecord10() {
-    	super();
+		this(0, "");
+    }
+	
+    public BleHrRecord10(long createTime, String devAddress) {
+    	super(RecordType.HR, createTime, devAddress);
     }
 
 	public String getHrList() {

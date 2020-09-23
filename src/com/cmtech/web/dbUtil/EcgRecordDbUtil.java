@@ -18,7 +18,7 @@ public class EcgRecordDbUtil {
 		BleEcgRecord10 record = BleEcgRecord10.createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.getRecordId(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
+		int id = record.retrieveId();
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
@@ -40,9 +40,7 @@ public class EcgRecordDbUtil {
 			ps.setInt(9, record.getLeadTypeCode());
 			ps.setInt(10, record.getRecordSecond());
 			ps.setString(11, record.getEcgData());
-			
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
+			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
