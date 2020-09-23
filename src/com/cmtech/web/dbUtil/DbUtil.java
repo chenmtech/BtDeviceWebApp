@@ -1,38 +1,37 @@
 package com.cmtech.web.dbUtil;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.cmtech.web.connection.ConnectionPoolFactory;
+
 public class DbUtil {
 	public static final int INVALID_ID = -1;
-	private static final String DBNAME = "com.mysql.cj.jdbc.Driver";
+	private static final String DBDRIVER = "com.mysql.cj.jdbc.Driver";
 	private static String dbAddress = "203.195.137.198:3306";
-	private static String dbUser = "normaluser";
+	private static String dbUserName = "normaluser";
 	private static String dbPassword = "chenm740216";
 	
 	public static void setDbAddress(String dbAddress) {
 		DbUtil.dbAddress = dbAddress; 
 	}
 	
+	public static void setDbUser(String userName, String password) {
+		dbUserName = userName;
+		dbPassword = password;
+	}
+	
 	public static String getDbUrl() {
 		return "jdbc:mysql://" + dbAddress + "/btdevice?characterEncoding=utf-8";
 	}
 	
-	public static void setUserInfo(String name, String password) {
-		dbUser = name;
-		dbPassword = password;
-	}
-	
 	public static Connection connect() {
+		ConnectionPoolFactory.init(DBDRIVER, getDbUrl(), dbUserName, dbPassword);
 		try {
-			Class.forName(DBNAME);
-			Connection conn = DriverManager.getConnection(getDbUrl(), dbUser, dbPassword);
-			return conn;
-		} catch (Exception e) {
+			return ConnectionPoolFactory.getConnection();
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
@@ -40,14 +39,7 @@ public class DbUtil {
 	}
 	
 	public static void disconnect(Connection conn) {
-		if(conn != null) {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		ConnectionPoolFactory.returnConnection(conn);
 	}
 	
 	public static void closeRS(ResultSet rs) {
@@ -68,11 +60,6 @@ public class DbUtil {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	}
-	
-	public static void close(ResultSet rs, Statement stmt) {
-		closeRS(rs);
-		closeSTMT(stmt);
 	}
 	
 	public static void close(ResultSet rs, Statement stmt, Connection conn) {
