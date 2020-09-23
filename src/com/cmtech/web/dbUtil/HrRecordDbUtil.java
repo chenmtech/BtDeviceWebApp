@@ -17,7 +17,7 @@ public class HrRecordDbUtil {
 		BleHrRecord10 record = BleHrRecord10.createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.HR, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.getRecordId(RecordType.HR, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();

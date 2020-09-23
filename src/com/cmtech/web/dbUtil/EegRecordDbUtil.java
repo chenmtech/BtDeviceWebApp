@@ -18,7 +18,7 @@ public class EegRecordDbUtil {
 		BleEegRecord10 record = BleEegRecord10.createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.getRecordId(RecordType.EEG, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();

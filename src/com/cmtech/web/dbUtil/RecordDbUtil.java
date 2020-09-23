@@ -19,16 +19,60 @@ import com.cmtech.web.btdevice.TmpRecord;
 
 public class RecordDbUtil {
 	// QUERY
-	public static int query(RecordType type, long createTime, String devAddress) {
-		return getId(type, createTime, devAddress);
+	public static int getRecordId(RecordType type, long createTime, String devAddress) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return INVALID_ID;
+		
+		String tableName = getTableName(type);
+		if("".equals(tableName)) return INVALID_ID;
+		
+		int id = INVALID_ID;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, devAddress);
+			ps.setLong(2, createTime);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				id = rs.getInt("id");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return id;	
 	}
 	
 	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
-		int id = query(type, createTime, devAddress);
-		if(id == INVALID_ID) return false;
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
 		
-		return updateNote(type, id, note);
+		String tableName = getTableName(type);
+		if("".equals(tableName)) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update " + tableName + " set note = ? where devAddress = ? and createTime = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, note);
+			ps.setString(2, devAddress);
+			ps.setLong(3, createTime);
+			
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
 	}
 	
 	// DELETE
@@ -36,19 +80,16 @@ public class RecordDbUtil {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
-		int id = query(type, createTime, devAddress);
-		if(id == INVALID_ID) return false;
-		
 		String tableName = getTableName(type);
 		if("".equals(tableName)) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "delete from " + tableName + " where id = ?";
+		String sql = "delete from " + tableName + " where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, id);
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
+			ps.setString(1, devAddress);
+			ps.setLong(2, createTime);
+			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -174,63 +215,10 @@ public class RecordDbUtil {
 	// when: later than fromTime
 	// howmuch: num
 	public static JSONObject download(RecordType type, long createTime, String devAddress) {
-		int id = query(type, createTime, devAddress);
+		int id = getRecordId(type, createTime, devAddress);
 		if(id == INVALID_ID) return null;
 		
 		return download(type, id);
-	}
-	
-	private static int getId(RecordType type, long createTime, String devAddress) {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		String tableName = getTableName(type);
-		if("".equals(tableName)) return INVALID_ID;
-		
-		int id = INVALID_ID;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				id = rs.getInt("id");
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return id;		
-	}
-	
-	private static boolean updateNote(RecordType type, int id, String note) {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		String tableName = getTableName(type);
-		
-		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set note = ? where id = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, note);
-			ps.setInt(2, id);
-			
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
-				return true;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;
 	}
 	
 	private static String getTableName(RecordType type) {

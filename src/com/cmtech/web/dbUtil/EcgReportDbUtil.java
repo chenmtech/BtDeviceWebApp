@@ -19,7 +19,7 @@ public class EcgReportDbUtil {
     public static final int CODE_REPORT_NO_NEW = 5;
 	
 	public static JSONObject requestReport(long recordCreateTime, String recordDevAddress, long createTime, String content) {
-		int recordId = RecordDbUtil.query(RecordType.ECG, recordCreateTime, recordDevAddress);
+		int recordId = RecordDbUtil.getRecordId(RecordType.ECG, recordCreateTime, recordDevAddress);
 		int reportCode = CODE_REPORT_FAILURE;
 		JSONObject reportResult = new JSONObject();
 		
@@ -74,7 +74,7 @@ public class EcgReportDbUtil {
 	}
 	
 	public static JSONObject getNewReport(long recordCreateTime, String recordDevAddress, long createTime, String content) {
-		int recordId = RecordDbUtil.query(RecordType.ECG, recordCreateTime, recordDevAddress);
+		int recordId = RecordDbUtil.getRecordId(RecordType.ECG, recordCreateTime, recordDevAddress);
 		int reportCode = CODE_REPORT_NO_NEW;
 		JSONObject reportResult = new JSONObject();
 		

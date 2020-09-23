@@ -9,13 +9,23 @@ import com.cmtech.web.connection.ConnectionPoolFactory;
 
 public class DbUtil {
 	public static final int INVALID_ID = -1;
-	private static final String DBDRIVER = "com.mysql.cj.jdbc.Driver";
-	private static String dbAddress = "203.195.137.198:3306";
-	private static String dbUserName = "normaluser";
-	private static String dbPassword = "chenm740216";
+	private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+	private static final String KM_TENGXUN_CLOUD_ADDRESS = "203.195.137.198:3306";
+	private static final String DEFAULT_USER_NAME = "normaluser";
+	private static final String DEFAULT_PASSWORD = "chenm740216";
 	
-	public static void setDbAddress(String dbAddress) {
-		DbUtil.dbAddress = dbAddress; 
+	
+	private static String dbDriver = JDBC_DRIVER;
+	private static String dbAddress = KM_TENGXUN_CLOUD_ADDRESS;
+	private static String dbUserName = DEFAULT_USER_NAME;
+	private static String dbPassword = DEFAULT_PASSWORD;
+	
+	public static void setDbDriver(String driver) {
+		dbDriver = driver;
+	}
+	
+	public static void setDbAddress(String address) {
+		DbUtil.dbAddress = address; 
 	}
 	
 	public static void setDbUser(String userName, String password) {
@@ -28,7 +38,7 @@ public class DbUtil {
 	}
 	
 	public static Connection connect() {
-		ConnectionPoolFactory.init(DBDRIVER, getDbUrl(), dbUserName, dbPassword);
+		ConnectionPoolFactory.init(dbDriver, getDbUrl(), dbUserName, dbPassword);
 		try {
 			return ConnectionPoolFactory.getConnection();
 		} catch (SQLException e) {

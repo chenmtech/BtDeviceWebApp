@@ -18,7 +18,7 @@ public class ThermoRecordDbUtil {
 		BleThermoRecord10 record = BleThermoRecord10.createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.THERMO, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.getRecordId(RecordType.THERMO, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();

@@ -53,7 +53,7 @@ public class RecordServlet extends HttpServlet {
 		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
 		long createTime = Long.parseLong(strCreateTime);
 		
-		int id = RecordDbUtil.query(type, createTime, devAddress);
+		int id = RecordDbUtil.getRecordId(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("code", SUCCESS.ordinal());
 		json.put("id", id);

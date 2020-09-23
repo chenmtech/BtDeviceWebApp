@@ -18,7 +18,7 @@ public class EcgRecordDbUtil {
 		BleEcgRecord10 record = BleEcgRecord10.createFromJson(json);
 		if(record == null) return false;
 		
-		int id = RecordDbUtil.query(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
+		int id = RecordDbUtil.getRecordId(RecordType.ECG, record.getCreateTime(), record.getDevAddress());
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
