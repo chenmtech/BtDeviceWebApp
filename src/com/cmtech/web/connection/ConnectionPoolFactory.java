@@ -17,27 +17,33 @@ public class ConnectionPoolFactory {
     }
  
     public static Connection getConnection() throws SQLException {
+    	if(connectionPool == null) return null;
         return connectionPool.getConnection();
     }
  
     public static void returnConnection(Connection connection){
-        connectionPool.returnConnection(connection);
+    	if(connectionPool != null)
+    		connectionPool.returnConnection(connection);
     }
  
     public static void refreshConnection() throws SQLException {
-        connectionPool.refreshConnection();
+    	if(connectionPool != null)
+    		connectionPool.refreshConnection();
     }
  
     public static void closeConnectionPool() throws SQLException {
-        connectionPool.closeConnectionPool();
+    	if(connectionPool != null)
+    		connectionPool.closeConnectionPool();
     }
  
     public static void setMaxConnections(int maxConnections) {
-        connectionPool.setMaxConnections(maxConnections);
+    	if(connectionPool != null)
+    		connectionPool.setMaxConnections(maxConnections);
     }
  
     public void setIncrementalConnections(int incrementalConnections) {
-        connectionPool.setIncrementalConnections(incrementalConnections);
+    	if(connectionPool != null)
+    		connectionPool.setIncrementalConnections(incrementalConnections);
     }
  
     static ConnectionPool getConnectionPool() {
