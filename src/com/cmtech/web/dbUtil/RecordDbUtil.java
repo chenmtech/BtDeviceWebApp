@@ -49,6 +49,18 @@ public class RecordDbUtil {
 		return record.insert();
 	}
 	
+	// DOWNLOAD RECORD
+	// who: creatorPlat+creatorId
+	// when: later than fromTime
+	// howmuch: num
+	public static JSONObject download(RecordType type, long createTime, String devAddress) {
+		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		if(record == null) return null;
+		
+		if(!record.retrieve()) return null;
+		return record.packToJson();
+	}
+	
 	// DOWNLOAD RECORD INFO
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
@@ -136,18 +148,6 @@ public class RecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
-	}
-	
-	// DOWNLOAD RECORD
-	// who: creatorPlat+creatorId
-	// when: later than fromTime
-	// howmuch: num
-	public static JSONObject download(RecordType type, long createTime, String devAddress) {
-		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
-		if(record == null) return null;
-		
-		if(!record.retrieve()) return null;
-		return record.packToJson();
 	}
 	
 	private static String getTableName(RecordType type) {

@@ -10,40 +10,49 @@ import java.sql.SQLException;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgReport10 {
-	private int recordId;
-	private long modifyTime;
-	private String note;
+    private static final int DONE = 0;
+    private static final int WAIT_PROCESS = 1;
+    private static final int PROCESSING = 2;
+    
+	private String ver = "1.0";
+    private long reportTime = -1;
+    private String content = "";
+    private int status = DONE;
 
 	public BleEcgReport10() {
 		
 	}
 
-	public int getRecordId() {
-		return recordId;
+	public long getReportTime() {
+		return reportTime;
 	}
 
-	public void setRecordId(int recordId) {
-		this.recordId = recordId;
+	public void setReportTime(long reportTime) {
+		this.reportTime = reportTime;
 	}
 
-	public long getModifyTime() {
-		return modifyTime;
+	public String getContent() {
+		return content;
 	}
 
-	public void setModifyTime(long modifyTime) {
-		this.modifyTime = modifyTime;
-	}
-
-	public String getNote() {
-		return note;
-	}
-
-	public void setNote(String note) {
-		this.note = note;
-	}
+	public void setContent(String content) {
+		this.content = content;
+	}	
 	
-	public int getId() {
-		return getId(recordId);
+	public String getVer() {
+		return ver;
+	}
+
+	public void setVer(String ver) {
+		this.ver = ver;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 	
 	public static int getId(int recordId) {
@@ -52,36 +61,19 @@ public class BleEcgReport10 {
 		
 		int id = INVALID_ID;
 		PreparedStatement ps = null;
-		ResultSet rlt = null;
+		ResultSet rs = null;
 		String sql = "select id from ecgreport where recordId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, recordId);
-			rlt = ps.executeQuery();
-			if(rlt.next()) {
-				id = rlt.getInt("id");
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				id = rs.getInt("id");
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if(rlt != null)
-				try {
-					rlt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			if(ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-			DbUtil.disconnect(conn);
+			DbUtil.close(rs, ps, conn);
 		}
 		return id;		
 	}

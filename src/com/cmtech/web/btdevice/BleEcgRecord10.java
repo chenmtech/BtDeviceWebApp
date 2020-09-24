@@ -17,6 +17,7 @@ public class BleEcgRecord10 extends AbstractRecord{
     private int leadTypeCode; // lead type code
     private int recordSecond; // unit: s
     private String ecgData; // ecg data
+    private BleEcgReport10 report; // ecg diagnose report
 
     public BleEcgRecord10(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
@@ -90,7 +91,6 @@ public class BleEcgRecord10 extends AbstractRecord{
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("recordSecond", recordSecond);
 		json.put("ecgData", ecgData);
-	
 		return json;
 	}
 	
