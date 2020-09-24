@@ -1,17 +1,18 @@
 package com.cmtech.web.btdevice;
 
+import org.json.JSONObject;
+
 public interface IRecord {
 	String getVer();
 	void setVer(String ver);
 	RecordType getType();
     long getCreateTime();
-    void setCreateTime(long createTime);
     String getDevAddress();
-    void setDevAddress(String devAddress);
     String getRecordName() ;
     String getCreatorPlat();
-    String getCreatorPlatId();
+    String getCreatorId();
     void setCreator(Account creator);
     String getNote();
     void setNote(String note);
+    JSONObject packToJson();
 }

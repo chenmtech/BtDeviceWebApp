@@ -1,5 +1,7 @@
 package com.cmtech.web.btdevice;
 
+import org.json.JSONObject;
+
 public class RecordFactory {
 	
 	private RecordFactory() {
@@ -18,6 +20,24 @@ public class RecordFactory {
 			return null;
 		case EEG:
 			return new BleEegRecord10(createTime, devAddress);
+		default:
+			break;
+		}
+		return null;
+	}
+	
+	public static AbstractRecord createFromJson(RecordType type, JSONObject json) {
+		switch(type) {
+		case ECG:
+			return BleEcgRecord10.createFromJson(json);
+		case HR:
+			return BleHrRecord10.createFromJson(json);	
+		case THERMO:
+			return BleThermoRecord10.createFromJson(json);
+		case TH:
+			return null;
+		case EEG:
+			return BleEegRecord10.createFromJson(json);
 		default:
 			break;
 		}

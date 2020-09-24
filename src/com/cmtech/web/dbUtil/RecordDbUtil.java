@@ -15,21 +15,22 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.AbstractRecord;
-import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.btdevice.TmpRecord;
 
 public class RecordDbUtil {
 	// QUERY
-	public static int getRecordId(RecordType type, long createTime, String devAddress) {
+	public static int getId(RecordType type, long createTime, String devAddress) {
 		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		if(record == null) return INVALID_ID;
 		return record.retrieveId();
 	}
 	
 	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
 		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		if(record == null) return false;
 		record.setNote(note);
 		return record.updateNote();
 	}
@@ -37,31 +38,15 @@ public class RecordDbUtil {
 	// DELETE
 	public static boolean delete(RecordType type, long createTime, String devAddress) {
 		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		if(record == null) return false;
 		return record.delete();
 	}
 	
 	// INSERT
 	public static boolean insert(RecordType type, JSONObject json) {
-		switch(type) {
-		case ECG:
-			BleEcgRecord10 record = BleEcgRecord10.createFromJson(json);
-			if(record == null) return false;
-			
-			return record.insert();
-			
-		case HR:
-			return HrRecordDbUtil.upload(json);
-			
-		case THERMO:
-			return ThermoRecordDbUtil.upload(json);
-			
-		case EEG:
-			return EegRecordDbUtil.upload(json);
-			
-		default:
-			break;
-		}
-		return false;
+		AbstractRecord record = RecordFactory.createFromJson(type, json);
+		if(record == null) return false;
+		return record.insert();
 	}
 	
 	// DOWNLOAD RECORD INFO
@@ -158,10 +143,11 @@ public class RecordDbUtil {
 	// when: later than fromTime
 	// howmuch: num
 	public static JSONObject download(RecordType type, long createTime, String devAddress) {
-		int id = getRecordId(type, createTime, devAddress);
-		if(id == INVALID_ID) return null;
+		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		if(record == null) return null;
 		
-		return download(type, id);
+		if(!record.retrieve()) return null;
+		return record.packToJson();
 	}
 	
 	private static String getTableName(RecordType type) {
@@ -195,26 +181,6 @@ public class RecordDbUtil {
 			
 		case EEG:
 			return EegRecordDbUtil.downloadBasicInfo(id);
-			
-		default:
-			break;
-		}
-		return null;		
-	}
-	
-	private static JSONObject download(RecordType type, int id) {
-		switch(type) {
-		case ECG:
-			return EcgRecordDbUtil.download(id);
-		
-		case HR:
-			return HrRecordDbUtil.download(id);
-			
-		case THERMO:
-			return ThermoRecordDbUtil.download(id);
-			
-		case EEG:
-			return EegRecordDbUtil.download(id);
 			
 		default:
 			break;

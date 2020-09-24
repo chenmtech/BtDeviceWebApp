@@ -14,20 +14,16 @@ import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.dbUtil.IRecordDbOperatable;
 
 public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
-    private String ver; // record version
     private final RecordType type;
-    private long createTime; //
-    private String devAddress; //
+    private final long createTime; //
+    private final String devAddress; //
+    private String ver; // record version
     private String creatorPlat;
     private String creatorId;
     private String note;
     
     private final String TABLE_NAME;
 
-    protected AbstractRecord(RecordType type) {
-    	this(type, 0, "");
-    }
-    
     protected AbstractRecord(RecordType type, long createTime, String devAddress) {
     	ver = "";
     	this.type = type;
@@ -37,6 +33,16 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
         creatorId = "";
         note = "";
         TABLE_NAME = getTableName(type);
+    }
+    
+    protected void initFromJson(JSONObject jsonObject) {
+		ver = jsonObject.getString("ver");
+		if(ver == null || "".equals(ver)) {
+			ver = "1.0";
+		}
+		creatorPlat = jsonObject.getString("creatorPlat");
+		creatorId = jsonObject.getString("creatorId");
+		note = jsonObject.getString("note");		
     }
 
     @Override
@@ -57,16 +63,8 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
         return createTime;
     }
     @Override
-    public void setCreateTime(long createTime) {
-        this.createTime = createTime;
-    }
-    @Override
     public String getDevAddress() {
         return devAddress;
-    }
-    @Override
-    public void setDevAddress(String devAddress) {
-        this.devAddress = devAddress;
     }
     @Override
     public String getRecordName() {
@@ -77,7 +75,7 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
         return creatorPlat;
     }
     @Override
-    public String getCreatorPlatId() {
+    public String getCreatorId() {
     	return creatorId;
     }
     @Override
@@ -114,6 +112,18 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
     }
     
     @Override
+	public JSONObject packToJson() {
+    	JSONObject json = new JSONObject();
+		json.put("recordTypeCode", type.getCode());
+		json.put("createTime", createTime);
+		json.put("devAddress", devAddress);
+		json.put("creatorPlat", creatorPlat);
+		json.put("creatorId", creatorId);
+		json.put("note", note);
+		return json;
+	}
+
+	@Override
     public int retrieveId() {
     	if("".equals(TABLE_NAME)) return INVALID_ID;
     	
@@ -193,16 +203,6 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
 		}
 		return false;
 	}
-    
-    @Override
-	public boolean insert() {
-    	return false;
-    }
-    
-    @Override
-	public JSONObject download(long createTime, String devAddress) {
-    	return null;
-    }
     
     @Override
     public JSONArray downloadBasicInfo(String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
