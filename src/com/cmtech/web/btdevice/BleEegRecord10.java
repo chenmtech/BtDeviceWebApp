@@ -83,8 +83,8 @@ public class BleEegRecord10 extends AbstractRecord{
 	}
 	
 	@Override
-	public JSONObject packToJson() {
-		JSONObject json = super.packToJson();
+	public JSONObject toJson() {
+		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);

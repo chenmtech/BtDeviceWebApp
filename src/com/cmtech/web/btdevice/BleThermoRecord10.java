@@ -38,8 +38,8 @@ public class BleThermoRecord10 extends AbstractRecord {
 	}	
 
 	@Override
-	public JSONObject packToJson() {
-		JSONObject json = super.packToJson();
+	public JSONObject toJson() {
+		JSONObject json = super.toJson();
 		json.put("temp", temp);	
 		return json;
 	}

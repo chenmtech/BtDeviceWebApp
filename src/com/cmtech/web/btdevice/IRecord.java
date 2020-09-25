@@ -14,5 +14,5 @@ public interface IRecord {
     void setCreator(Account creator);
     String getNote();
     void setNote(String note);
-    JSONObject packToJson();
+    JSONObject toJson();
 }

@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.AbstractRecord;
+import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.btdevice.BleEcgReport10;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.btdevice.TmpRecord;
@@ -58,7 +60,7 @@ public class RecordDbUtil {
 		if(record == null) return null;
 		
 		if(!record.retrieve()) return null;
-		return record.packToJson();
+		return record.toJson();
 	}
 	
 	// DOWNLOAD RECORD INFO
@@ -141,6 +143,34 @@ public class RecordDbUtil {
 			}
 			
 			return jsonArray;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;
+	}
+	
+	public JSONObject downloadLastRequestRecord() {
+		BleEcgReport10 report = new BleEcgReport10();
+		if(!report.initAsLastRequest()) return null;
+		
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select createTime, devAddress from ecgrecord where id = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, report.getRecordId());
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				return download(RecordType.ECG, createTime, devAddress);
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

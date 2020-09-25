@@ -89,8 +89,8 @@ public class BleEcgRecord10 extends AbstractRecord{
 	}
 	
 	@Override
-	public JSONObject packToJson() {
-		JSONObject json = super.packToJson();
+	public JSONObject toJson() {
+		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
@@ -167,6 +167,9 @@ public class BleEcgRecord10 extends AbstractRecord{
 	}
 	
 	public int requestReport() {
+		int recordId = retrieveId();
+		if(recordId == INVALID_ID) return ReportDbUtil.CODE_REPORT_FAILURE;
+		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return ReportDbUtil.CODE_REPORT_FAILURE;
 		
@@ -175,10 +178,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 		String selectSql = "select ecgReportId, status from ecgreport where recordId = ?";
 		String insertSql = "insert into ecgreport (status, recordId) values (?, ?)";
 		String updateSql = "update ecgreport set status = ? where ecgReportId = ?";
-		try {
-			int recordId = retrieveId();
-			if(recordId == INVALID_ID) return ReportDbUtil.CODE_REPORT_FAILURE;
-			
+		try {			
 			ps = conn.prepareStatement(selectSql);
 			ps.setInt(1, recordId);
 			rs = ps.executeQuery();

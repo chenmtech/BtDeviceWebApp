@@ -112,7 +112,7 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperation{
     }
     
     @Override
-	public JSONObject packToJson() {
+	public JSONObject toJson() {
     	JSONObject json = new JSONObject();
 		json.put("recordTypeCode", type.getCode());
 		json.put("createTime", createTime);

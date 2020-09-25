@@ -16,10 +16,12 @@ public class BleEcgReport10 {
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
     
+    private int reportId = -1;
 	private String ver = "1.0";
     private long reportTime = -1;
     private String content = "";
     private int status = DONE;
+    private int recordId = -1;
 
 	public BleEcgReport10() {
 		
@@ -55,8 +57,24 @@ public class BleEcgReport10 {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}	
+	
+	public int getReportId() {
+		return reportId;
+	}
+
+	public void setReportId(int reportId) {
+		this.reportId = reportId;
 	}
 	
+	public int getRecordId() {
+		return recordId;
+	}
+
+	public void setRecordId(int recordId) {
+		this.recordId = recordId;
+	}
+
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("reportVer", ver);
@@ -66,26 +84,31 @@ public class BleEcgReport10 {
 		return json;
 	}
 	
-	public static int getId(int recordId) {
+	public boolean initAsLastRequest() {
 		Connection conn = DbUtil.connect();
-		if(conn == null) return INVALID_ID;
+		if(conn == null) return false;
 		
-		int id = INVALID_ID;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from ecgreport where recordId = ?";
+		String sql = "select * from ecgreport where status = ? order by reportId limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, recordId);
+			ps.setInt(1, REQUEST);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				id = rs.getInt("id");
+				reportId = rs.getInt("reportId");
+				ver = rs.getString("reportVer");
+				reportTime = rs.getLong("reportTime");
+				content = rs.getString("content");
+				status = rs.getInt("status");
+				recordId = rs.getInt("recordId");
+				return true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return id;		
+		return false;		
 	}
 }

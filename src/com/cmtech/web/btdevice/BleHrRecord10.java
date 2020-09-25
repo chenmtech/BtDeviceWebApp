@@ -83,8 +83,8 @@ public class BleHrRecord10 extends AbstractRecord {
 	}
 
 	@Override
-	public JSONObject packToJson() {
-		JSONObject json = super.packToJson();
+	public JSONObject toJson() {
+		JSONObject json = super.toJson();
 		json.put("hrList", hrList);
 		json.put("hrMax", hrMax);
 		json.put("hrAve", hrAve);
