@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.dbUtil.ReportDbUtil;
 
 public class BleEcgRecord10 extends AbstractRecord{
 	private int sampleRate; // sample rate
@@ -17,7 +18,7 @@ public class BleEcgRecord10 extends AbstractRecord{
     private int leadTypeCode; // lead type code
     private int recordSecond; // unit: s
     private String ecgData; // ecg data
-    private BleEcgReport10 report; // ecg diagnose report
+    private BleEcgReport10 report = new BleEcgReport10(); // ecg diagnose report
 
     public BleEcgRecord10(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
@@ -63,6 +64,10 @@ public class BleEcgRecord10 extends AbstractRecord{
 		this.ecgData = ecgData;
 	}
 	
+	public BleEcgReport10 getReport() {
+		return report;
+	}
+
 	public static BleEcgRecord10 createFromJson(JSONObject jsonObject) {
 		long createTime = jsonObject.getLong("createTime");
 		String devAddress = jsonObject.getString("devAddress");
@@ -161,4 +166,86 @@ public class BleEcgRecord10 extends AbstractRecord{
 		return false;
 	}
 	
+	public int requestReport() {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return ReportDbUtil.CODE_REPORT_FAILURE;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String selectSql = "select ecgReportId, status from ecgreport where recordId = ?";
+		String insertSql = "insert into ecgreport (status, recordId) values (?, ?)";
+		String updateSql = "update ecgreport set status = ? where ecgReportId = ?";
+		try {
+			int recordId = retrieveId();
+			if(recordId == INVALID_ID) return ReportDbUtil.CODE_REPORT_FAILURE;
+			
+			ps = conn.prepareStatement(selectSql);
+			ps.setInt(1, recordId);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				int status = rs.getInt("status");
+				int ecgReportId = rs.getInt("ecgReportId");
+				if(status == BleEcgReport10.DONE) {
+					DbUtil.closeSTMT(ps);
+					ps = conn.prepareStatement(updateSql);
+					ps.setInt(1, BleEcgReport10.REQUEST);
+					ps.setInt(2, ecgReportId);
+					if(ps.executeUpdate() != 0)
+						return ReportDbUtil.CODE_REPORT_REQUEST_AGAIN;
+				} else {
+					return ReportDbUtil.CODE_REPORT_PROCESSING;
+				}
+			} else {
+				DbUtil.closeSTMT(ps);
+				ps = conn.prepareStatement(insertSql);
+				ps.setInt(1, BleEcgReport10.REQUEST);
+				ps.setInt(2, recordId);
+				if(ps.executeUpdate() != 0)
+					return ReportDbUtil.CODE_REPORT_ADD_NEW;				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return ReportDbUtil.CODE_REPORT_FAILURE;	
+	}
+	
+	public int updateReportFromDb() {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return ReportDbUtil.CODE_REPORT_FAILURE;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String selectSql = "select reportVer, reportTime, content, status from ecgreport, ecgrecord "
+				+ "where ecgrecord.createTime = ? and ecgrecord.devAddress = ? and ecgrecord.id = ecgreport.recordId";
+		try {
+			ps = conn.prepareStatement(selectSql);
+			ps.setLong(1, getCreateTime());
+			ps.setString(2,  getDevAddress());
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				String reportVer = rs.getString("reportVer");
+				long reportTime = rs.getLong("reportTime");
+				String content = rs.getString("content");
+				int status = rs.getInt("status");
+				report.setVer(reportVer);
+				report.setReportTime(reportTime);
+				report.setContent(content);
+				report.setStatus(status);
+				return ReportDbUtil.CODE_REPORT_SUCCESS;
+			} else {
+				return ReportDbUtil.CODE_REPORT_NO_NEW;				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return ReportDbUtil.CODE_REPORT_FAILURE;	
+	}
+	
+	public int dumpReportToDb() {
+		return 0;
+	}
 }

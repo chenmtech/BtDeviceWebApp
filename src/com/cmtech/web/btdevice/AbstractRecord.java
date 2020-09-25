@@ -11,9 +11,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.dbUtil.IRecordDbOperatable;
+import com.cmtech.web.dbUtil.IRecordDbOperation;
 
-public abstract class AbstractRecord implements IRecord, IRecordDbOperatable{
+public abstract class AbstractRecord implements IRecord, IRecordDbOperation{
     private final RecordType type;
     private final long createTime; //
     private final String devAddress; //

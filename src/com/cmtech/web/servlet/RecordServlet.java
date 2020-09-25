@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
+import com.cmtech.web.dbUtil.ReportDbUtil;
 import com.cmtech.web.dbUtil.RecordDbUtil;
 import com.cmtech.web.exception.MyException;
 
@@ -100,13 +101,15 @@ public class RecordServlet extends HttpServlet {
 
 			// 执行命令
 			String cmd = jsonObject.getString("cmd");
-			RecordType type = RecordType.fromCode(jsonObject.getInt("recordTypeCode"));
+			RecordType type = null;
+			if(!jsonObject.isNull("recordTypeCode"))
+				type = RecordType.fromCode(jsonObject.getInt("recordTypeCode"));
+			
 			boolean cmdResult = false;
 			JSONObject jsonResult = null;
 			long createTime;
 			String devAddress;
-			switch(cmd) {
-			
+			switch(cmd) {			
 			case "upload":
 				cmdResult = RecordDbUtil.insert(type, jsonObject);
 				if(cmdResult) {
@@ -173,6 +176,38 @@ public class RecordServlet extends HttpServlet {
 					ServletUtil.responseException(response, new MyException(DELETE_ERR, "删除失败"));
 				}
 				break;
+				
+			case "downloadReport":
+				createTime = jsonObject.getLong("createTime");
+		        devAddress = jsonObject.getString("devAddress");
+		        JSONObject json1 = ReportDbUtil.downloadReport(createTime, devAddress);		        
+				
+				if(json1 == null) {
+					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+				} else {
+					System.out.println(json1.toString());
+					jsonResult = new JSONObject();
+					jsonResult.put("code", SUCCESS.ordinal());
+					jsonResult.put("reportResult", json1);
+					ServletUtil.responseJson(response, jsonResult);
+				}
+				break;
+				
+			case "requestReport":
+				createTime = jsonObject.getLong("createTime");
+		        devAddress = jsonObject.getString("devAddress");
+		        JSONObject report = ReportDbUtil.requestReport(createTime, devAddress);		        
+				
+				if(report == null) {
+					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+				} else {
+					System.out.println(report.toString());
+					jsonResult = new JSONObject();
+					jsonResult.put("code", SUCCESS.ordinal());
+					jsonResult.put("reportResult", report);
+					ServletUtil.responseJson(response, jsonResult);
+				}
+				break;	
 				
 				default:
 					ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效命令"));

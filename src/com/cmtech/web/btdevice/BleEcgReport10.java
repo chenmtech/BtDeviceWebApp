@@ -7,12 +7,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.json.JSONObject;
+
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgReport10 {
-    private static final int DONE = 0;
-    private static final int WAIT_PROCESS = 1;
-    private static final int PROCESSING = 2;
+    public static final int DONE = 0;
+    public static final int REQUEST = 1;
+    public static final int PROCESS = 2;
     
 	private String ver = "1.0";
     private long reportTime = -1;
@@ -53,6 +55,15 @@ public class BleEcgReport10 {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+	
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("reportVer", ver);
+		json.put("reportTime", reportTime);
+		json.put("content", content);
+		json.put("status", status);
+		return json;
 	}
 	
 	public static int getId(int recordId) {

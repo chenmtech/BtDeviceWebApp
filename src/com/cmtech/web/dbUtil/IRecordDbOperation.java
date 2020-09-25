@@ -2,7 +2,7 @@ package com.cmtech.web.dbUtil;
 
 import org.json.JSONArray;
 
-public interface IRecordDbOperatable {
+public interface IRecordDbOperation {
 	int retrieveId();
 	boolean retrieve();
 	boolean insert();
