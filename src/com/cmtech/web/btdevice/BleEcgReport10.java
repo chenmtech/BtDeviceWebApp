@@ -1,15 +1,6 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.json.JSONObject;
-
-import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgReport10 {
     public static final int DONE = 0;
@@ -84,31 +75,5 @@ public class BleEcgReport10 {
 		return json;
 	}
 	
-	public boolean initAsLastRequest() {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select * from ecgreport where status = ? order by reportId limit 1";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, REQUEST);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				reportId = rs.getInt("reportId");
-				ver = rs.getString("reportVer");
-				reportTime = rs.getLong("reportTime");
-				content = rs.getString("content");
-				status = rs.getInt("status");
-				recordId = rs.getInt("recordId");
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;		
-	}
+	
 }

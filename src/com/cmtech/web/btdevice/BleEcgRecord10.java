@@ -235,7 +235,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 				report.setStatus(status);
 				return ReportDbUtil.CODE_REPORT_SUCCESS;
 			} else {
-				return ReportDbUtil.CODE_REPORT_NO_NEW;				
+				return ReportDbUtil.CODE_REPORT_NO_NEW;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -245,7 +245,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 		return ReportDbUtil.CODE_REPORT_FAILURE;	
 	}
 	
-	public int dumpReportToDb() {
-		return 0;
+	public boolean dumpReportToDb() {
+		return false;
 	}
 }

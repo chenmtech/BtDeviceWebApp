@@ -15,7 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.AbstractRecord;
-import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.BleEcgReport10;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
@@ -152,19 +152,21 @@ public class RecordDbUtil {
 		return null;
 	}
 	
-	public JSONObject downloadLastRequestRecord() {
-		BleEcgReport10 report = new BleEcgReport10();
-		if(!report.initAsLastRequest()) return null;
+	public static JSONObject downloadLastRequestRecord() {
+		int ecgReportId = getLastRequestReportId();
+		if(ecgReportId == INVALID_ID) return null;
+		
+		if(!applyForProcessReport(ecgReportId)) return null;
 		
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress from ecgrecord where id = ?";
+		String sql = "select createTime, devAddress from ecgrecord, ecgreport where ecgreport.ecgReportId = ? and ecgrecord.id = ecgreport.recordId";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, report.getRecordId());
+			ps.setInt(1, ecgReportId);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				long createTime = rs.getLong("createTime");
@@ -178,6 +180,82 @@ public class RecordDbUtil {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
+	}
+	
+	public static boolean updateReport(long createTime, String devAddress, long reportTime, String content) {
+		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		if(record == null) return false;
+		
+		int recordId = record.retrieveId();
+		if(recordId == INVALID_ID) return false;
+		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update ecgreport set reportTime = ?, content = ?, status = ? where recordId = ? and status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setLong(1, reportTime);
+			ps.setString(2, content);
+			ps.setInt(3, BleEcgReport10.DONE);
+			ps.setInt(4, recordId);
+			ps.setInt(5, BleEcgReport10.PROCESS);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;	
+	}
+	
+	private static int getLastRequestReportId() {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return INVALID_ID;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select ecgReportId from ecgreport where status = ? order by ecgReportId limit 1";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, BleEcgReport10.REQUEST);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				return rs.getInt("ecgReportId");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return INVALID_ID;		
+	}
+	
+	private static boolean applyForProcessReport(int reportId) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update ecgreport set status = ? where ecgReportId = ? and status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, BleEcgReport10.PROCESS);
+			ps.setInt(2, reportId);
+			ps.setInt(3, BleEcgReport10.REQUEST);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;		
 	}
 	
 	private static String getTableName(RecordType type) {
