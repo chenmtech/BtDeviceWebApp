@@ -12,7 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.dbUtil.ReportDbUtil;
 
-public class BleEcgRecord10 extends AbstractRecord{
+public class BleEcgRecord10 extends BasicRecord{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
@@ -133,7 +133,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 
 	@Override
 	public boolean insert() {
-		int id = retrieveId();
+		int id = getId();
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
@@ -167,7 +167,7 @@ public class BleEcgRecord10 extends AbstractRecord{
 	}
 	
 	public int requestReport() {
-		int recordId = retrieveId();
+		int recordId = getId();
 		if(recordId == INVALID_ID) return ReportDbUtil.CODE_REPORT_FAILURE;
 		
 		Connection conn = DbUtil.connect();

@@ -13,18 +13,18 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.dbUtil.IRecordDbOperation;
 
-public abstract class AbstractRecord implements IRecord, IRecordDbOperation{
+public abstract class BasicRecord implements IRecord, IRecordDbOperation{
+    private String ver; // record version
     private final RecordType type;
     private final long createTime; //
     private final String devAddress; //
-    private String ver; // record version
     private String creatorPlat;
     private String creatorId;
     private String note;
     
     private final String TABLE_NAME;
 
-    protected AbstractRecord(RecordType type, long createTime, String devAddress) {
+    protected BasicRecord(RecordType type, long createTime, String devAddress) {
     	ver = "";
     	this.type = type;
         this.createTime = createTime;
@@ -114,6 +114,7 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperation{
     @Override
 	public JSONObject toJson() {
     	JSONObject json = new JSONObject();
+    	json.put("ver", ver);
 		json.put("recordTypeCode", type.getCode());
 		json.put("createTime", createTime);
 		json.put("devAddress", devAddress);
@@ -124,7 +125,7 @@ public abstract class AbstractRecord implements IRecord, IRecordDbOperation{
 	}
 
 	@Override
-    public int retrieveId() {
+    public int getId() {
     	if("".equals(TABLE_NAME)) return INVALID_ID;
     	
 		Connection conn = DbUtil.connect();

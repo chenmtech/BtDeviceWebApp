@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
-public class BleThermoRecord10 extends AbstractRecord {
+public class BleThermoRecord10 extends BasicRecord {
     private String temp;
     
     public BleThermoRecord10(long createTime, String devAddress) {
@@ -74,7 +74,7 @@ public class BleThermoRecord10 extends AbstractRecord {
 	
 	@Override
 	public boolean insert() {
-		int id = retrieveId();
+		int id = getId();
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();

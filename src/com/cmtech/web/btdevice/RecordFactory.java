@@ -8,7 +8,7 @@ public class RecordFactory {
 		
 	}
 	
-	public static AbstractRecord create(RecordType type, long createTime, String devAddress) {
+	public static BasicRecord create(RecordType type, long createTime, String devAddress) {
 		switch(type) {
 		case ECG:
 			return new BleEcgRecord10(createTime, devAddress);
@@ -26,7 +26,7 @@ public class RecordFactory {
 		return null;
 	}
 	
-	public static AbstractRecord createFromJson(RecordType type, JSONObject json) {
+	public static BasicRecord createFromJson(RecordType type, JSONObject json) {
 		switch(type) {
 		case ECG:
 			return BleEcgRecord10.createFromJson(json);

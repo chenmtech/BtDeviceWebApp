@@ -14,7 +14,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.cmtech.web.btdevice.AbstractRecord;
+import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.BleEcgReport10;
 import com.cmtech.web.btdevice.RecordFactory;
@@ -24,14 +24,14 @@ import com.cmtech.web.btdevice.TmpRecord;
 public class RecordDbUtil {
 	// QUERY
 	public static int getId(RecordType type, long createTime, String devAddress) {
-		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return INVALID_ID;
-		return record.retrieveId();
+		return record.getId();
 	}
 	
 	// UPDATE NOTE
 	public static boolean updateNote(RecordType type, long createTime, String devAddress, String note) {
-		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;
 		record.setNote(note);
 		return record.updateNote();
@@ -39,14 +39,14 @@ public class RecordDbUtil {
 	
 	// DELETE
 	public static boolean delete(RecordType type, long createTime, String devAddress) {
-		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;
 		return record.delete();
 	}
 	
 	// INSERT
 	public static boolean insert(RecordType type, JSONObject json) {
-		AbstractRecord record = RecordFactory.createFromJson(type, json);
+		BasicRecord record = RecordFactory.createFromJson(type, json);
 		if(record == null) return false;
 		return record.insert();
 	}
@@ -56,7 +56,7 @@ public class RecordDbUtil {
 	// when: later than fromTime
 	// howmuch: num
 	public static JSONObject download(RecordType type, long createTime, String devAddress) {
-		AbstractRecord record = RecordFactory.create(type, createTime, devAddress);
+		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return null;
 		
 		if(!record.retrieve()) return null;
@@ -186,7 +186,7 @@ public class RecordDbUtil {
 		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		if(record == null) return false;
 		
-		int recordId = record.retrieveId();
+		int recordId = record.getId();
 		if(recordId == INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();

@@ -3,7 +3,7 @@ package com.cmtech.web.dbUtil;
 import org.json.JSONArray;
 
 public interface IRecordDbOperation {
-	int retrieveId();
+	int getId();
 	boolean retrieve();
 	boolean insert();
 	boolean delete();

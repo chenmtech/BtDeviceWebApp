@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
-public class BleHrRecord10 extends AbstractRecord {
+public class BleHrRecord10 extends BasicRecord {
 	private String hrList; // list of the filtered HR
     private short hrMax;
     private short hrAve;
@@ -127,7 +127,7 @@ public class BleHrRecord10 extends AbstractRecord {
 
 	@Override
 	public boolean insert() {
-		int id = retrieveId();
+		int id = getId();
 		if(id != INVALID_ID) return false;
 		
 		Connection conn = DbUtil.connect();
