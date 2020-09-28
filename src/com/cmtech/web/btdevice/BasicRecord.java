@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.dbUtil.IRecordDbOperation;
+import com.cmtech.web.dbUtil.RecordDbUtil;
 
 public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     private String ver; // record version
@@ -32,7 +33,7 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
         creatorPlat = "";
         creatorId = "";
         note = "";
-        TABLE_NAME = getTableName(type);
+        TABLE_NAME = RecordDbUtil.getTableName(type);
     }
     
     protected void initFromJson(JSONObject jsonObject) {
@@ -209,22 +210,4 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     public JSONArray downloadBasicInfo(String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
     	return null;
     }
-    
-	private static String getTableName(RecordType type) {
-		switch(type) {
-		case ECG:
-			return "ecgrecord";
-		case HR:
-			return "hrrecord";			
-		case THERMO:
-			return "thermorecord";
-		case TH:
-			return "threcord";
-		case EEG:
-			return "eegrecord";
-		default:
-			break;
-		}
-		return "";
-	}
 }
