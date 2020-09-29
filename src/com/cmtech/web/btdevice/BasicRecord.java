@@ -12,7 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.dbUtil.RecordDbUtil;
 
-public abstract class BasicRecord implements IRecord, IDbOperation, IJsonable{
+public abstract class BasicRecord implements IDbOperation, IJsonable{
     private String ver; // record version
     private final RecordType type;
     private final long createTime; //
@@ -62,49 +62,47 @@ public abstract class BasicRecord implements IRecord, IDbOperation, IJsonable{
 		return json;
 	}
 
-    @Override
     public RecordType getType() {
 		return type;
 	}
 
-	@Override
     public String getVer() {
     	return ver;
     }
-    @Override
+
     public void setVer(String ver) {
         this.ver = ver;
     }
-    @Override
+
     public long getCreateTime() {
         return createTime;
     }
-    @Override
+
     public String getDevAddress() {
         return devAddress;
     }
-    @Override
+
     public String getRecordName() {
         return createTime + devAddress;
     }
-    @Override
+
     public String getCreatorPlat() {
         return creatorPlat;
     }
-    @Override
+
     public String getCreatorId() {
     	return creatorId;
     }
-    @Override
+
     public void setCreator(Account creator) {
         this.creatorPlat = creator.getPlatName();
         this.creatorId = creator.getPlatId();
     }
-    @Override
+
     public String getNote() {
     	return note;
     }
-    @Override
+
     public void setNote(String note) {
     	this.note = note;
     }
@@ -127,7 +125,7 @@ public abstract class BasicRecord implements IRecord, IDbOperation, IJsonable{
         if(this == otherObject) return true;
         if(otherObject == null) return false;
         if(getClass() != otherObject.getClass()) return false;
-        IRecord other = (IRecord) otherObject;
+        BasicRecord other = (BasicRecord) otherObject;
         return getRecordName().equals(other.getRecordName());
     }
 

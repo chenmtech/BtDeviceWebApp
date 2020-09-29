@@ -17,17 +17,11 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord10;
 import com.cmtech.web.btdevice.BleEcgReport10;
+import com.cmtech.web.btdevice.IDiagnosable;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
 public class RecordDbUtil {
-
-    public static final int CODE_REPORT_SUCCESS = 0;
-    public static final int CODE_REPORT_FAILURE = 1;
-    public static final int CODE_REPORT_ADD_NEW = 2;
-    public static final int CODE_REPORT_PROCESSING = 3;
-    public static final int CODE_REPORT_REQUEST_AGAIN = 4;
-    public static final int CODE_REPORT_NO_NEW = 5;
 	
 	// QUERY
 	public static int getId(RecordType type, long createTime, String devAddress) {
@@ -124,10 +118,10 @@ public class RecordDbUtil {
 	
 	public static JSONObject downloadReport(long createTime, String devAddress) {
 		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		int reportCode = record.updateReportFromDb();
+		int reportCode = record.retrieveReport();
 		JSONObject reportResult = new JSONObject();
 		reportResult.put("reportCode", reportCode);
-		if(reportCode == CODE_REPORT_SUCCESS)
+		if(reportCode == IDiagnosable.CODE_REPORT_SUCCESS)
 			reportResult.put("report", record.getReport().toJson());
 		return reportResult;
 	}
@@ -136,8 +130,8 @@ public class RecordDbUtil {
 		int ecgReportId = getLastRequestReportId();
 		if(ecgReportId == INVALID_ID) return null;
 		
-		if(!applyForProcessReport(ecgReportId)) return null;
-		
+		if(!applyProcessingReport(ecgReportId)) return null;
+
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
 		
@@ -162,35 +156,14 @@ public class RecordDbUtil {
 		return null;
 	}
 	
-	public static boolean updateReport(long createTime, String devAddress, long reportTime, String content) {
+	public static boolean uploadReport(long createTime, String devAddress, long reportTime, String content) {
 		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		if(record == null) return false;
 		
-		int recordId = record.getId();
-		if(recordId == INVALID_ID) return false;
+		record.getReport().setReportTime(reportTime);
+		record.getReport().setContent(content);
 		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "update EcgReport set reportTime = ?, content = ?, status = ? where recordId = ? and status = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setLong(1, reportTime);
-			ps.setString(2, content);
-			ps.setInt(3, BleEcgReport10.DONE);
-			ps.setInt(4, recordId);
-			ps.setInt(5, BleEcgReport10.PROCESS);
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;	
+		return record.updateReport();
 	}
 	
 	private static int getLastRequestReportId() {
@@ -215,7 +188,7 @@ public class RecordDbUtil {
 		return INVALID_ID;		
 	}
 	
-	private static boolean applyForProcessReport(int reportId) {
+	private static boolean applyProcessingReport(int reportId) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		

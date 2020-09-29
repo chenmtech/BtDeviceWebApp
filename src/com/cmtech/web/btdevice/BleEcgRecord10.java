@@ -10,9 +10,8 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.dbUtil.RecordDbUtil;
 
-public class BleEcgRecord10 extends BasicRecord{
+public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
@@ -145,13 +144,14 @@ public class BleEcgRecord10 extends BasicRecord{
 		}
 		return false;
 	}
-	
+
+	@Override
 	public int requestReport() {
 		int recordId = getId();
-		if(recordId == INVALID_ID) return RecordDbUtil.CODE_REPORT_FAILURE;
+		if(recordId == INVALID_ID) return IDiagnosable.CODE_REPORT_FAILURE;
 		
 		Connection conn = DbUtil.connect();
-		if(conn == null) return RecordDbUtil.CODE_REPORT_FAILURE;
+		if(conn == null) return IDiagnosable.CODE_REPORT_FAILURE;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -171,9 +171,9 @@ public class BleEcgRecord10 extends BasicRecord{
 					ps.setInt(1, BleEcgReport10.REQUEST);
 					ps.setInt(2, ecgReportId);
 					if(ps.executeUpdate() != 0)
-						return RecordDbUtil.CODE_REPORT_REQUEST_AGAIN;
+						return IDiagnosable.CODE_REPORT_REQUEST_AGAIN;
 				} else {
-					return RecordDbUtil.CODE_REPORT_PROCESSING;
+					return IDiagnosable.CODE_REPORT_PROCESSING;
 				}
 			} else {
 				DbUtil.closeSTMT(ps);
@@ -181,19 +181,20 @@ public class BleEcgRecord10 extends BasicRecord{
 				ps.setInt(1, BleEcgReport10.REQUEST);
 				ps.setInt(2, recordId);
 				if(ps.executeUpdate() != 0)
-					return RecordDbUtil.CODE_REPORT_ADD_NEW;				
+					return IDiagnosable.CODE_REPORT_ADD_NEW;				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return RecordDbUtil.CODE_REPORT_FAILURE;	
+		return IDiagnosable.CODE_REPORT_FAILURE;	
 	}
-	
-	public int updateReportFromDb() {
+
+	@Override
+	public int retrieveReport() {
 		Connection conn = DbUtil.connect();
-		if(conn == null) return RecordDbUtil.CODE_REPORT_FAILURE;
+		if(conn == null) return IDiagnosable.CODE_REPORT_FAILURE;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -213,19 +214,69 @@ public class BleEcgRecord10 extends BasicRecord{
 				report.setReportTime(reportTime);
 				report.setContent(content);
 				report.setStatus(status);
-				return RecordDbUtil.CODE_REPORT_SUCCESS;
+				return IDiagnosable.CODE_REPORT_SUCCESS;
 			} else {
-				return RecordDbUtil.CODE_REPORT_NO_NEW;
+				return IDiagnosable.CODE_REPORT_NO_NEW;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return RecordDbUtil.CODE_REPORT_FAILURE;	
+		return IDiagnosable.CODE_REPORT_FAILURE;	
+	}
+
+	@Override
+	public boolean updateReport() {		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update EcgReport, EcgRecord set reportTime = ?, content = ?, status = ? " 
+				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId and EcgReport.status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setLong(1, report.getReportTime());
+			ps.setString(2, report.getContent());
+			ps.setInt(3, BleEcgReport10.DONE);
+			ps.setLong(4, getCreateTime());
+			ps.setString(5,  getDevAddress());
+			ps.setInt(6, BleEcgReport10.PROCESS);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;	
 	}
 	
-	public boolean dumpReportToDb() {
-		return false;
+	@Override
+	public boolean applyProcessingRequest() {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update EcgReport, EcgRecord set status = ? " 
+				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId and EcgReport.status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, BleEcgReport10.PROCESS);
+			ps.setLong(2, getCreateTime());
+			ps.setString(3,  getDevAddress());
+			ps.setInt(4, BleEcgReport10.REQUEST);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;		
 	}
 }
