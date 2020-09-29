@@ -106,7 +106,7 @@ public class BleEcgRecord10 extends BasicRecord{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData from ecgrecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData from EcgRecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
@@ -140,7 +140,7 @@ public class BleEcgRecord10 extends BasicRecord{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ecgrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
+		String sql = "insert into EcgRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -175,9 +175,9 @@ public class BleEcgRecord10 extends BasicRecord{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String selectSql = "select ecgReportId, status from ecgreport where recordId = ?";
-		String insertSql = "insert into ecgreport (status, recordId) values (?, ?)";
-		String updateSql = "update ecgreport set status = ? where ecgReportId = ?";
+		String selectSql = "select ecgReportId, status from EcgReport where recordId = ?";
+		String insertSql = "insert into EcgReport (status, recordId) values (?, ?)";
+		String updateSql = "update EcgReport set status = ? where ecgReportId = ?";
 		try {			
 			ps = conn.prepareStatement(selectSql);
 			ps.setInt(1, recordId);
@@ -217,8 +217,8 @@ public class BleEcgRecord10 extends BasicRecord{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String selectSql = "select reportVer, reportTime, content, status from ecgreport, ecgrecord "
-				+ "where ecgrecord.createTime = ? and ecgrecord.devAddress = ? and ecgrecord.id = ecgreport.recordId";
+		String selectSql = "select reportVer, reportTime, content, status from EcgReport, EcgRecord "
+				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId";
 		try {
 			ps = conn.prepareStatement(selectSql);
 			ps.setLong(1, getCreateTime());

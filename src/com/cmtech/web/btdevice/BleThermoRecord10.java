@@ -51,7 +51,7 @@ public class BleThermoRecord10 extends BasicRecord {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, temp from thermorecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, temp from ThermoRecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
@@ -81,7 +81,7 @@ public class BleThermoRecord10 extends BasicRecord {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into thermorecord (ver, createTime, devAddress, creatorPlat, creatorId, note, temp) "
+		String sql = "insert into ThermoRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, temp) "
 				+ "values (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);

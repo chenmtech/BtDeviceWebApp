@@ -15,5 +15,5 @@ public interface IRecord {
     String getNote();
     void setNote(String note);
     JSONObject toJson();
-    void fromJson(JSONObject json);
+    //void fromJson(JSONObject json);
 }

@@ -114,7 +114,7 @@ public class RecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress from ecgrecord, ecgreport where ecgreport.ecgReportId = ? and ecgrecord.id = ecgreport.recordId";
+		String sql = "select createTime, devAddress from EcgRecord, EcgReport where EcgReport.ecgReportId = ? and EcgRecord.id = EcgReport.recordId";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, ecgReportId);
@@ -145,7 +145,7 @@ public class RecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update ecgreport set reportTime = ?, content = ?, status = ? where recordId = ? and status = ?";
+		String sql = "update EcgReport set reportTime = ?, content = ?, status = ? where recordId = ? and status = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setLong(1, reportTime);
@@ -170,7 +170,7 @@ public class RecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ecgReportId from ecgreport where status = ? order by ecgReportId limit 1";
+		String sql = "select ecgReportId from EcgReport where status = ? order by ecgReportId limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, BleEcgReport10.REQUEST);
@@ -192,7 +192,7 @@ public class RecordDbUtil {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update ecgreport set status = ? where ecgReportId = ? and status = ?";
+		String sql = "update EcgReport set status = ? where ecgReportId = ? and status = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, BleEcgReport10.PROCESS);
@@ -310,15 +310,15 @@ public class RecordDbUtil {
 	public static String getTableName(RecordType type) {
 		switch(type) {
 		case ECG:
-			return "ecgrecord";
+			return "EcgRecord";
 		case HR:
-			return "hrrecord";			
+			return "HrRecord";			
 		case THERMO:
-			return "thermorecord";
+			return "ThermoRecord";
 		case TH:
-			return "threcord";
+			return "ThRecord";
 		case EEG:
-			return "eegrecord";
+			return "EegRecord";
 		default:
 			break;
 		}

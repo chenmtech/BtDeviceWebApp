@@ -100,7 +100,7 @@ public class BleHrRecord10 extends BasicRecord {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond from hrrecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond from HrRecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
@@ -134,7 +134,7 @@ public class BleHrRecord10 extends BasicRecord {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into hrrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond) "
+		String sql = "insert into HrRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);

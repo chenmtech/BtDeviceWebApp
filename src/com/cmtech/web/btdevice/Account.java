@@ -49,7 +49,7 @@ public class Account {
 		
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		String sql = "select platName, platId, name, note, icon from account where id = ?";
+		String sql = "select platName, platId, name, note, icon from Account where id = ?";
 		try {
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, id);
@@ -84,7 +84,7 @@ public class Account {
 		int id = INVALID_ID;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from account where platName = ? and platId = ?";
+		String sql = "select id from Account where platName = ? and platId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, platName);
@@ -109,7 +109,7 @@ public class Account {
 		}
 		
 		PreparedStatement ps = null;
-		String sql = "insert into account (platName, platId, name, note, icon) values (?, ?, ?, ?, ?)";
+		String sql = "insert into Account (platName, platId, name, note, icon) values (?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, platName);
@@ -140,7 +140,7 @@ public class Account {
 		if(id == INVALID_ID) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update account set name=?, note=?, icon=? where id=?";
+		String sql = "update Account set name=?, note=?, icon=? where id=?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, name);

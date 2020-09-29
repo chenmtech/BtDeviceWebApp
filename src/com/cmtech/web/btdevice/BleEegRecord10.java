@@ -100,7 +100,7 @@ public class BleEegRecord10 extends BasicRecord{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from eegrecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from EegRecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
@@ -134,7 +134,7 @@ public class BleEegRecord10 extends BasicRecord{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into eegrecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData) "
+		String sql = "insert into EegRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
