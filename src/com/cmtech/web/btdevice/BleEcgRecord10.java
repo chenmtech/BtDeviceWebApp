@@ -10,13 +10,12 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.dbUtil.ReportDbUtil;
+import com.cmtech.web.dbUtil.RecordDbUtil;
 
 public class BleEcgRecord10 extends BasicRecord{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
-    private int recordSecond; // unit: s
     private String ecgData; // ecg data
     private BleEcgReport10 report = new BleEcgReport10(); // ecg diagnose report
 
@@ -36,10 +35,6 @@ public class BleEcgRecord10 extends BasicRecord{
 		return leadTypeCode;
 	}
 
-	public int getRecordSecond() {
-		return recordSecond;
-	}
-
 	public String getEcgData() {
 		return ecgData;
 	}
@@ -56,10 +51,6 @@ public class BleEcgRecord10 extends BasicRecord{
 		this.leadTypeCode = leadTypeCode;
 	}
 
-	public void setRecordSecond(int recordSecond) {
-		this.recordSecond = recordSecond;
-	}
-
 	public void setEcgData(String ecgData) {
 		this.ecgData = ecgData;
 	}
@@ -67,25 +58,15 @@ public class BleEcgRecord10 extends BasicRecord{
 	public BleEcgReport10 getReport() {
 		return report;
 	}
-
-	public static BleEcgRecord10 createFromJson(JSONObject jsonObject) {
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		BleEcgRecord10 record = new BleEcgRecord10(createTime, devAddress);
-		record.initFromJson(jsonObject);
+	
+    @Override
+	public void fromJson(JSONObject jsonObject) {
+		super.fromJson(jsonObject);
 		
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String ecgData = jsonObject.getString("ecgData");
-		
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setEcgData(ecgData);
-		return record;
+		sampleRate = jsonObject.getInt("sampleRate");
+		caliValue = jsonObject.getInt("caliValue");
+		leadTypeCode = jsonObject.getInt("leadTypeCode");
+		ecgData = jsonObject.getString("ecgData");
 	}
 	
 	@Override
@@ -94,7 +75,6 @@ public class BleEcgRecord10 extends BasicRecord{
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
-		json.put("recordSecond", recordSecond);
 		json.put("ecgData", ecgData);
 		return json;
 	}
@@ -115,10 +95,10 @@ public class BleEcgRecord10 extends BasicRecord{
 			if(rs.next()) {
 				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
 				setNote(rs.getString("note"));
+				setRecordSecond(rs.getInt("recordSecond"));
 				sampleRate = rs.getInt("sampleRate");
 				caliValue = rs.getInt("caliValue");
 				leadTypeCode = rs.getInt("leadTypeCode");
-				recordSecond = rs.getInt("recordSecond");
 				ecgData = rs.getString("ecgData");
 				return true;
 			}
@@ -168,10 +148,10 @@ public class BleEcgRecord10 extends BasicRecord{
 	
 	public int requestReport() {
 		int recordId = getId();
-		if(recordId == INVALID_ID) return ReportDbUtil.CODE_REPORT_FAILURE;
+		if(recordId == INVALID_ID) return RecordDbUtil.CODE_REPORT_FAILURE;
 		
 		Connection conn = DbUtil.connect();
-		if(conn == null) return ReportDbUtil.CODE_REPORT_FAILURE;
+		if(conn == null) return RecordDbUtil.CODE_REPORT_FAILURE;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -191,9 +171,9 @@ public class BleEcgRecord10 extends BasicRecord{
 					ps.setInt(1, BleEcgReport10.REQUEST);
 					ps.setInt(2, ecgReportId);
 					if(ps.executeUpdate() != 0)
-						return ReportDbUtil.CODE_REPORT_REQUEST_AGAIN;
+						return RecordDbUtil.CODE_REPORT_REQUEST_AGAIN;
 				} else {
-					return ReportDbUtil.CODE_REPORT_PROCESSING;
+					return RecordDbUtil.CODE_REPORT_PROCESSING;
 				}
 			} else {
 				DbUtil.closeSTMT(ps);
@@ -201,19 +181,19 @@ public class BleEcgRecord10 extends BasicRecord{
 				ps.setInt(1, BleEcgReport10.REQUEST);
 				ps.setInt(2, recordId);
 				if(ps.executeUpdate() != 0)
-					return ReportDbUtil.CODE_REPORT_ADD_NEW;				
+					return RecordDbUtil.CODE_REPORT_ADD_NEW;				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return ReportDbUtil.CODE_REPORT_FAILURE;	
+		return RecordDbUtil.CODE_REPORT_FAILURE;	
 	}
 	
 	public int updateReportFromDb() {
 		Connection conn = DbUtil.connect();
-		if(conn == null) return ReportDbUtil.CODE_REPORT_FAILURE;
+		if(conn == null) return RecordDbUtil.CODE_REPORT_FAILURE;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -233,16 +213,16 @@ public class BleEcgRecord10 extends BasicRecord{
 				report.setReportTime(reportTime);
 				report.setContent(content);
 				report.setStatus(status);
-				return ReportDbUtil.CODE_REPORT_SUCCESS;
+				return RecordDbUtil.CODE_REPORT_SUCCESS;
 			} else {
-				return ReportDbUtil.CODE_REPORT_NO_NEW;
+				return RecordDbUtil.CODE_REPORT_NO_NEW;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return ReportDbUtil.CODE_REPORT_FAILURE;	
+		return RecordDbUtil.CODE_REPORT_FAILURE;	
 	}
 	
 	public boolean dumpReportToDb() {

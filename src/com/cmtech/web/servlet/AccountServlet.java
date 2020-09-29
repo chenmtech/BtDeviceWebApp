@@ -9,7 +9,6 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
-import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
 import static com.cmtech.web.exception.MyExceptionCode.LOGIN_ERR;
@@ -143,7 +142,7 @@ public class AccountServlet extends HttpServlet {
 				if(accountId == INVALID_ID) {
 					result = account.insert();
 				} else {
-					result = account.updateDb();
+					result = account.update();
 				}
 				
 				if(result) {
@@ -154,17 +153,11 @@ public class AccountServlet extends HttpServlet {
 				break;
 				
 			case "download":
-				accountId = Account.getId(platName, platId);
-				if(accountId == INVALID_ID) {
-					ServletUtil.responseException(response, new MyException(ACCOUNT_ERR, "无效账户"));
-					return;
-				}
-				
-				Account acount = Account.create(accountId);
-				if(acount != null) {
+				Account acnt = new Account(platName, platId);
+				if(acnt.retrieve()) {
 					JSONObject json = new JSONObject();
 					json.put("code", SUCCESS.ordinal());
-					json.put("account", acount.toJson());
+					json.put("account", acnt.toJson());
 					ServletUtil.responseJson(response, json);
 				} else {
 					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载错误"));

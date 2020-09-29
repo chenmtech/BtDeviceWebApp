@@ -7,14 +7,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.dbUtil.IRecordDbOperation;
 import com.cmtech.web.dbUtil.RecordDbUtil;
 
-public abstract class BasicRecord implements IRecord, IRecordDbOperation{
+public abstract class BasicRecord implements IRecord, IDbOperation, IJsonable{
     private String ver; // record version
     private final RecordType type;
     private final long createTime; //
@@ -22,6 +20,7 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     private String creatorPlat;
     private String creatorId;
     private String note;
+    private int recordSecond;
     
     private final String TABLE_NAME;
 
@@ -33,10 +32,12 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
         creatorPlat = "";
         creatorId = "";
         note = "";
+        recordSecond = 0;
         TABLE_NAME = RecordDbUtil.getTableName(type);
-    }
+    }    
     
-    protected void initFromJson(JSONObject jsonObject) {
+    @Override
+    public void fromJson(JSONObject jsonObject) {
 		ver = jsonObject.getString("ver");
 		if(ver == null || "".equals(ver)) {
 			ver = "1.0";
@@ -44,7 +45,22 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
 		creatorPlat = jsonObject.getString("creatorPlat");
 		creatorId = jsonObject.getString("creatorId");
 		note = jsonObject.getString("note");		
+		recordSecond = jsonObject.getInt("recordSecond");
     }
+    
+    @Override
+	public JSONObject toJson() {
+    	JSONObject json = new JSONObject();
+    	json.put("ver", ver);
+		json.put("recordTypeCode", type.getCode());
+		json.put("createTime", createTime);
+		json.put("devAddress", devAddress);
+		json.put("creatorPlat", creatorPlat);
+		json.put("creatorId", creatorId);
+		json.put("note", note);
+		json.put("recordSecond", recordSecond);
+		return json;
+	}
 
     @Override
     public RecordType getType() {
@@ -93,7 +109,15 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     	this.note = note;
     }
 
-    @Override
+    public int getRecordSecond() {
+		return recordSecond;
+	}
+
+	public void setRecordSecond(int recordSecond) {
+		this.recordSecond = recordSecond;
+	}
+
+	@Override
     public String toString() {
         return type + "-" + createTime + "-" + devAddress + "-" + creatorPlat + "-" + creatorId + "-" + note;
     }
@@ -111,19 +135,6 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     public int hashCode() {
         return getRecordName().hashCode();
     }
-    
-    @Override
-	public JSONObject toJson() {
-    	JSONObject json = new JSONObject();
-    	json.put("ver", ver);
-		json.put("recordTypeCode", type.getCode());
-		json.put("createTime", createTime);
-		json.put("devAddress", devAddress);
-		json.put("creatorPlat", creatorPlat);
-		json.put("creatorId", creatorId);
-		json.put("note", note);
-		return json;
-	}
 
 	@Override
     public int getId() {
@@ -155,7 +166,7 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
     
 	// UPDATE NOTE
     @Override
-	public boolean updateNote() {
+	public boolean update() {
     	if("".equals(TABLE_NAME)) return false;
     	
 		Connection conn = DbUtil.connect();
@@ -205,9 +216,4 @@ public abstract class BasicRecord implements IRecord, IRecordDbOperation{
 		}
 		return false;
 	}
-    
-    @Override
-    public JSONArray downloadBasicInfo(String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
-    	return null;
-    }
 }

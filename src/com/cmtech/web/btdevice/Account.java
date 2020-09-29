@@ -12,12 +12,12 @@ import com.cmtech.web.dbUtil.DbUtil;
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import com.cmtech.web.util.Base64;
 
-public class Account {
-	private final String platName;
-	private final String platId;
-	private final String name;
-	private final String note;
-	private final byte[] iconData;
+public class Account implements IDbOperation {
+	private String platName;
+	private String platId;
+	private String name;
+	private String note;
+	private byte[] iconData;
 	
 	public Account(String platName, String platId) {
 		this(platName, platId, "", "", null);
@@ -30,7 +30,7 @@ public class Account {
 		this.note = note;
 		this.iconData = iconData;
 	}
-	
+
 	public String getPlatName() {
 		return platName;
 	}
@@ -39,42 +39,41 @@ public class Account {
 		return platId;
 	}
 	
+	@Override
 	public int getId() {
 		return getId(platName, platId);
 	}
 	
-	public static Account create(int id) {
+	@Override
+	public boolean retrieve() {
 		Connection conn = DbUtil.connect();		
-		if(conn == null || id == INVALID_ID) return null;
+		if(conn == null) return false;
 		
-		PreparedStatement stmt = null;
+		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select platName, platId, name, note, icon from Account where id = ?";
+		String sql = "select name, note, icon from Account where platName = ? and platId = ?";
 		try {
-			stmt = conn.prepareStatement(sql);
-			stmt.setInt(1, id);
-			rs = stmt.executeQuery();
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, platName);
+			ps.setString(2, platId);
+			rs = ps.executeQuery();
 			if(rs.next()) {
-				String platName = rs.getString("platName");
-				String platId = rs.getString("platId");
-				String name = rs.getString("name");
-				String note = rs.getString("note");
+				name = rs.getString("name");
+				note = rs.getString("note");
 				Blob b = rs.getBlob("icon");
-				byte[] iconData;
 				if(b == null || b.length() < 1) 
 					iconData = null;
 				else
 					iconData = b.getBytes(1, (int)b.length());
-				//String iconStr = Base64.encodeToString(iconData, Base64.DEFAULT);
-				return new Account(platName, platId, name, note, iconData);
+				return true;
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			DbUtil.close(rs, stmt, conn);
+			DbUtil.close(rs, ps, conn);
 		}
-		return null;		
+		return false;		
 	}
 
 	public static int getId(String platName, String platId) {
@@ -102,6 +101,7 @@ public class Account {
 		return id;		
 	}
 	
+	@Override
 	public boolean insert() {
 		Connection conn = DbUtil.connect();
 		if(conn == null) {
@@ -116,7 +116,6 @@ public class Account {
 			ps.setString(2, platId);
 			ps.setString(3, name);
 			ps.setString(4, note);
-			//byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(5, b);
@@ -132,7 +131,8 @@ public class Account {
 		return false;
 	}
 	
-	public boolean updateDb() {
+	@Override
+	public boolean update() {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -145,7 +145,6 @@ public class Account {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, name);
 			ps.setString(2, note);
-			//byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(3, b);
@@ -162,6 +161,12 @@ public class Account {
 		return false;
 	}
 	
+	@Override
+	public boolean delete() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("platName", platName);

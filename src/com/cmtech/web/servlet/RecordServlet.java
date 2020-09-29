@@ -1,7 +1,14 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
-import static com.cmtech.web.exception.MyExceptionCode.*;
+import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.DELETE_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
+import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
+import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +25,6 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.dbUtil.ReportDbUtil;
 import com.cmtech.web.dbUtil.RecordDbUtil;
 import com.cmtech.web.exception.MyException;
 
@@ -180,7 +186,7 @@ public class RecordServlet extends HttpServlet {
 			case "downloadReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject json1 = ReportDbUtil.downloadReport(createTime, devAddress);		        
+		        JSONObject json1 = RecordDbUtil.downloadReport(createTime, devAddress);		        
 				
 				if(json1 == null) {
 					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
@@ -196,7 +202,7 @@ public class RecordServlet extends HttpServlet {
 			case "requestReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject report = ReportDbUtil.requestReport(createTime, devAddress);		        
+		        JSONObject report = RecordDbUtil.requestReport(createTime, devAddress);		        
 				
 				if(report == null) {
 					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));

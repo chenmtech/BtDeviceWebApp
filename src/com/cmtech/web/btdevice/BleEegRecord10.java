@@ -15,7 +15,6 @@ public class BleEegRecord10 extends BasicRecord{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
-    private int recordSecond; // unit: s
     private String eegData; // ecg data
     
     public BleEegRecord10(long createTime, String devAddress) {
@@ -34,10 +33,6 @@ public class BleEegRecord10 extends BasicRecord{
 		return leadTypeCode;
 	}
 
-	public int getRecordSecond() {
-		return recordSecond;
-	}
-
 	public String getEegData() {
 		return eegData;
 	}
@@ -54,32 +49,18 @@ public class BleEegRecord10 extends BasicRecord{
 		this.leadTypeCode = leadTypeCode;
 	}
 
-	public void setRecordSecond(int recordSecond) {
-		this.recordSecond = recordSecond;
-	}
-
 	public void setEegData(String eegData) {
 		this.eegData = eegData;
 	}
-	
-	public static BleEegRecord10 createFromJson(JSONObject jsonObject) {
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		BleEegRecord10 record = new BleEegRecord10(createTime, devAddress);
-		record.initFromJson(jsonObject);
+
+    @Override
+	public void fromJson(JSONObject jsonObject) {
+		super.fromJson(jsonObject);
 		
-		int sampleRate = jsonObject.getInt("sampleRate");
-		int caliValue = jsonObject.getInt("caliValue");
-		int leadTypeCode = jsonObject.getInt("leadTypeCode");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		String eegData = jsonObject.getString("eegData");
-		
-		record.setSampleRate(sampleRate);
-		record.setCaliValue(caliValue);
-		record.setLeadTypeCode(leadTypeCode);
-		record.setRecordSecond(recordSecond);
-		record.setEegData(eegData);
-		return record;
+		sampleRate = jsonObject.getInt("sampleRate");
+		caliValue = jsonObject.getInt("caliValue");
+		leadTypeCode = jsonObject.getInt("leadTypeCode");
+		eegData = jsonObject.getString("eegData");
 	}
 	
 	@Override
@@ -88,7 +69,6 @@ public class BleEegRecord10 extends BasicRecord{
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
-		json.put("recordSecond", recordSecond);
 		json.put("eegData", eegData);
 		return json;
 	}
@@ -109,10 +89,10 @@ public class BleEegRecord10 extends BasicRecord{
 			if(rs.next()) {
 				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
 				setNote(rs.getString("note"));
+				setRecordSecond(rs.getInt("recordSecond"));
 				sampleRate = rs.getInt("sampleRate");
 				caliValue = rs.getInt("caliValue");
 				leadTypeCode = rs.getInt("leadTypeCode");
-				recordSecond = rs.getInt("recordSecond");
 				eegData = rs.getString("eegData");
 				return true;
 			}

@@ -16,7 +16,6 @@ public class BleHrRecord10 extends BasicRecord {
     private short hrMax;
     private short hrAve;
     private String hrHist; // HR histogram value
-    private int recordSecond; // unit: s
 
     public BleHrRecord10(long createTime, String devAddress) {
     	super(RecordType.HR, createTime, devAddress);
@@ -54,32 +53,14 @@ public class BleHrRecord10 extends BasicRecord {
 		this.hrHist = hrHist;
 	}
 
-	public int getRecordSecond() {
-		return recordSecond;
-	}
-
-	public void setRecordSecond(int recordSecond) {
-		this.recordSecond = recordSecond;
-	}
-	
-	public static BleHrRecord10 createFromJson(JSONObject jsonObject) {
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		BleHrRecord10 record = new BleHrRecord10(createTime, devAddress);
-		record.initFromJson(jsonObject);
+    @Override
+	public void fromJson(JSONObject jsonObject) {
+		super.fromJson(jsonObject);
 		
-		String hrList = jsonObject.getString("hrList");
-		short hrMax = (short) jsonObject.getInt("hrMax");
-		short hrAve = (short) jsonObject.getInt("hrAve");
-		String hrHist = jsonObject.getString("hrHist");
-		int recordSecond = jsonObject.getInt("recordSecond");
-		
-		record.setHrList(hrList);
-		record.setHrMax(hrMax);
-		record.setHrAve(hrAve);
-		record.setHrHist(hrHist);
-		record.setRecordSecond(recordSecond);
-		return record;
+		hrList = jsonObject.getString("hrList");
+		hrMax = (short) jsonObject.getInt("hrMax");
+		hrAve = (short) jsonObject.getInt("hrAve");
+		hrHist = jsonObject.getString("hrHist");
 	}
 
 	@Override
@@ -89,7 +70,6 @@ public class BleHrRecord10 extends BasicRecord {
 		json.put("hrMax", hrMax);
 		json.put("hrAve", hrAve);
 		json.put("hrHist", hrHist);
-		json.put("recordSecond", recordSecond);	
 		return json;
 	}
 
@@ -113,7 +93,7 @@ public class BleHrRecord10 extends BasicRecord {
 				hrMax = rs.getShort("hrMax");
 				hrAve = rs.getShort("hrAve");
 				hrHist = rs.getString("hrHist");
-				recordSecond = rs.getInt("recordSecond");
+				setRecordSecond(rs.getInt("recordSecond"));
 				return true;
 			}
 		} catch (SQLException e) {

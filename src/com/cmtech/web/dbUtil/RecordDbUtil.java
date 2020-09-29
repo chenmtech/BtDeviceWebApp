@@ -21,6 +21,14 @@ import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
 public class RecordDbUtil {
+
+    public static final int CODE_REPORT_SUCCESS = 0;
+    public static final int CODE_REPORT_FAILURE = 1;
+    public static final int CODE_REPORT_ADD_NEW = 2;
+    public static final int CODE_REPORT_PROCESSING = 3;
+    public static final int CODE_REPORT_REQUEST_AGAIN = 4;
+    public static final int CODE_REPORT_NO_NEW = 5;
+	
 	// QUERY
 	public static int getId(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
@@ -33,7 +41,7 @@ public class RecordDbUtil {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;
 		record.setNote(note);
-		return record.updateNote();
+		return record.update();
 	}
 	
 	// DELETE
@@ -45,8 +53,11 @@ public class RecordDbUtil {
 	
 	// INSERT
 	public static boolean insert(RecordType type, JSONObject json) {
-		BasicRecord record = RecordFactory.createFromJson(type, json);
+		long createTime = json.getLong("createTime");
+		String devAddress = json.getString("devAddress");
+		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;
+		record.fromJson(json);
 		return record.insert();
 	}
 	
@@ -101,6 +112,24 @@ public class RecordDbUtil {
 		}
 		
 		return jsonArray;
+	}
+	
+	public static JSONObject requestReport(long createTime, String devAddress) {
+		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		int reportCode = record.requestReport();
+		JSONObject reportResult = new JSONObject();
+		reportResult.put("reportCode", reportCode);
+		return reportResult;
+	}
+	
+	public static JSONObject downloadReport(long createTime, String devAddress) {
+		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		int reportCode = record.updateReportFromDb();
+		JSONObject reportResult = new JSONObject();
+		reportResult.put("reportCode", reportCode);
+		if(reportCode == CODE_REPORT_SUCCESS)
+			reportResult.put("report", record.getReport().toJson());
+		return reportResult;
 	}
 	
 	public static JSONObject downloadLastRequestRecord() {

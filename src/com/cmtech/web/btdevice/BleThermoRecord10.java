@@ -25,16 +25,12 @@ public class BleThermoRecord10 extends BasicRecord {
 	public void setTemp(String temp) {
 		this.temp = temp;
 	}
-    
-	public static BleThermoRecord10 createFromJson(JSONObject jsonObject) {
-		long createTime = jsonObject.getLong("createTime");
-		String devAddress = jsonObject.getString("devAddress");
-		BleThermoRecord10 record = new BleThermoRecord10(createTime, devAddress);
-		record.initFromJson(jsonObject);
+
+    @Override
+	public void fromJson(JSONObject jsonObject) {
+		super.fromJson(jsonObject);
 		
-		String temp = jsonObject.getString("temp");
-		record.setTemp(temp);
-		return record;
+		temp = jsonObject.getString("temp");
 	}	
 
 	@Override
@@ -51,7 +47,7 @@ public class BleThermoRecord10 extends BasicRecord {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, temp from ThermoRecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, recordSecond, temp from ThermoRecord where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
@@ -60,6 +56,7 @@ public class BleThermoRecord10 extends BasicRecord {
 			if(rs.next()) {
 				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
 				setNote(rs.getString("note"));
+				setRecordSecond(rs.getInt("recordSecond"));
 				temp = rs.getString("temp");
 				return true;
 			}
@@ -81,8 +78,8 @@ public class BleThermoRecord10 extends BasicRecord {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ThermoRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, temp) "
-				+ "values (?, ?, ?, ?, ?, ?, ?)";
+		String sql = "insert into ThermoRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, recordSecond, temp) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getVer());
@@ -91,7 +88,8 @@ public class BleThermoRecord10 extends BasicRecord {
 			ps.setString(4, getCreatorPlat());
 			ps.setString(5, getCreatorId());
 			ps.setString(6, getNote());
-			ps.setString(7, getTemp());
+			ps.setInt(7, getRecordSecond());
+			ps.setString(8, getTemp());
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
