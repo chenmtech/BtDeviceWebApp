@@ -8,14 +8,14 @@
  */
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
+import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
-import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.LOGIN_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.SIGNUP_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
-import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.exception.MyException;
-import com.cmtech.web.util.Base64;
 
 /**
  * ClassName: AccountServlet
@@ -63,37 +61,37 @@ public class AccountServlet extends HttpServlet {
 		String platId = req.getParameter("platId");
 		
 		if(cmd == null || platName == null || platId == null) {
-			ServletUtil.responseException(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+			ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 		} else {
 			Account acount = new Account(platName, platId);
-			System.out.println(platName+platId);
+			//System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
 				if(acount.login()) {
-					ServletUtil.responseException(resp, new MyException(SUCCESS, "登录成功"));
+					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.responseException(resp, new MyException(LOGIN_ERR, "登录错误"));
+					ServletUtil.codeResponse(resp, LOGIN_ERR);
 				}
 				break;
 				
 			case "signUp":
 				if(acount.signUp()) {
-					ServletUtil.responseException(resp, new MyException(SUCCESS, "注册成功"));
+					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.responseException(resp, new MyException(SIGNUP_ERR, "注册失败"));
+					ServletUtil.codeResponse(resp, SIGNUP_ERR);
 				}
 				break;
 				
 			case "signUporLogin":
 				if(acount.login() || acount.signUp()) {
-					ServletUtil.responseException(resp, new MyException(SUCCESS, "注册/登录成功"));
+					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.responseException(resp, new MyException(OTHER_ERR, "注册/登录失败"));
+					ServletUtil.codeResponse(resp, OTHER_ERR);
 				}
 				break;
 				
 				default:
-					ServletUtil.responseException(resp, new MyException(INVALID_PARA_ERR, "无效请求"));
+					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 					break;
 			}
 		}
@@ -123,22 +121,17 @@ public class AccountServlet extends HttpServlet {
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
 			if(platName == null || platId == null) {
-				ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
-					
+			Account account = new Account(platName, platId);
 			String cmd = jsonObject.getString("cmd");
 			boolean result;
 			int accountId = INVALID_ID;
 			switch(cmd) {
 			case "upload":
-				String name = jsonObject.getString("name");
-				String note = jsonObject.getString("note");
-				String iconStr = jsonObject.getString("iconStr");
-				byte[] iconData = Base64.decode(iconStr, Base64.DEFAULT);
-				Account account = new Account(platName, platId, name, note, iconData);
-				
-				accountId = Account.getId(platName, platId);
+				account.fromJson(jsonObject);
+				accountId = account.getId();
 				if(accountId == INVALID_ID) {
 					result = account.insert();
 				} else {
@@ -146,31 +139,29 @@ public class AccountServlet extends HttpServlet {
 				}
 				
 				if(result) {
-					ServletUtil.responseException(response, new MyException(SUCCESS, "上传成功"));
+					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
-					ServletUtil.responseException(response, new MyException(UPLOAD_ERR, "上传失败"));
+					ServletUtil.codeResponse(response, UPLOAD_ERR);
 				}
 				break;
 				
 			case "download":
-				Account acnt = new Account(platName, platId);
-				if(acnt.retrieve()) {
+				if(account.retrieve()) {
 					JSONObject json = new JSONObject();
-					json.put("code", SUCCESS.ordinal());
-					json.put("account", acnt.toJson());
-					ServletUtil.responseJson(response, json);
+					json.put("account", account.toJson());
+					ServletUtil.dataResponse(response, json);
 				} else {
-					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载错误"));
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				}
 				break;
 				
 				default:
-					ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效命令"));
+					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 					break;				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			ServletUtil.responseException(response, new MyException(OTHER_ERR, "执行命令错误"));
+			ServletUtil.codeResponse(response, OTHER_ERR);
 		} finally {
 			streamReader.close();
 		}

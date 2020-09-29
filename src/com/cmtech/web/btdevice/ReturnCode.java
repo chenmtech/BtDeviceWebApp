@@ -1,6 +1,6 @@
-package com.cmtech.web.exception;
+package com.cmtech.web.btdevice;
 
-public enum MyExceptionCode {
+public enum ReturnCode {
 	SUCCESS,
 	WEB_ERR,
 	INVALID_PARA_ERR,

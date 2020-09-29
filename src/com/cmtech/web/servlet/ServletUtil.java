@@ -1,5 +1,7 @@
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -7,11 +9,30 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.exception.MyException;
+import com.cmtech.web.btdevice.ReturnCode;
 
 public class ServletUtil {
 	
-	public static void responseJson(HttpServletResponse resp, JSONObject json) throws IOException {
+	public static void dataResponse(HttpServletResponse resp, JSONObject data) throws IOException {
+		if(resp == null || data == null) {
+			throw new NullPointerException();
+		}
+		data.put("code", SUCCESS.ordinal());
+		doResponse(resp, data);
+	}
+	
+	public static void codeResponse(HttpServletResponse resp, ReturnCode code) throws IOException {
+		if(resp == null || code == null) {
+			throw new NullPointerException();
+		}
+		
+		JSONObject json = new JSONObject();
+		json.put("code", code.ordinal());
+		ServletUtil.doResponse(resp, json);
+		//System.out.println(exception.getDescription());
+	}
+	
+	public static void doResponse(HttpServletResponse resp, JSONObject json) throws IOException {
 		if(resp == null || json == null) {
 			throw new NullPointerException();
 		}
@@ -22,13 +43,5 @@ public class ServletUtil {
 			out.append(json.toString());
 			out.flush();
 		}
-	}
-	
-	public static void responseException(HttpServletResponse resp, MyException exception) throws IOException {
-		JSONObject json = new JSONObject();
-		json.put("code", exception.getCode().ordinal());
-		json.put("errStr", exception.getDescription());
-		ServletUtil.responseJson(resp, json);
-		System.out.println(exception.getDescription());
 	}
 }

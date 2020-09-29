@@ -12,7 +12,7 @@ import com.cmtech.web.dbUtil.DbUtil;
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 import com.cmtech.web.util.Base64;
 
-public class Account implements IDbOperation {
+public class Account implements IDbOperation, IJsonable {
 	private String platName;
 	private String platId;
 	private String name;
@@ -20,15 +20,8 @@ public class Account implements IDbOperation {
 	private byte[] iconData;
 	
 	public Account(String platName, String platId) {
-		this(platName, platId, "", "", null);
-	}
-	
-	public Account(String platName, String platId, String name, String note, byte[] iconData) {
 		this.platName = platName;
 		this.platId = platId;
-		this.name = name;
-		this.note = note;
-		this.iconData = iconData;
 	}
 
 	public String getPlatName() {
@@ -40,8 +33,51 @@ public class Account implements IDbOperation {
 	}
 	
 	@Override
+	public void fromJson(JSONObject jsonObject) {
+		name = jsonObject.getString("name");
+		note = jsonObject.getString("note");
+		String iconStr = jsonObject.getString("iconStr");
+		iconData = Base64.decode(iconStr, Base64.DEFAULT);
+	}
+
+	@Override
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("platName", platName);
+		json.put("platId", platId);
+		json.put("name", name);
+		json.put("note", note);
+		if(iconData == null)
+			json.put("iconStr", "");
+		else
+			json.put("iconStr", Base64.encodeToString(iconData, Base64.DEFAULT));
+	
+		return json;
+	}
+	
+	@Override
 	public int getId() {
-		return getId(platName, platId);
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return INVALID_ID;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select id from Account where platName = ? and platId = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, platName);
+			ps.setString(2, platId);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				return rs.getInt("id");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return INVALID_ID;		
 	}
 	
 	@Override
@@ -75,38 +111,11 @@ public class Account implements IDbOperation {
 		}
 		return false;		
 	}
-
-	public static int getId(String platName, String platId) {
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return INVALID_ID;
-		
-		int id = INVALID_ID;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select id from Account where platName = ? and platId = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, platName);
-			ps.setString(2, platId);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				id = rs.getInt("id");
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return id;		
-	}
 	
 	@Override
 	public boolean insert() {
 		Connection conn = DbUtil.connect();
-		if(conn == null) {
-			return false;
-		}
+		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		String sql = "insert into Account (platName, platId, name, note, icon) values (?, ?, ?, ?, ?)";
@@ -119,8 +128,7 @@ public class Account implements IDbOperation {
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(5, b);
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
+			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -136,11 +144,8 @@ public class Account implements IDbOperation {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
-		int id = getId();
-		if(id == INVALID_ID) return false;
-		
 		PreparedStatement ps = null;
-		String sql = "update Account set name=?, note=?, icon=? where id=?";
+		String sql = "update Account set name=?, note=?, icon=? where platName = ? and platId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, name);
@@ -148,10 +153,11 @@ public class Account implements IDbOperation {
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(3, b);
-			ps.setInt(4, id);
-			boolean rlt = ps.execute();
-			if(!rlt && ps.getUpdateCount() == 1)
+			ps.setString(4, platName);
+			ps.setString(5, platId);
+			if(ps.executeUpdate() != 0) {
 				return true;
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -165,20 +171,6 @@ public class Account implements IDbOperation {
 	public boolean delete() {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	public JSONObject toJson() {
-		JSONObject json = new JSONObject();
-		json.put("platName", platName);
-		json.put("platId", platId);
-		json.put("name", name);
-		json.put("note", note);
-		if(iconData == null)
-			json.put("iconStr", "");
-		else
-			json.put("iconStr", Base64.encodeToString(iconData, Base64.DEFAULT));
-	
-		return json;
 	}
 	
 	@Override

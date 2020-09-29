@@ -1,14 +1,14 @@
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
+import static com.cmtech.web.btdevice.ReturnCode.UPDATE_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
-import static com.cmtech.web.exception.MyExceptionCode.ACCOUNT_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.DELETE_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.DOWNLOAD_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.INVALID_PARA_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.OTHER_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.SUCCESS;
-import static com.cmtech.web.exception.MyExceptionCode.UPDATE_ERR;
-import static com.cmtech.web.exception.MyExceptionCode.UPLOAD_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.dbUtil.RecordDbUtil;
-import com.cmtech.web.exception.MyException;
 
 
 /**
@@ -54,7 +53,7 @@ public class RecordServlet extends HttpServlet {
 		String strCreateTime = request.getParameter("createTime");
 		String devAddress = request.getParameter("devAddress");
 		if(strRecordTypeCode == null || strCreateTime == null || devAddress == null) {
-			ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+			ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 			return;
 		}
 		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
@@ -62,9 +61,8 @@ public class RecordServlet extends HttpServlet {
 		
 		int id = RecordDbUtil.getId(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
-		json.put("code", SUCCESS.ordinal());
 		json.put("id", id);
-		ServletUtil.responseJson(response, json);
+		ServletUtil.dataResponse(response, json);
 		
 		System.out.println("The found record id = "+id);
 	}
@@ -97,11 +95,11 @@ public class RecordServlet extends HttpServlet {
 			String platName = jsonObject.getString("platName");
 			String platId = jsonObject.getString("platId");
 			if(platName == null || platId == null) {
-				ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效参数"));
+				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
-			if(Account.getId(platName, platId) == INVALID_ID) {
-				ServletUtil.responseException(response, new MyException(ACCOUNT_ERR, "无效用户"));
+			if(new Account(platName, platId).getId() == INVALID_ID) {
+				ServletUtil.codeResponse(response, ACCOUNT_ERR);
 				return;
 			}			
 
@@ -119,9 +117,9 @@ public class RecordServlet extends HttpServlet {
 			case "upload":
 				cmdResult = RecordDbUtil.insert(type, jsonObject);
 				if(cmdResult) {
-					ServletUtil.responseException(response, new MyException(SUCCESS, "上传成功"));
+					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
-					ServletUtil.responseException(response, new MyException(UPLOAD_ERR, "上传失败"));
+					ServletUtil.codeResponse(response, UPLOAD_ERR);
 				}
 				break;
 				
@@ -131,9 +129,9 @@ public class RecordServlet extends HttpServlet {
 				String note = jsonObject.getString("note");
 				cmdResult = RecordDbUtil.updateNote(type, createTime, devAddress, note);
 				if(cmdResult) {
-					ServletUtil.responseException(response, new MyException(SUCCESS, "更新成功"));
+					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
-					ServletUtil.responseException(response, new MyException(UPDATE_ERR, "更新失败"));
+					ServletUtil.codeResponse(response, UPDATE_ERR);
 				}
 				break;
 				
@@ -146,13 +144,12 @@ public class RecordServlet extends HttpServlet {
 				JSONArray jsonArr = RecordDbUtil.downloadBasicInfo(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
 				
 				if(jsonArr == null) {
-					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(jsonArr.toString());
 					jsonResult = new JSONObject();
-					jsonResult.put("code", SUCCESS.ordinal());
 					jsonResult.put("records", jsonArr);
-					ServletUtil.responseJson(response, jsonResult);
+					ServletUtil.dataResponse(response, jsonResult);
 				}
 				break;
 				
@@ -162,13 +159,12 @@ public class RecordServlet extends HttpServlet {
 				JSONObject json = RecordDbUtil.download(type, createTime, devAddress);
 				
 				if(json == null) {
-					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(json.toString());
 					jsonResult = new JSONObject();
-					jsonResult.put("code", SUCCESS.ordinal());
 					jsonResult.put("record", json);
-					ServletUtil.responseJson(response, jsonResult);
+					ServletUtil.dataResponse(response, jsonResult);
 				}
 				break;
 				
@@ -177,9 +173,9 @@ public class RecordServlet extends HttpServlet {
 				devAddress = jsonObject.getString("devAddress");
 				cmdResult = RecordDbUtil.delete(type, createTime, devAddress);
 				if(cmdResult) {
-					ServletUtil.responseException(response, new MyException(SUCCESS, "删除成功"));
+					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
-					ServletUtil.responseException(response, new MyException(DELETE_ERR, "删除失败"));
+					ServletUtil.codeResponse(response, DELETE_ERR);
 				}
 				break;
 				
@@ -189,13 +185,12 @@ public class RecordServlet extends HttpServlet {
 		        JSONObject json1 = RecordDbUtil.downloadReport(createTime, devAddress);		        
 				
 				if(json1 == null) {
-					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(json1.toString());
 					jsonResult = new JSONObject();
-					jsonResult.put("code", SUCCESS.ordinal());
 					jsonResult.put("reportResult", json1);
-					ServletUtil.responseJson(response, jsonResult);
+					ServletUtil.dataResponse(response, jsonResult);
 				}
 				break;
 				
@@ -205,23 +200,22 @@ public class RecordServlet extends HttpServlet {
 		        JSONObject report = RecordDbUtil.requestReport(createTime, devAddress);		        
 				
 				if(report == null) {
-					ServletUtil.responseException(response, new MyException(DOWNLOAD_ERR, "下载失败"));
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(report.toString());
 					jsonResult = new JSONObject();
-					jsonResult.put("code", SUCCESS.ordinal());
 					jsonResult.put("reportResult", report);
-					ServletUtil.responseJson(response, jsonResult);
+					ServletUtil.dataResponse(response, jsonResult);
 				}
 				break;	
 				
 				default:
-					ServletUtil.responseException(response, new MyException(INVALID_PARA_ERR, "无效命令"));
+					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 					break;				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			ServletUtil.responseException(response, new MyException(OTHER_ERR, "执行命令错误"));
+			ServletUtil.codeResponse(response, OTHER_ERR);
 		} finally {
 			streamReader.close();
 		}
