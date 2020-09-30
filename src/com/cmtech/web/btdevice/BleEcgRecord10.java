@@ -21,8 +21,8 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
     public BleEcgRecord10(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
     }
-
-	public int getSampleRate() {
+    
+    public int getSampleRate() {
 		return sampleRate;
 	}
 
@@ -77,7 +77,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		json.put("ecgData", ecgData);
 		return json;
 	}
-	
+
 	@Override
 	public boolean retrieve() {
 		Connection conn = DbUtil.connect();		

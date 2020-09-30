@@ -1,15 +1,25 @@
 package com.cmtech.web.btdevice;
 
 public enum ReturnCode {
-	SUCCESS,
-	WEB_ERR,
-	INVALID_PARA_ERR,
-	SIGNUP_ERR,
-	LOGIN_ERR,
-	ACCOUNT_ERR,
-	UPDATE_ERR,
-	UPLOAD_ERR,
-	DOWNLOAD_ERR,
-	DELETE_ERR,
-	OTHER_ERR
+	SUCCESS(0),
+	WEB_ERR(1),
+	INVALID_PARA_ERR(2),
+	SIGNUP_ERR(3),
+	LOGIN_ERR(4),
+	ACCOUNT_ERR(5),
+	UPDATE_ERR(6),
+	UPLOAD_ERR(7),
+	DOWNLOAD_ERR(8),
+	DELETE_ERR(9),
+	OTHER_ERR(10);
+	
+	private final int code;
+	
+	private ReturnCode(int code) {
+		this.code = code;
+	}
+	
+	public int getCode() {
+		return code;
+	}
 }

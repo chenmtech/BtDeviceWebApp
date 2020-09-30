@@ -1,14 +1,21 @@
 package com.cmtech.web.btdevice;
 
 public enum RecordType {
-	ALL("所有", 0), ECG("心电", 1), HR("心率", 2), THERMO("体温", 3), TH("温湿度", 4), EEG("脑电", 5);  
+	ALL(0, "所有", ""), 
+	ECG(1, "心电", "EcgRecord"), 
+	HR(2, "心率", "HrRecord"), 
+	THERMO(3, "体温", "ThermoRecord"), 
+	TH(4, "温湿度", ""), 
+	EEG(5, "脑电", "EegRecord");  
 
-    private String name;  
-    private int code;  
+    private final int code;  
+    private final String name;  
+    private final String tableName;
 
-    private RecordType(String name, int code) {  
-        this.name = name;  
+    private RecordType(int code, String name, String tableName) {  
         this.code = code;  
+        this.name = name;  
+        this.tableName = tableName;
     }  
     
     public static RecordType fromCode(int code) {  
@@ -21,31 +28,24 @@ public enum RecordType {
     }  
 
     public static String getName(int code) {  
-        for (RecordType type : RecordType.values()) {  
-            if (type.getCode() == code) {  
-                return type.name;  
-            }  
-        }  
-        return null;  
+    	RecordType type = RecordType.fromCode(code);
+    	return (type == null) ? null : type.name;
     }  
 
     public String getName() {  
         return name;  
-    }  
-    public void setName(String name) {  
-        this.name = name;  
-    }  
+    } 
+    
     public int getCode() {  
         return code;  
     }  
-    public void setCode(int code) {  
-        this.code = code;  
-    }
+
+	public String getTableName() {
+		return tableName;
+	}
 
 	@Override
 	public String toString() {
 		return getName();
 	} 
-    
-    
 }

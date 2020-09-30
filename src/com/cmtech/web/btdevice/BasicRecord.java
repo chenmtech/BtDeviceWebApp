@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.dbUtil.RecordDbUtil;
 
 public abstract class BasicRecord implements IDbOperation, IJsonable{
     private String ver; // record version
@@ -21,8 +20,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     private String creatorId;
     private String note;
     private int recordSecond;
-    
-    private final String TABLE_NAME;
 
     protected BasicRecord(RecordType type, long createTime, String devAddress) {
     	ver = "";
@@ -33,7 +30,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         creatorId = "";
         note = "";
         recordSecond = 0;
-        TABLE_NAME = RecordDbUtil.getTableName(type);
     }    
     
     @Override
@@ -134,9 +130,10 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         return getRecordName().hashCode();
     }
 
-	@Override
+    @Override
     public int getId() {
-    	if("".equals(TABLE_NAME)) return INVALID_ID;
+    	String tableName = type.getTableName();
+    	if("".equals(tableName)) return INVALID_ID;
     	
 		Connection conn = DbUtil.connect();
 		if(conn == null) return INVALID_ID;
@@ -144,7 +141,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		int id = INVALID_ID;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from " + TABLE_NAME + " where devAddress = ? and createTime = ?";
+		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, devAddress);
@@ -165,13 +162,14 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	// UPDATE NOTE
     @Override
 	public boolean update() {
-    	if("".equals(TABLE_NAME)) return false;
+    	String tableName = type.getTableName();
+    	if("".equals(tableName)) return false;
     	
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + TABLE_NAME + " set note = ? where devAddress = ? and createTime = ?";
+		String sql = "update " + tableName + " set note = ? where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, note);
@@ -193,13 +191,14 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	// DELETE
     @Override
 	public boolean delete() {
-    	if("".equals(TABLE_NAME)) return false;
+    	String tableName = type.getTableName();
+    	if("".equals(tableName)) return false;
     	
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "delete from " + TABLE_NAME + " where devAddress = ? and createTime = ?";
+		String sql = "delete from " + tableName + " where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, devAddress);

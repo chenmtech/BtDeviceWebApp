@@ -1,18 +1,19 @@
 package com.cmtech.web.btdevice;
 
 import org.json.JSONObject;
+import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
 
 public class BleEcgReport10 {
     public static final int DONE = 0;
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
     
-    private int reportId = -1;
+    private int reportId = INVALID_ID;
 	private String ver = "1.0";
     private long reportTime = -1;
     private String content = "";
     private int status = DONE;
-    private int recordId = -1;
+    private int recordId = INVALID_ID;
 
 	public BleEcgReport10() {
 		

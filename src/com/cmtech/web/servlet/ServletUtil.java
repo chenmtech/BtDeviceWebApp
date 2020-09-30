@@ -17,7 +17,7 @@ public class ServletUtil {
 		if(resp == null || data == null) {
 			throw new NullPointerException();
 		}
-		data.put("code", SUCCESS.ordinal());
+		data.put("code", SUCCESS.getCode());
 		doResponse(resp, data);
 	}
 	
@@ -27,7 +27,7 @@ public class ServletUtil {
 		}
 		
 		JSONObject json = new JSONObject();
-		json.put("code", code.ordinal());
+		json.put("code", code.getCode());
 		ServletUtil.doResponse(resp, json);
 		//System.out.println(exception.getDescription());
 	}

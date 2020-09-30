@@ -212,7 +212,8 @@ public class RecordDbUtil {
 	}
 	
 	private static JSONObject downloadBasicInfo(RecordType type, int id) {
-		String tableName = getTableName(type);
+		String tableName = type.getTableName();
+		if("".equals(tableName)) return null;
 		
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return null;
@@ -255,7 +256,7 @@ public class RecordDbUtil {
 	
 	private static List<TmpRecord> searchRecord(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
 		if(num <= 0) return null;
-		String tableName = getTableName(type);
+		String tableName = type.getTableName();
 		if("".equals(tableName)) return null;
 		
 		Connection conn = DbUtil.connect();		
@@ -308,25 +309,7 @@ public class RecordDbUtil {
 		}
 		return null;
 	}
-	
-	public static String getTableName(RecordType type) {
-		switch(type) {
-		case ECG:
-			return "EcgRecord";
-		case HR:
-			return "HrRecord";			
-		case THERMO:
-			return "ThermoRecord";
-		case TH:
-			return "ThRecord";
-		case EEG:
-			return "EegRecord";
-		default:
-			break;
-		}
-		return "";
-	}
-	
+
 	private static class TmpRecord {
 		int id;
 		long createTime;

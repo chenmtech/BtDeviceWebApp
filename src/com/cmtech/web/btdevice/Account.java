@@ -33,10 +33,10 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	@Override
-	public void fromJson(JSONObject jsonObject) {
-		name = jsonObject.getString("name");
-		note = jsonObject.getString("note");
-		String iconStr = jsonObject.getString("iconStr");
+	public void fromJson(JSONObject json) {
+		name = json.getString("name");
+		note = json.getString("note");
+		String iconStr = json.getString("iconStr");
 		iconData = Base64.decode(iconStr, Base64.DEFAULT);
 	}
 
@@ -175,7 +175,7 @@ public class Account implements IDbOperation, IJsonable {
 	
 	@Override
 	public String toString() {
-		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconData="+iconData;
+		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconDataLength="+iconData.length;
 	}
 	
 	public boolean login() {
