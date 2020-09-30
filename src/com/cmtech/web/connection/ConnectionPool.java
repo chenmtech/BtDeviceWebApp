@@ -159,7 +159,6 @@ public class ConnectionPool {
                     try{
                         connection = newConnection();
                     } catch (SQLException e) {
-                        System.out.println("创建数据库失败！" + e.getMessage());
                         return null;
                     }
                     pConn.setConnection(connection);
