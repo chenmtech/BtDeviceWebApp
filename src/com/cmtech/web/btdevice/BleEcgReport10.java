@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BleEcgReport10 implements IDbOperation, IDiagnosable{
+public class BleEcgReport10 implements IDbOperation{
     public static final int DONE = 0;
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
@@ -211,40 +211,29 @@ public class BleEcgReport10 implements IDbOperation, IDiagnosable{
 		}
 		return false;	
 	}
-
-	@Override
-	public int requestReport() {
-		if(retrieve()) {
-			if(status == BleEcgReport10.DONE) {
-				DbUtil.closeSTMT(ps);
-				ps = conn.prepareStatement(updateSql);
-				ps.setInt(1, BleEcgReport10.REQUEST);
-				ps.setInt(2, ecgReportId);
-				if(ps.executeUpdate() != 0)
-					return IDiagnosable.CODE_REPORT_REQUEST_AGAIN;
-			} else {
-				return IDiagnosable.CODE_REPORT_PROCESSING;
+	
+	public boolean updateStatus(int beforeStatus, int afterStatus) {
+		if(recordId == INVALID_ID) return false;
+		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update EcgReport set status = ? where recordId = ? and status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, afterStatus);
+			ps.setInt(2, recordId);
+			ps.setInt(3, beforeStatus);
+			if(ps.executeUpdate() != 0) {
+				return true;
 			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
 		}
+		return false;	
 	}
-
-	@Override
-	public boolean applyProcessingRequest() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int retrieveReport() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean updateReport() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	
 }
