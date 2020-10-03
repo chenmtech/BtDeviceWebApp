@@ -1,6 +1,6 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +22,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     private int recordSecond;
 
     protected BasicRecord(RecordType type, long createTime, String devAddress) {
-    	ver = "";
+    	ver = DEFAULT_VER;
     	this.type = type;
         this.createTime = createTime;
         this.devAddress = devAddress;
@@ -33,15 +33,16 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     }    
     
     @Override
-    public void fromJson(JSONObject jsonObject) {
-		ver = jsonObject.getString("ver");
-		if(ver == null || "".equals(ver)) {
-			ver = "1.0";
-		}
-		creatorPlat = jsonObject.getString("creatorPlat");
-		creatorId = jsonObject.getString("creatorId");
-		note = jsonObject.getString("note");		
-		recordSecond = jsonObject.getInt("recordSecond");
+    public void fromJson(JSONObject json) {
+    	if(json.has("ver")) {
+			ver = json.getString("ver");			
+    	} else {
+    		ver = DEFAULT_VER;
+    	}
+		creatorPlat = json.getString("creatorPlat");
+		creatorId = json.getString("creatorId");
+		note = json.getString("note");
+		recordSecond = json.getInt("recordSecond");
     }
     
     @Override
@@ -138,17 +139,16 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		Connection conn = DbUtil.connect();
 		if(conn == null) return INVALID_ID;
 		
-		int id = INVALID_ID;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from " + tableName + " where devAddress = ? and createTime = ?";
+		String sql = "select id from " + tableName + " where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
+			ps.setLong(1, createTime);
+			ps.setString(2, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				id = rs.getInt("id");
+				return rs.getInt("id");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -156,7 +156,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		} finally {
 			DbUtil.close(rs, ps, conn);
 		}
-		return id;	
+		return INVALID_ID;	
 	}
     
 	// UPDATE NOTE
@@ -169,13 +169,12 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set note = ? where devAddress = ? and createTime = ?";
+		String sql = "update " + tableName + " set note = ? where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, note);
-			ps.setString(2, devAddress);
-			ps.setLong(3, createTime);
-			
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);			
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -198,11 +197,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "delete from " + tableName + " where devAddress = ? and createTime = ?";
+		String sql = "delete from " + tableName + " where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, devAddress);
-			ps.setLong(2, createTime);
+			ps.setLong(1, createTime);
+			ps.setString(2, devAddress);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {

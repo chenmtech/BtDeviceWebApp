@@ -9,10 +9,11 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 import com.cmtech.web.util.Base64;
 
 public class Account implements IDbOperation, IJsonable {
+	private String ver = DEFAULT_VER;
 	private String platName;
 	private String platId;
 	private String name;
@@ -87,20 +88,14 @@ public class Account implements IDbOperation, IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select name, note, icon from Account where platName = ? and platId = ?";
+		String sql = "select ver, name, note, icon from Account where platName = ? and platId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, platName);
 			ps.setString(2, platId);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				name = rs.getString("name");
-				note = rs.getString("note");
-				Blob b = rs.getBlob("icon");
-				if(b == null || b.length() < 1) 
-					iconData = null;
-				else
-					iconData = b.getBytes(1, (int)b.length());
+				setFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -112,6 +107,18 @@ public class Account implements IDbOperation, IJsonable {
 		return false;		
 	}
 	
+	@Override
+	public void setFromResultSet(ResultSet rs) throws SQLException {
+		ver = rs.getString("ver");
+		name = rs.getString("name");
+		note = rs.getString("note");
+		Blob b = rs.getBlob("icon");
+		if(b == null || b.length() < 1) 
+			iconData = null;
+		else
+			iconData = b.getBytes(1, (int)b.length());
+	}
+
 	@Override
 	public boolean insert() {
 		Connection conn = DbUtil.connect();

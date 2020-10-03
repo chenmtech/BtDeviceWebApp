@@ -15,7 +15,7 @@ import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

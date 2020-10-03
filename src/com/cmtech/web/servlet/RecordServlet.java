@@ -1,14 +1,7 @@
 package com.cmtech.web.servlet;
 
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
-import static com.cmtech.web.btdevice.ReturnCode.UPDATE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.btdevice.ReturnCode.*;
+import static com.cmtech.web.MyConstant.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -154,7 +154,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 				return IDiagnosable.CODE_REPORT_ADD_NEW;
 		} else {
 			report.setStatus(BleEcgReport10.REQUEST);
-			if(report.updateStatusWithCondition(BleEcgReport10.DONE)) {
+			if(report.updateStatusIfBeing(BleEcgReport10.DONE)) {
 				return IDiagnosable.CODE_REPORT_REQUEST_AGAIN;
 			} else {
 				return IDiagnosable.CODE_REPORT_PROCESSING;
@@ -177,17 +177,17 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		report.setReportTime(reportTime);
 		report.setContent(content);
 		report.setStatus(BleEcgReport10.DONE);
-		return report.updateWithCondition(BleEcgReport10.PROCESS);
+		return report.updateIfBeing(BleEcgReport10.PROCESS);
 	}
 	
 	@Override
 	public boolean applyForDiagnose() {
 		report.setStatus(BleEcgReport10.PROCESS);
-		return report.updateStatusWithCondition(BleEcgReport10.REQUEST);
+		return report.updateStatusIfBeing(BleEcgReport10.REQUEST);
 	}
 	
-	public static BleEcgRecord10 getLastRequestRecord() {
-		BleEcgReport10 report = BleEcgReport10.getLastRequestReport();
+	public static BleEcgRecord10 getFirstRequestRecord() {
+		BleEcgReport10 report = BleEcgReport10.getFirstRequestReport();
 		if(report != null) {
 			return new BleEcgRecord10(report.getCreateTime(), report.getDevAddress());
 		}

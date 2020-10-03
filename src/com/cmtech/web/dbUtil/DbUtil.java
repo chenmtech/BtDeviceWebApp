@@ -8,7 +8,6 @@ import java.sql.Statement;
 import com.cmtech.web.connection.ConnectionPoolFactory;
 
 public class DbUtil {
-	public static final int INVALID_ID = -1;
 	private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
 	private static final String KM_TENGXUN_CLOUD_ADDRESS = "203.195.137.198:3306";
 	private static final String DEFAULT_USER_NAME = "webuser";

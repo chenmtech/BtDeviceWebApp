@@ -4,23 +4,23 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BleEcgReport10 implements IDbOperation{
+public class BleEcgReport10 implements IDbOperation, IJsonable{
     public static final int DONE = 0;
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
     
-	private String ver = "1.0";
-    private long reportTime = -1;
+	private String ver = DEFAULT_VER;
+    private long reportTime = INVALID_TIME;
     private String content = "";
     private int status = DONE;
-    private long createTime = -1;
+    private long createTime = INVALID_TIME;
     private String devAddress = "";
 	
 	public BleEcgReport10(long createTime, String devAddress) {
@@ -68,13 +68,26 @@ public class BleEcgReport10 implements IDbOperation{
 		return devAddress;
 	}
 
+	@Override
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
-		json.put("reportVer", ver);
+		json.put("ver", ver);
 		json.put("reportTime", reportTime);
 		json.put("content", content);
 		json.put("status", status);
 		return json;
+	}
+
+	@Override
+	public void fromJson(JSONObject json) {
+		if(json.has("ver")) {
+			ver = json.getString("ver");			
+    	} else {
+    		ver = DEFAULT_VER;
+    	}
+		reportTime = json.getLong("reportTime");
+		content = json.getString("content");
+		status = json.getInt("status");
 	}
 
 	@Override
@@ -108,17 +121,14 @@ public class BleEcgReport10 implements IDbOperation{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String selectSql = "select reportVer, reportTime, content, status from EcgReport where createTime = ? and devAddress = ?";
+		String selectSql = "select ver, reportTime, content, status from EcgReport where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(selectSql);
 			ps.setLong(1, createTime);
 			ps.setString(2, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				ver = rs.getString("reportVer");
-				reportTime = rs.getLong("reportTime");
-				content = rs.getString("content");
-				status = rs.getInt("status");
+				setFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -127,6 +137,14 @@ public class BleEcgReport10 implements IDbOperation{
 			DbUtil.close(rs, ps, conn);
 		}
 		return false;
+	}
+
+	@Override
+	public void setFromResultSet(ResultSet rs) throws SQLException {
+		ver = rs.getString("ver");
+		reportTime = rs.getLong("reportTime");
+		content = rs.getString("content");
+		status = rs.getInt("status");
 	}
 
 	@Override
@@ -201,7 +219,7 @@ public class BleEcgReport10 implements IDbOperation{
 		return false;	
 	}
 	
-	public boolean updateWithCondition(int beforeStatus) {
+	public boolean updateIfBeing(int beforeStatus) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -228,7 +246,7 @@ public class BleEcgReport10 implements IDbOperation{
 		return false;	
 	}
 	
-	public boolean updateStatusWithCondition(int beforeStatus) {
+	public boolean updateStatusIfBeing(int beforeStatus) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -252,7 +270,7 @@ public class BleEcgReport10 implements IDbOperation{
 		return false;	
 	}
 	
-	public static BleEcgReport10 getLastRequestReport() {
+	public static BleEcgReport10 getFirstRequestReport() {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return null;
 		

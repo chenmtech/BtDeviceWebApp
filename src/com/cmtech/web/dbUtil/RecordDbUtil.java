@@ -1,6 +1,6 @@
 package com.cmtech.web.dbUtil;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -116,7 +116,7 @@ public class RecordDbUtil {
 	
 	// APPLY FOR DIAGNOSE
 	public static JSONObject applyForDiagnose() {
-		BleEcgRecord10 record = BleEcgRecord10.getLastRequestRecord();
+		BleEcgRecord10 record = BleEcgRecord10.getFirstRequestRecord();
 		if(record != null && record.applyForDiagnose() && record.retrieve()) {
 			return record.toJson();
 		}

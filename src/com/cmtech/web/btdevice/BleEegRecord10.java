@@ -1,6 +1,6 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.dbUtil.DbUtil.INVALID_ID;
+import static com.cmtech.web.MyConstant.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -80,11 +80,12 @@ public class BleEegRecord10 extends BasicRecord{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, eegData from EegRecord where devAddress = ? and createTime = ?";
+		String sql = "select creatorPlat, creatorId, note, recordSecond, sampleRate, caliValue, leadTypeCode, eegData from EegRecord "
+				+ "where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, getDevAddress());
-			ps.setLong(2, getCreateTime());
+			ps.setLong(1, getCreateTime());
+			ps.setString(2, getDevAddress());
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
@@ -104,6 +105,8 @@ public class BleEegRecord10 extends BasicRecord{
 		}
 		return false;
 	}
+	
+	
 
 	@Override
 	public boolean insert() {
