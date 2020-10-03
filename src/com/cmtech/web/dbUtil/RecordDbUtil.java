@@ -16,7 +16,6 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord10;
-import com.cmtech.web.btdevice.BleEcgReport10;
 import com.cmtech.web.btdevice.IDiagnosable;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
@@ -55,10 +54,7 @@ public class RecordDbUtil {
 		return record.insert();
 	}
 	
-	// DOWNLOAD RECORD
-	// who: creatorPlat+creatorId
-	// when: later than fromTime
-	// howmuch: num
+	// DOWNLOAD
 	public static JSONObject download(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return null;
@@ -70,6 +66,7 @@ public class RecordDbUtil {
 	// DOWNLOAD BASIC RECORD INFO
 	// who: creatorPlat+creatorId
 	// when: later than fromTime
+	// include: noteSearchStr
 	// howmuch: num
 	public static JSONArray downloadBasicInfo(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
 		if(num <= 0) return null;
@@ -108,107 +105,40 @@ public class RecordDbUtil {
 		return jsonArray;
 	}
 	
-	public static JSONObject requestReport(long createTime, String devAddress) {
+	// REQUEST DIAGNOSE
+	public static JSONObject requestDiagnose(long createTime, String devAddress) {
 		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		int reportCode = record.requestReport();
+		int reportCode = record.requestDiagnose();
 		JSONObject reportResult = new JSONObject();
 		reportResult.put("reportCode", reportCode);
 		return reportResult;
 	}
 	
-	public static JSONObject downloadReport(long createTime, String devAddress) {
-		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		int reportCode = record.retrieveReport();
-		JSONObject reportResult = new JSONObject();
-		reportResult.put("reportCode", reportCode);
-		if(reportCode == IDiagnosable.CODE_REPORT_SUCCESS)
-			reportResult.put("report", record.getReport().toJson());
-		return reportResult;
-	}
-	
-	public static JSONObject downloadLastRequestRecord() {
-		int ecgReportId = getLastRequestReportId();
-		if(ecgReportId == INVALID_ID) return null;
-		
-		if(!applyProcessingReport(ecgReportId)) return null;
-
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return null;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select createTime, devAddress from EcgRecord, EcgReport where EcgReport.ecgReportId = ? and EcgRecord.id = EcgReport.recordId";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, ecgReportId);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				long createTime = rs.getLong("createTime");
-				String devAddress = rs.getString("devAddress");
-				return download(RecordType.ECG, createTime, devAddress);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
+	// APPLY FOR DIAGNOSE
+	public static JSONObject applyForDiagnose() {
+		BleEcgRecord10 record = BleEcgRecord10.getLastRequestRecord();
+		if(record != null && record.applyForDiagnose() && record.retrieve()) {
+			return record.toJson();
 		}
 		return null;
 	}
 	
-	public static boolean uploadReport(long createTime, String devAddress, long reportTime, String content) {
+	// DOWNLOAD DIAGNOSE RESULT
+	public static JSONObject downloadDiagnoseResult(long createTime, String devAddress) {
 		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		if(record == null) return false;
-		
-		record.getReport().setReportTime(reportTime);
-		record.getReport().setContent(content);
-		
-		return record.updateReport();
+		int reportCode = record.retrieveDiagnoseResult();
+		JSONObject reportResult = new JSONObject();
+		reportResult.put("reportCode", reportCode);
+		if(reportCode == IDiagnosable.CODE_REPORT_SUCCESS)
+			reportResult.put("report", record.getReportJson());
+		return reportResult;
 	}
-	
-	private static int getLastRequestReportId() {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select ecgReportId from EcgReport where status = ? order by ecgReportId limit 1";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, BleEcgReport10.REQUEST);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				return rs.getInt("ecgReportId");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return INVALID_ID;		
-	}
-	
-	private static boolean applyProcessingReport(int reportId) {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "update EcgReport set status = ? where ecgReportId = ? and status = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, BleEcgReport10.PROCESS);
-			ps.setInt(2, reportId);
-			ps.setInt(3, BleEcgReport10.REQUEST);
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;		
+
+	// UPLOAD DIAGNOSE RESULT
+	public static boolean uploadDiagnoseResult(long createTime, String devAddress, long reportTime, String content) {
+		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		if(record == null) return false;		
+		return record.updateDiagnoseResult(reportTime, content);
 	}
 	
 	private static JSONObject downloadBasicInfo(RecordType type, int id) {
@@ -331,8 +261,6 @@ public class RecordDbUtil {
 
 		public RecordType getType() {
 			return type;
-		}
-		
-		
+		}		
 	}
 }

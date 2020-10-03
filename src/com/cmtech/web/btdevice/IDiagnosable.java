@@ -8,8 +8,8 @@ public interface IDiagnosable {
     int CODE_REPORT_REQUEST_AGAIN = 4;
     int CODE_REPORT_NO_NEW = 5;
     
-	int requestReport(); // 请求诊断
-	boolean applyProcessingRequest(); // 申请处理请求
-	int retrieveReport(); // 从数据库获取诊断信息
-	boolean updateReport(); // 更新数据库中的诊断信息
+	int requestDiagnose(); // 请求诊断
+	boolean applyForDiagnose(); // 申请处理诊断
+	int retrieveDiagnoseResult(); // 获取诊断结果
+	boolean updateDiagnoseResult(long reportTime, String content); // 更新诊断结果
 }

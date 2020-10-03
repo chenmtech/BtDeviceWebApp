@@ -182,7 +182,7 @@ public class RecordServlet extends HttpServlet {
 			case "downloadReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject json1 = RecordDbUtil.downloadReport(createTime, devAddress);		        
+		        JSONObject json1 = RecordDbUtil.downloadDiagnoseResult(createTime, devAddress);		        
 				
 				if(json1 == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -197,7 +197,7 @@ public class RecordServlet extends HttpServlet {
 			case "requestReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject report = RecordDbUtil.requestReport(createTime, devAddress);		        
+		        JSONObject report = RecordDbUtil.requestDiagnose(createTime, devAddress);		        
 				
 				if(report == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);

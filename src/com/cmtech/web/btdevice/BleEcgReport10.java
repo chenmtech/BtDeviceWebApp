@@ -16,19 +16,16 @@ public class BleEcgReport10 implements IDbOperation{
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
     
-    private int reportId = INVALID_ID;
 	private String ver = "1.0";
     private long reportTime = -1;
     private String content = "";
     private int status = DONE;
-    private int recordId = INVALID_ID;
-
-	public BleEcgReport10() {
-		
-	}
+    private long createTime = -1;
+    private String devAddress = "";
 	
-	public BleEcgReport10(int recordId) {
-		this.recordId = recordId;
+	public BleEcgReport10(long createTime, String devAddress) {
+		this.createTime = createTime;
+		this.devAddress = devAddress;
 	}
 
 	public long getReportTime() {
@@ -62,13 +59,13 @@ public class BleEcgReport10 implements IDbOperation{
 	public void setStatus(int status) {
 		this.status = status;
 	}
-	
-	public int getRecordId() {
-		return recordId;
+
+	public long getCreateTime() {
+		return createTime;
 	}
 
-	public void setRecordId(int recordId) {
-		this.recordId = recordId;
+	public String getDevAddress() {
+		return devAddress;
 	}
 
 	public JSONObject toJson() {
@@ -82,22 +79,19 @@ public class BleEcgReport10 implements IDbOperation{
 
 	@Override
 	public int getId() {
-		if(reportId != INVALID_ID) return reportId;
-		if(recordId == INVALID_ID) return INVALID_ID;
-		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return INVALID_ID;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String selectSql = "select ecgReportId from EcgReport where recordId = ?";
+		String selectSql = "select id from EcgReport where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(selectSql);
-			ps.setInt(1, recordId);
+			ps.setLong(1, createTime);
+			ps.setString(2, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				reportId = rs.getInt("ecgReportId");
-				return reportId;
+				return rs.getInt("id");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -109,20 +103,18 @@ public class BleEcgReport10 implements IDbOperation{
 
 	@Override
 	public boolean retrieve() {
-		if(recordId == INVALID_ID) return false;
-		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String selectSql = "select ecgReportId, reportVer, reportTime, content, status from EcgReport where recordId = ?";
+		String selectSql = "select reportVer, reportTime, content, status from EcgReport where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(selectSql);
-			ps.setInt(1, recordId);
+			ps.setLong(1, createTime);
+			ps.setString(2, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				reportId = rs.getInt("ecgReportId");
 				ver = rs.getString("reportVer");
 				reportTime = rs.getLong("reportTime");
 				content = rs.getString("content");
@@ -139,18 +131,17 @@ public class BleEcgReport10 implements IDbOperation{
 
 	@Override
 	public boolean insert() {
-		if(recordId == INVALID_ID) return false;
-		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String insertSql = "insert into EcgReport (status, recordId) values (?, ?)";
+		String insertSql = "insert into EcgReport (status, createTime, devAddress) values (?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(insertSql);
 			ps.setInt(1, status);
-			ps.setInt(2, recordId);
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -163,16 +154,15 @@ public class BleEcgReport10 implements IDbOperation{
 
 	@Override
 	public boolean delete() {
-		if(recordId == INVALID_ID) return false;
-		
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "delete from EcgReport where recordId = ?";
+		String sql = "delete from EcgReport where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, recordId);
+			ps.setLong(1, createTime);
+			ps.setString(2, devAddress);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -186,21 +176,20 @@ public class BleEcgReport10 implements IDbOperation{
 
 	@Override
 	public boolean update() {
-		if(recordId == INVALID_ID) return false;
-		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		String sql = "update EcgReport set reportTime = ?, content = ?, status = ? " 
-				+ "where recordId = ?";
+				+ "where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setLong(1, reportTime);
 			ps.setString(2, content);
 			ps.setInt(3, status);
-			ps.setInt(4, recordId);
+			ps.setLong(4, createTime);
+			ps.setString(5, devAddress);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -212,20 +201,22 @@ public class BleEcgReport10 implements IDbOperation{
 		return false;	
 	}
 	
-	public boolean updateStatus(int beforeStatus, int afterStatus) {
-		if(recordId == INVALID_ID) return false;
-		
+	public boolean updateWithCondition(int beforeStatus) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update EcgReport set status = ? where recordId = ? and status = ?";
+		String sql = "update EcgReport set reportTime = ?, content = ?, status = ? " 
+				+ "where createTime = ? and devAddress = ? and status = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, afterStatus);
-			ps.setInt(2, recordId);
-			ps.setInt(3, beforeStatus);
+			ps.setLong(1, reportTime);
+			ps.setString(2, content);
+			ps.setInt(3, status);
+			ps.setLong(4, createTime);
+			ps.setString(5, devAddress);
+			ps.setInt(6, beforeStatus);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -235,5 +226,53 @@ public class BleEcgReport10 implements IDbOperation{
 			DbUtil.close(rs, ps, conn);
 		}
 		return false;	
+	}
+	
+	public boolean updateStatusWithCondition(int beforeStatus) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update EcgReport set status = ? where createTime = ? and devAddress = ? and status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, status);
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);
+			ps.setInt(4, beforeStatus);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;	
+	}
+	
+	public static BleEcgReport10 getLastRequestReport() {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select createTime, devAddress from EcgReport where status = ? order by id limit 1";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, BleEcgReport10.REQUEST);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				return new BleEcgReport10(createTime, devAddress);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;		
 	}
 }

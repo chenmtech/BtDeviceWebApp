@@ -16,10 +16,11 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     private String ecgData; // ecg data
-    private BleEcgReport10 report = new BleEcgReport10(); // ecg diagnose report
+    private BleEcgReport10 report; // ecg diagnose report
 
     public BleEcgRecord10(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
+    	report = new BleEcgReport10(createTime, devAddress);
     }
     
     public int getSampleRate() {
@@ -54,10 +55,6 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		this.ecgData = ecgData;
 	}
 	
-	public BleEcgReport10 getReport() {
-		return report;
-	}
-	
     @Override
 	public void fromJson(JSONObject jsonObject) {
 		super.fromJson(jsonObject);
@@ -76,6 +73,10 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
 		return json;
+	}
+	
+	public JSONObject getReportJson() {
+		return report.toJson();
 	}
 
 	@Override
@@ -146,137 +147,50 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 	}
 
 	@Override
-	public int requestReport() {
-		int recordId = getId();
-		if(recordId == INVALID_ID) return IDiagnosable.CODE_REPORT_FAILURE;
-		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return IDiagnosable.CODE_REPORT_FAILURE;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String selectSql = "select ecgReportId, status from EcgReport where recordId = ?";
-		String insertSql = "insert into EcgReport (status, recordId) values (?, ?)";
-		String updateSql = "update EcgReport set status = ? where ecgReportId = ?";
-		try {			
-			ps = conn.prepareStatement(selectSql);
-			ps.setInt(1, recordId);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				int status = rs.getInt("status");
-				int ecgReportId = rs.getInt("ecgReportId");
-				if(status == BleEcgReport10.DONE) {
-					DbUtil.closeSTMT(ps);
-					ps = conn.prepareStatement(updateSql);
-					ps.setInt(1, BleEcgReport10.REQUEST);
-					ps.setInt(2, ecgReportId);
-					if(ps.executeUpdate() != 0)
-						return IDiagnosable.CODE_REPORT_REQUEST_AGAIN;
-				} else {
-					return IDiagnosable.CODE_REPORT_PROCESSING;
-				}
+	public int requestDiagnose() {
+		if(!report.retrieve()) {
+			report.setStatus(BleEcgReport10.REQUEST);
+			if(report.insert())
+				return IDiagnosable.CODE_REPORT_ADD_NEW;
+		} else {
+			report.setStatus(BleEcgReport10.REQUEST);
+			if(report.updateStatusWithCondition(BleEcgReport10.DONE)) {
+				return IDiagnosable.CODE_REPORT_REQUEST_AGAIN;
 			} else {
-				DbUtil.closeSTMT(ps);
-				ps = conn.prepareStatement(insertSql);
-				ps.setInt(1, BleEcgReport10.REQUEST);
-				ps.setInt(2, recordId);
-				if(ps.executeUpdate() != 0)
-					return IDiagnosable.CODE_REPORT_ADD_NEW;				
+				return IDiagnosable.CODE_REPORT_PROCESSING;
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
 		}
-		return IDiagnosable.CODE_REPORT_FAILURE;	
+		return IDiagnosable.CODE_REPORT_FAILURE;
 	}
 
 	@Override
-	public int retrieveReport() {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return IDiagnosable.CODE_REPORT_FAILURE;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String selectSql = "select reportVer, reportTime, content, status from EcgReport, EcgRecord "
-				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId";
-		try {
-			ps = conn.prepareStatement(selectSql);
-			ps.setLong(1, getCreateTime());
-			ps.setString(2,  getDevAddress());
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				String reportVer = rs.getString("reportVer");
-				long reportTime = rs.getLong("reportTime");
-				String content = rs.getString("content");
-				int status = rs.getInt("status");
-				report.setVer(reportVer);
-				report.setReportTime(reportTime);
-				report.setContent(content);
-				report.setStatus(status);
-				return IDiagnosable.CODE_REPORT_SUCCESS;
-			} else {
-				return IDiagnosable.CODE_REPORT_NO_NEW;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
+	public int retrieveDiagnoseResult() {
+		if(report.retrieve()) {
+			return IDiagnosable.CODE_REPORT_SUCCESS;
+		} else {
+			return IDiagnosable.CODE_REPORT_NO_NEW;
 		}
-		return IDiagnosable.CODE_REPORT_FAILURE;	
 	}
 
 	@Override
-	public boolean updateReport() {		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "update EcgReport, EcgRecord set reportTime = ?, content = ?, status = ? " 
-				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId and EcgReport.status = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setLong(1, report.getReportTime());
-			ps.setString(2, report.getContent());
-			ps.setInt(3, BleEcgReport10.DONE);
-			ps.setLong(4, getCreateTime());
-			ps.setString(5,  getDevAddress());
-			ps.setInt(6, BleEcgReport10.PROCESS);
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;	
+	public boolean updateDiagnoseResult(long reportTime, String content) {
+		report.setReportTime(reportTime);
+		report.setContent(content);
+		report.setStatus(BleEcgReport10.DONE);
+		return report.updateWithCondition(BleEcgReport10.PROCESS);
 	}
 	
 	@Override
-	public boolean applyProcessingRequest() {
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "update EcgReport, EcgRecord set status = ? " 
-				+ "where EcgRecord.createTime = ? and EcgRecord.devAddress = ? and EcgRecord.id = EcgReport.recordId and EcgReport.status = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, BleEcgReport10.PROCESS);
-			ps.setLong(2, getCreateTime());
-			ps.setString(3,  getDevAddress());
-			ps.setInt(4, BleEcgReport10.REQUEST);
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
+	public boolean applyForDiagnose() {
+		report.setStatus(BleEcgReport10.PROCESS);
+		return report.updateStatusWithCondition(BleEcgReport10.REQUEST);
+	}
+	
+	public static BleEcgRecord10 getLastRequestRecord() {
+		BleEcgReport10 report = BleEcgReport10.getLastRequestReport();
+		if(report != null) {
+			return new BleEcgRecord10(report.getCreateTime(), report.getDevAddress());
 		}
-		return false;		
+		return null;
 	}
 }
