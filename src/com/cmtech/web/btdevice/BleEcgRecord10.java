@@ -1,18 +1,13 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.MyConstant.*;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.dbUtil.DbUtil;
-
 public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
-	private static final String SELECT_STR = BasicRecord.SELECT_STR + "sampleRate, caliValue, leadTypeCode, ecgData";
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData"};
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
@@ -55,10 +50,14 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 	public void setEcgData(String ecgData) {
 		this.ecgData = ecgData;
 	}
-    
-    public String getSelectStr() {
-		return SELECT_STR;
+	
+	public JSONObject getReportJson() {
+		return report.toJson();
 	}
+	
+    public String[] getProperties() {    	
+    	return PROPERTIES;
+    }
 	
     @Override
 	public void fromJson(JSONObject json) {
@@ -80,17 +79,23 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		return json;
 	}
 	
-	public JSONObject getReportJson() {
-		return report.toJson();
-	}
-	
 	@Override
-	public void setFromResultSet(ResultSet rs) throws SQLException {
-		super.setFromResultSet(rs);
+	public void getFromResultSet(ResultSet rs) throws SQLException {
+		super.getFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		ecgData = rs.getString("ecgData");
+	}
+	
+	@Override
+	public int setToPreparedStatement(PreparedStatement ps) throws SQLException {
+		int begin = super.setToPreparedStatement(ps);
+		ps.setInt(begin++, sampleRate);
+		ps.setInt(begin++, caliValue);
+		ps.setInt(begin++, leadTypeCode);
+		ps.setString(begin++, ecgData);
+		return begin;
 	}
 
 	@Override
@@ -104,42 +109,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		report.delete();
 		return super.delete();
 	}
-
-	@Override
-	public boolean insert() {
-		int id = getId();
-		if(id != INVALID_ID) return false;
-		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "insert into EcgRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, recordSecond, sampleRate, caliValue, leadTypeCode, ecgData) "
-				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, getVer());
-			ps.setLong(2, getCreateTime());
-			ps.setString(3, getDevAddress());
-			ps.setString(4, getCreatorPlat());
-			ps.setString(5, getCreatorId());
-			ps.setString(6, getNote());
-			ps.setInt(7, getRecordSecond());
-			ps.setInt(8, sampleRate);
-			ps.setInt(9, caliValue);
-			ps.setInt(10, leadTypeCode);
-			ps.setString(11, ecgData);
-			if(ps.executeUpdate() != 0)
-				return true;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;
-	}
-
+	
 	@Override
 	public int requestDiagnose() {
 		if(!report.retrieve()) {

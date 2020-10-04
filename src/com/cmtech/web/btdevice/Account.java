@@ -95,7 +95,7 @@ public class Account implements IDbOperation, IJsonable {
 			ps.setString(2, platId);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				setFromResultSet(rs);
+				getFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -107,8 +107,7 @@ public class Account implements IDbOperation, IJsonable {
 		return false;		
 	}
 	
-	@Override
-	public void setFromResultSet(ResultSet rs) throws SQLException {
+	private void getFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		name = rs.getString("name");
 		note = rs.getString("note");

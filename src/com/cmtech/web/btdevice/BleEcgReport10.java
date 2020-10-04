@@ -128,7 +128,7 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 			ps.setString(2, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				setFromResultSet(rs);
+				getFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -139,8 +139,7 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 		return false;
 	}
 
-	@Override
-	public void setFromResultSet(ResultSet rs) throws SQLException {
+	private void getFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		reportTime = rs.getLong("reportTime");
 		content = rs.getString("content");
