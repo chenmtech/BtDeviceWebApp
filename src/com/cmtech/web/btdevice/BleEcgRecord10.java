@@ -146,7 +146,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public boolean applyForDiagnose() {
+	public boolean applyProcessingDiagnose() {
 		report.setStatus(BleEcgReport10.PROCESS);
 		return report.updateStatusIfBeing(BleEcgReport10.REQUEST);
 	}

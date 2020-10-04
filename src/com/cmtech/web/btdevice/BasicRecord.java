@@ -19,10 +19,10 @@ import com.cmtech.web.dbUtil.DbUtil;
 public abstract class BasicRecord implements IDbOperation, IJsonable{
 	private static final String[] BASIC_PROPERTIES = {"ver", "creatorPlat", "creatorId", "note", "recordSecond"};
 	private static final String[] INSERT_PROPERTIES = {"createTime", "devAddress", "ver", "creatorPlat", "creatorId", "note", "recordSecond"};
-    private String ver; // record version
     private final RecordType type;
     private final long createTime; //
     private final String devAddress; //
+    private String ver; // record version
     private String creatorPlat;
     private String creatorId;
     private String note;

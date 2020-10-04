@@ -9,7 +9,7 @@ public interface IDiagnosable {
     int CODE_REPORT_NO_NEW = 5;
     
 	int requestDiagnose(); // 请求诊断
-	boolean applyForDiagnose(); // 申请处理诊断
+	boolean applyProcessingDiagnose(); // 申请处理诊断
 	int retrieveDiagnoseResult(); // 获取诊断结果
 	boolean updateDiagnoseResult(long reportTime, String content); // 更新诊断结果
 }

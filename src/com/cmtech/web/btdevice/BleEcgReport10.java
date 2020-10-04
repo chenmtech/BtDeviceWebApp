@@ -69,16 +69,6 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 	}
 
 	@Override
-	public JSONObject toJson() {
-		JSONObject json = new JSONObject();
-		json.put("ver", ver);
-		json.put("reportTime", reportTime);
-		json.put("content", content);
-		json.put("status", status);
-		return json;
-	}
-
-	@Override
 	public void fromJson(JSONObject json) {
 		if(json.has("ver")) {
 			ver = json.getString("ver");			
@@ -88,6 +78,16 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 		reportTime = json.getLong("reportTime");
 		content = json.getString("content");
 		status = json.getInt("status");
+	}
+
+	@Override
+	public JSONObject toJson() {
+		JSONObject json = new JSONObject();
+		json.put("ver", ver);
+		json.put("reportTime", reportTime);
+		json.put("content", content);
+		json.put("status", status);
+		return json;
 	}
 
 	@Override

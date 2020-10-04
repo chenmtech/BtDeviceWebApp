@@ -87,7 +87,7 @@ public class RecordDbUtil {
 	// Return the json object of the record if exist the request record
 	public static JSONObject applyForDiagnose() {
 		BleEcgRecord10 record = BleEcgRecord10.getFirstRequestRecord();
-		if(record != null && record.applyForDiagnose() && record.retrieve()) {
+		if(record != null && record.applyProcessingDiagnose() && record.retrieve()) {
 			return record.toJson();
 		}
 		return null;
