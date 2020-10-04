@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
+	private static final String SELECT_STR = BasicRecord.SELECT_STR + "sampleRate, caliValue, leadTypeCode, ecgData";
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
@@ -54,15 +55,18 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 	public void setEcgData(String ecgData) {
 		this.ecgData = ecgData;
 	}
+    
+    public String getSelectStr() {
+		return SELECT_STR;
+	}
 	
     @Override
-	public void fromJson(JSONObject jsonObject) {
-		super.fromJson(jsonObject);
-		
-		sampleRate = jsonObject.getInt("sampleRate");
-		caliValue = jsonObject.getInt("caliValue");
-		leadTypeCode = jsonObject.getInt("leadTypeCode");
-		ecgData = jsonObject.getString("ecgData");
+	public void fromJson(JSONObject json) {
+		super.fromJson(json);		
+		sampleRate = json.getInt("sampleRate");
+		caliValue = json.getInt("caliValue");
+		leadTypeCode = json.getInt("leadTypeCode");
+		ecgData = json.getString("ecgData");
 	}
 	
 	@Override
@@ -72,43 +76,33 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
+		json.put("report", report.toJson());
 		return json;
 	}
 	
 	public JSONObject getReportJson() {
 		return report.toJson();
 	}
+	
+	@Override
+	public void setFromResultSet(ResultSet rs) throws SQLException {
+		super.setFromResultSet(rs);
+		sampleRate = rs.getInt("sampleRate");
+		caliValue = rs.getInt("caliValue");
+		leadTypeCode = rs.getInt("leadTypeCode");
+		ecgData = rs.getString("ecgData");
+	}
 
 	@Override
 	public boolean retrieve() {
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData from EcgRecord where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, getDevAddress());
-			ps.setLong(2, getCreateTime());
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
-				setNote(rs.getString("note"));
-				setRecordSecond(rs.getInt("recordSecond"));
-				sampleRate = rs.getInt("sampleRate");
-				caliValue = rs.getInt("caliValue");
-				leadTypeCode = rs.getInt("leadTypeCode");
-				ecgData = rs.getString("ecgData");
-				return true;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;
+		report.retrieve();
+		return super.retrieve();
+	}
+
+	@Override
+	public boolean delete() {
+		report.delete();
+		return super.delete();
 	}
 
 	@Override
@@ -120,7 +114,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into EcgRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, sampleRate, caliValue, leadTypeCode, recordSecond, ecgData) "
+		String sql = "insert into EcgRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, recordSecond, sampleRate, caliValue, leadTypeCode, ecgData) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -130,11 +124,11 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 			ps.setString(4, getCreatorPlat());
 			ps.setString(5, getCreatorId());
 			ps.setString(6, getNote());
-			ps.setInt(7, getSampleRate());
-			ps.setInt(8, getCaliValue());
-			ps.setInt(9, getLeadTypeCode());
-			ps.setInt(10, getRecordSecond());
-			ps.setString(11, getEcgData());
+			ps.setInt(7, getRecordSecond());
+			ps.setInt(8, sampleRate);
+			ps.setInt(9, caliValue);
+			ps.setInt(10, leadTypeCode);
+			ps.setString(11, ecgData);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -152,6 +146,8 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 			report.setStatus(BleEcgReport10.REQUEST);
 			if(report.insert())
 				return IDiagnosable.CODE_REPORT_ADD_NEW;
+			else
+				return IDiagnosable.CODE_REPORT_FAILURE;
 		} else {
 			report.setStatus(BleEcgReport10.REQUEST);
 			if(report.updateStatusIfBeing(BleEcgReport10.DONE)) {
@@ -160,7 +156,6 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 				return IDiagnosable.CODE_REPORT_PROCESSING;
 			}
 		}
-		return IDiagnosable.CODE_REPORT_FAILURE;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.cmtech.web.btdevice;
 
-public class RecordFactory {
-	
+public class RecordFactory {	
 	private RecordFactory() {
 		
 	}

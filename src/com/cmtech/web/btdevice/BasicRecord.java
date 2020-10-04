@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public abstract class BasicRecord implements IDbOperation, IJsonable{
+	public static final String SELECT_STR = "creatorPlat, creatorId, note, recordSecond, ";
     private String ver; // record version
     private final RecordType type;
     private final long createTime; //
@@ -32,33 +33,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         recordSecond = 0;
     }    
     
-    @Override
-    public void fromJson(JSONObject json) {
-    	if(json.has("ver")) {
-			ver = json.getString("ver");			
-    	} else {
-    		ver = DEFAULT_VER;
-    	}
-		creatorPlat = json.getString("creatorPlat");
-		creatorId = json.getString("creatorId");
-		note = json.getString("note");
-		recordSecond = json.getInt("recordSecond");
-    }
-    
-    @Override
-	public JSONObject toJson() {
-    	JSONObject json = new JSONObject();
-    	json.put("ver", ver);
-		json.put("recordTypeCode", type.getCode());
-		json.put("createTime", createTime);
-		json.put("devAddress", devAddress);
-		json.put("creatorPlat", creatorPlat);
-		json.put("creatorId", creatorId);
-		json.put("note", note);
-		json.put("recordSecond", recordSecond);
-		return json;
-	}
-
     public RecordType getType() {
 		return type;
 	}
@@ -111,6 +85,43 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	public void setRecordSecond(int recordSecond) {
 		this.recordSecond = recordSecond;
 	}
+    
+    public abstract String getSelectStr();
+
+	@Override
+    public void fromJson(JSONObject json) {
+    	if(json.has("ver")) {
+			ver = json.getString("ver");			
+    	} else {
+    		ver = DEFAULT_VER;
+    	}
+		creatorPlat = json.getString("creatorPlat");
+		creatorId = json.getString("creatorId");
+		note = json.getString("note");
+		recordSecond = json.getInt("recordSecond");
+    }
+    
+    @Override
+	public JSONObject toJson() {
+    	JSONObject json = new JSONObject();
+    	json.put("ver", ver);
+		json.put("recordTypeCode", type.getCode());
+		json.put("createTime", createTime);
+		json.put("devAddress", devAddress);
+		json.put("creatorPlat", creatorPlat);
+		json.put("creatorId", creatorId);
+		json.put("note", note);
+		json.put("recordSecond", recordSecond);
+		return json;
+	}
+
+	@Override
+	public void setFromResultSet(ResultSet rs) throws SQLException {
+		creatorPlat = rs.getString("creatorPlat");
+		creatorId = rs.getString("creatorId");
+		note = rs.getString("note");
+		recordSecond = rs.getInt("recordSecond");
+	}
 
 	@Override
     public String toString() {
@@ -132,7 +143,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     }
 
     @Override
-    public int getId() {
+    public final int getId() {
     	String tableName = type.getTableName();
     	if("".equals(tableName)) return INVALID_ID;
     	
@@ -159,9 +170,38 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return INVALID_ID;	
 	}
     
+    @Override
+	public boolean retrieve() {
+    	String tableName = type.getTableName();
+    	if("".equals(tableName)) return false;
+    	
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select " + getSelectStr() + " from " + tableName + " where devAddress = ? and createTime = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, getDevAddress());
+			ps.setLong(2, getCreateTime());
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				setFromResultSet(rs);
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;
+	}
+    
 	// UPDATE NOTE
     @Override
-	public boolean update() {
+	public final boolean update() {
     	String tableName = type.getTableName();
     	if("".equals(tableName)) return false;
     	

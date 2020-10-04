@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleHrRecord10 extends BasicRecord {
+	private static final String SELECT_STR = BasicRecord.SELECT_STR + "hrList, hrMax, hrAve, hrHist";
 	private String hrList; // list of the filtered HR
     private short hrMax;
     private short hrAve;
@@ -52,15 +53,18 @@ public class BleHrRecord10 extends BasicRecord {
 	public void setHrHist(String hrHist) {
 		this.hrHist = hrHist;
 	}
-
+    
+    public String getSelectStr() {
+		return SELECT_STR;
+	}
+    
     @Override
-	public void fromJson(JSONObject jsonObject) {
-		super.fromJson(jsonObject);
-		
-		hrList = jsonObject.getString("hrList");
-		hrMax = (short) jsonObject.getInt("hrMax");
-		hrAve = (short) jsonObject.getInt("hrAve");
-		hrHist = jsonObject.getString("hrHist");
+	public void fromJson(JSONObject json) {
+		super.fromJson(json);		
+		hrList = json.getString("hrList");
+		hrMax = (short) json.getInt("hrMax");
+		hrAve = (short) json.getInt("hrAve");
+		hrHist = json.getString("hrHist");
 	}
 
 	@Override
@@ -72,37 +76,14 @@ public class BleHrRecord10 extends BasicRecord {
 		json.put("hrHist", hrHist);
 		return json;
 	}
-
+	
 	@Override
-	public boolean retrieve() {
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond from HrRecord where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, getDevAddress());
-			ps.setLong(2, getCreateTime());
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				setCreator(new Account(rs.getString("creatorPlat"), rs.getString("creatorId")));
-				setNote(rs.getString("note"));
-				hrList = rs.getString("hrList");
-				hrMax = rs.getShort("hrMax");
-				hrAve = rs.getShort("hrAve");
-				hrHist = rs.getString("hrHist");
-				setRecordSecond(rs.getInt("recordSecond"));
-				return true;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;
+	public void setFromResultSet(ResultSet rs) throws SQLException {
+		super.setFromResultSet(rs);
+		hrList = rs.getString("hrList");
+		hrMax = rs.getShort("hrMax");
+		hrAve = rs.getShort("hrAve");
+		hrHist = rs.getString("hrHist");
 	}
 
 	@Override
@@ -114,7 +95,7 @@ public class BleHrRecord10 extends BasicRecord {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into HrRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, hrList, hrMax, hrAve, hrHist, recordSecond) "
+		String sql = "insert into HrRecord (ver, createTime, devAddress, creatorPlat, creatorId, note, recordSecond, hrList, hrMax, hrAve, hrHist) "
 				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -124,11 +105,11 @@ public class BleHrRecord10 extends BasicRecord {
 			ps.setString(4, getCreatorPlat());
 			ps.setString(5, getCreatorId());
 			ps.setString(6, getNote());
-			ps.setString(7, getHrList());
-			ps.setShort(8, getHrMax());
-			ps.setShort(9, getHrAve());
-			ps.setString(10, getHrHist());
-			ps.setInt(11, getRecordSecond());
+			ps.setInt(7, getRecordSecond());
+			ps.setString(8, hrList);
+			ps.setShort(9, hrMax);
+			ps.setShort(10, hrAve);
+			ps.setString(11, hrHist);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {

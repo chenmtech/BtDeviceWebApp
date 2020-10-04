@@ -22,7 +22,7 @@ import com.cmtech.web.btdevice.RecordType;
 
 public class RecordDbUtil {
 	
-	// QUERY
+	// QUERY ID
 	public static int getId(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return INVALID_ID;
@@ -115,6 +115,7 @@ public class RecordDbUtil {
 	}
 	
 	// APPLY FOR DIAGNOSE
+	// Return the json object of the record if exist the request record
 	public static JSONObject applyForDiagnose() {
 		BleEcgRecord10 record = BleEcgRecord10.getFirstRequestRecord();
 		if(record != null && record.applyForDiagnose() && record.retrieve()) {
