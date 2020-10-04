@@ -159,6 +159,13 @@ public class ConnectionPool {
                     try{
                         connection = newConnection();
                     } catch (SQLException e) {
+                    	if(connection != null)
+							try {
+								connection.close();
+							} catch (SQLException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
                         return null;
                     }
                     pConn.setConnection(connection);

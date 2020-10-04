@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -15,8 +17,8 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public abstract class BasicRecord implements IDbOperation, IJsonable{
-	private static final String[] SELECT_PROPERTIES = {"ver", "creatorPlat", "creatorId", "note", "recordSecond"};
-	private static final String[] INSERT_PROPERTIES = {"ver", "createTime", "devAddress", "creatorPlat", "creatorId", "note", "recordSecond"};
+	private static final String[] BASIC_PROPERTIES = {"ver", "creatorPlat", "creatorId", "note", "recordSecond"};
+	private static final String[] INSERT_PROPERTIES = {"createTime", "devAddress", "ver", "creatorPlat", "creatorId", "note", "recordSecond"};
     private String ver; // record version
     private final RecordType type;
     private final long createTime; //
@@ -106,28 +108,32 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     }
     
     @Override
-	public JSONObject toJson() {
+	public JSONObject toJson() {    	
+		return basicToJson();
+	}
+    
+    public JSONObject basicToJson() {
     	JSONObject json = new JSONObject();
-    	json.put("ver", ver);
 		json.put("recordTypeCode", type.getCode());
 		json.put("createTime", createTime);
 		json.put("devAddress", devAddress);
+    	json.put("ver", ver);
 		json.put("creatorPlat", creatorPlat);
 		json.put("creatorId", creatorId);
 		json.put("note", note);
 		json.put("recordSecond", recordSecond);
 		return json;
-	}
+    }
 
-	public void getFromResultSet(ResultSet rs) throws SQLException {
-		getBasicInfoFromResultSet(rs);
+	public void getPropertiesFromResultSet(ResultSet rs) throws SQLException {
+		getBasicPropertiesFromResultSet(rs);
 	}
 	
-	public int setToPreparedStatement(PreparedStatement ps) throws SQLException {
+	public int setPropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = 1;
-		ps.setString(begin++, ver);
 		ps.setLong(begin++, createTime);
 		ps.setString(begin++, devAddress);
+		ps.setString(begin++, ver);
 		ps.setString(begin++, creatorPlat);
 		ps.setString(begin++, creatorId);
 		ps.setString(begin++, note);
@@ -192,14 +198,14 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select " + getSelectStr() + " from " + tableName + " where devAddress = ? and createTime = ?";
+		String sql = "select " + getPropertiesString() + " from " + tableName + " where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
 			ps.setLong(2, getCreateTime());
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				getFromResultSet(rs);
+				getPropertiesFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -252,10 +258,10 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into " + tableName + " (" + getInsertStr() + ") values (" + getInsertQuestionMark() + ")";
+		String sql = "insert into " + tableName + " (" + getInsertPropertiesString() + ") values (" + getInsertQuestionMark() + ")";
 		try {
 			ps = conn.prepareStatement(sql);
-			setToPreparedStatement(ps);
+			setPropertiesToPreparedStatement(ps);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -302,14 +308,14 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select " + getBasicSelectStr() + " from " + tableName + " where devAddress = ? and createTime = ?";
+		String sql = "select " + getBasicPropertiesString() + " from " + tableName + " where devAddress = ? and createTime = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, getDevAddress());
 			ps.setLong(2, getCreateTime());
 			rs = ps.executeQuery();
 			if(rs.next()) {
-				getBasicInfoFromResultSet(rs);
+				getBasicPropertiesFromResultSet(rs);
 				return true;
 			}
 		} catch (SQLException e) {
@@ -321,7 +327,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return false;
 	}
 	
-	private void getBasicInfoFromResultSet(ResultSet rs) throws SQLException {
+	private void getBasicPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		creatorPlat = rs.getString("creatorPlat");
 		creatorId = rs.getString("creatorId");
@@ -329,21 +335,19 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		recordSecond = rs.getInt("recordSecond");
 	}
     
-    private String getBasicSelectStr() {
+    private String getBasicPropertiesString() {
     	StringBuilder builder = new StringBuilder();
-    	int len = SELECT_PROPERTIES.length;
+    	int len = BASIC_PROPERTIES.length;
     	for(int i = 0; i < len-1; i++) {
-    		builder.append(SELECT_PROPERTIES[i]).append(',');
+    		builder.append(BASIC_PROPERTIES[i]).append(',');
     	}
-    	builder.append(SELECT_PROPERTIES[len-1]);
+    	builder.append(BASIC_PROPERTIES[len-1]);
     	return builder.toString();
     }
 
-    private String getSelectStr() {
-    	StringBuilder builder = new StringBuilder();
-    	for(String str : SELECT_PROPERTIES) {
-    		builder.append(str).append(',');
-    	}
+    private String getPropertiesString() {
+    	StringBuilder builder = new StringBuilder(getBasicPropertiesString());
+    	builder.append(',');
     	String[] properties = getProperties();
     	int len = properties.length;
     	for(int i = 0; i < len-1; i++) {
@@ -353,7 +357,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     	return builder.toString();
     }
     
-    private String getInsertStr() {
+    private String getInsertPropertiesString() {
     	StringBuilder builder = new StringBuilder();
     	for(String str : INSERT_PROPERTIES) {
     		builder.append(str).append(',');
@@ -376,8 +380,46 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		builder.append('?');
 		return builder.toString();
     }
+    
+    public static List<BasicRecord> findRecord(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
+    	if(num <= 0) return null;
+		
+		List<RecordType> types = new ArrayList<>();
+		if(type == RecordType.ALL) {
+			for(RecordType t : RecordType.values()) {
+				if(t != RecordType.ALL && t != RecordType.TH) {
+					types.add(t);
+				}
+			}
+		}
+		else
+			types.add(type);
+		
+		List<BasicRecord> found = new ArrayList<>();
+		for(RecordType t : types) {
+			List<BasicRecord> tmp = BasicRecord.searchRecordOfType(t, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+			if(tmp != null && !tmp.isEmpty())
+				found.addAll(tmp);
+		}
+		Collections.sort(found, new Comparator<BasicRecord>() {
+		    @Override
+		    public int compare(BasicRecord o1, BasicRecord o2) {
+		    	int rlt = 0;
+		        if(o2.getCreateTime() > o1.getCreateTime()) rlt = 1;
+		        else if(o2.getCreateTime() < o1.getCreateTime()) rlt = -1;
+		        return rlt;
+		    }
+		});
 
-	public static List<TmpRecord> searchRecord(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
+		int N = Math.min(num, found.size());			
+		for(int i = 0; i < N; i++) {
+			found.get(i).retrieveBasicInfo();
+		}
+		
+		return found.subList(0, N);
+    }
+
+	private static List<BasicRecord> searchRecordOfType(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
 		if(num <= 0) return null;
 		String tableName = type.getTableName();
 		if("".equals(tableName)) return null;
@@ -388,7 +430,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
-			List<TmpRecord> found = new ArrayList<>();
 			String sql = "select createTime, devAddress from " + tableName;
 			String where = " where ";
 			if(!"".equals(creatorPlat)) {
@@ -417,10 +458,12 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 			ps.setLong(i++, fromTime);
 			ps.setInt(i++, num);
 			rs = ps.executeQuery();
+
+			List<BasicRecord> found = new ArrayList<>();
 			while(rs.next()) {
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
-				found.add(new TmpRecord(type, createTime, devAddress));
+				found.add(RecordFactory.create(type, createTime, devAddress));
 			}			
 			return found;
 		} catch (SQLException e) {
@@ -430,29 +473,5 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
-	}
-
-	public static class TmpRecord {
-		RecordType type;
-		long createTime;
-		String devAddress;
-		
-		public TmpRecord(RecordType type, long createTime, String devAddress) {
-			this.type = type;
-			this.createTime= createTime;
-			this.devAddress = devAddress;
-		}
-
-		public RecordType getType() {
-			return type;
-		}		
-
-		public long getCreateTime() {
-			return createTime;
-		}
-		
-		public String getDevAddress() {
-			return devAddress;
-		}
 	}
 }

@@ -40,14 +40,14 @@ public class BleThermoRecord10 extends BasicRecord {
 	}
 	
 	@Override
-	public void getFromResultSet(ResultSet rs) throws SQLException {
-		super.getFromResultSet(rs);
+	public void getPropertiesFromResultSet(ResultSet rs) throws SQLException {
+		super.getPropertiesFromResultSet(rs);
 		temp = rs.getString("temp");
 	}
 	
 	@Override
-	public int setToPreparedStatement(PreparedStatement ps) throws SQLException {
-		int begin = super.setToPreparedStatement(ps);
+	public int setPropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
+		int begin = super.setPropertiesToPreparedStatement(ps);
 		ps.setString(begin++, temp);
 		return begin;
 	}

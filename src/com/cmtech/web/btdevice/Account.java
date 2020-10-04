@@ -44,6 +44,7 @@ public class Account implements IDbOperation, IJsonable {
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
+		json.put("ver", ver);
 		json.put("platName", platName);
 		json.put("platId", platId);
 		json.put("name", name);
