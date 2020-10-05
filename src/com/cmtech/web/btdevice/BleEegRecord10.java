@@ -48,7 +48,8 @@ public class BleEegRecord10 extends BasicRecord{
 	public void setEegData(String eegData) {
 		this.eegData = eegData;
 	}
-	
+
+	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
     }

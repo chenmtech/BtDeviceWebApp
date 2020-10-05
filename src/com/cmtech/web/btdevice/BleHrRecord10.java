@@ -49,6 +49,7 @@ public class BleHrRecord10 extends BasicRecord {
 		this.hrHist = hrHist;
 	}
 	
+	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
     }

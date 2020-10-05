@@ -21,7 +21,8 @@ public class BleThermoRecord10 extends BasicRecord {
 	public void setTemp(String temp) {
 		this.temp = temp;
 	}
-	
+
+	@Override
     public String[] getProperties() {
     	return PROPERTIES;
     }

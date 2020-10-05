@@ -55,6 +55,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		return report.toJson();
 	}
 	
+	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
     }

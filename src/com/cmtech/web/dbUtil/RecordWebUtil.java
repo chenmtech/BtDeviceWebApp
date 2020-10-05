@@ -13,7 +13,7 @@ import com.cmtech.web.btdevice.IDiagnosable;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
-public class RecordDbUtil {
+public class RecordWebUtil {
 	
 	// QUERY ID
 	public static int getId(RecordType type, long createTime, String devAddress) {
@@ -37,8 +37,8 @@ public class RecordDbUtil {
 		return record.delete();
 	}
 	
-	// INSERT
-	public static boolean insert(RecordType type, JSONObject json) {
+	// UPLOAD
+	public static boolean upload(RecordType type, JSONObject json) {
 		long createTime = json.getLong("createTime");
 		String devAddress = json.getString("devAddress");
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);

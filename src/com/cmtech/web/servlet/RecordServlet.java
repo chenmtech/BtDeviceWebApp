@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.dbUtil.RecordDbUtil;
+import com.cmtech.web.dbUtil.RecordWebUtil;
 
 
 /**
@@ -52,7 +52,7 @@ public class RecordServlet extends HttpServlet {
 		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
 		long createTime = Long.parseLong(strCreateTime);
 		
-		int id = RecordDbUtil.getId(type, createTime, devAddress);
+		int id = RecordWebUtil.getId(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
 		ServletUtil.dataResponse(response, json);
@@ -108,7 +108,7 @@ public class RecordServlet extends HttpServlet {
 			String devAddress;
 			switch(cmd) {			
 			case "upload":
-				cmdResult = RecordDbUtil.insert(type, jsonObject);
+				cmdResult = RecordWebUtil.upload(type, jsonObject);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
@@ -120,7 +120,7 @@ public class RecordServlet extends HttpServlet {
 				createTime = jsonObject.getLong("createTime");
 				devAddress = jsonObject.getString("devAddress");
 				String note = jsonObject.getString("note");
-				cmdResult = RecordDbUtil.updateNote(type, createTime, devAddress, note);
+				cmdResult = RecordWebUtil.updateNote(type, createTime, devAddress, note);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
@@ -134,7 +134,7 @@ public class RecordServlet extends HttpServlet {
 				String creatorId = jsonObject.getString("creatorId");
 				int num = jsonObject.getInt("num");
 				String noteSearchStr = jsonObject.getString("noteSearchStr");
-				JSONArray jsonArr = RecordDbUtil.downloadBasicInfo(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+				JSONArray jsonArr = RecordWebUtil.downloadBasicInfo(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
 				
 				if(jsonArr == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -149,7 +149,7 @@ public class RecordServlet extends HttpServlet {
 			case "download":
 				createTime = jsonObject.getLong("createTime");
 				devAddress = jsonObject.getString("devAddress");
-				JSONObject json = RecordDbUtil.download(type, createTime, devAddress);
+				JSONObject json = RecordWebUtil.download(type, createTime, devAddress);
 				
 				if(json == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -164,7 +164,7 @@ public class RecordServlet extends HttpServlet {
 			case "delete":
 				createTime = jsonObject.getLong("createTime");
 				devAddress = jsonObject.getString("devAddress");
-				cmdResult = RecordDbUtil.delete(type, createTime, devAddress);
+				cmdResult = RecordWebUtil.delete(type, createTime, devAddress);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
@@ -175,7 +175,7 @@ public class RecordServlet extends HttpServlet {
 			case "downloadReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject json1 = RecordDbUtil.downloadDiagnoseResult(createTime, devAddress);		        
+		        JSONObject json1 = RecordWebUtil.downloadDiagnoseResult(createTime, devAddress);		        
 				
 				if(json1 == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -190,7 +190,7 @@ public class RecordServlet extends HttpServlet {
 			case "requestReport":
 				createTime = jsonObject.getLong("createTime");
 		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject report = RecordDbUtil.requestDiagnose(createTime, devAddress);		        
+		        JSONObject report = RecordWebUtil.requestDiagnose(createTime, devAddress);		        
 				
 				if(report == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
