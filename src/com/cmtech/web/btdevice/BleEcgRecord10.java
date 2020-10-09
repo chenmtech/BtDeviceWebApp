@@ -101,8 +101,10 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 
 	@Override
 	public boolean retrieve() {
-		report.retrieve();
-		return super.retrieve();
+		boolean result = super.retrieve();
+		if(result)
+			report.retrieve();
+		return result;
 	}
 
 	@Override
