@@ -74,8 +74,8 @@ public class BleHrRecord10 extends BasicRecord {
 	}
 	
 	@Override
-	public void getPropertiesFromResultSet(ResultSet rs) throws SQLException {
-		super.getPropertiesFromResultSet(rs);
+	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
+		super.readPropertiesFromResultSet(rs);
 		hrList = rs.getString("hrList");
 		hrMax = rs.getShort("hrMax");
 		hrAve = rs.getShort("hrAve");
@@ -83,8 +83,8 @@ public class BleHrRecord10 extends BasicRecord {
 	}
 	
 	@Override
-	public int setPropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
-		int begin = super.setPropertiesToPreparedStatement(ps);
+	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
+		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setString(begin++, hrList);
 		ps.setShort(begin++, hrMax);
 		ps.setShort(begin++, hrAve);

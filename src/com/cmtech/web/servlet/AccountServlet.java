@@ -104,33 +104,33 @@ public class AccountServlet extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		BufferedReader streamReader = null;
-		try {
-			String charEncoding = request.getCharacterEncoding();
-	        if (charEncoding == null) {
-	            charEncoding = "UTF-8";
-	        }
-			streamReader = new BufferedReader( new InputStreamReader(request.getInputStream(), charEncoding));
+		String charEncoding = request.getCharacterEncoding();
+        if (charEncoding == null) {
+            charEncoding = "UTF-8";
+        }
+		
+		try (BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), charEncoding))) {
 			StringBuilder strBuilder = new StringBuilder();
-			String inputStr;
-			while ((inputStr = streamReader.readLine()) != null)
-				strBuilder.append(inputStr);
-			JSONObject jsonObject = new JSONObject(strBuilder.toString());
-			System.out.println(jsonObject.toString());
+			String s;
+			while ((s = streamReader.readLine()) != null)
+				strBuilder.append(s);
+			JSONObject inputJson = new JSONObject(strBuilder.toString());
+			// System.out.println(inputJson.toString());
 			
-			String platName = jsonObject.getString("platName");
-			String platId = jsonObject.getString("platId");
+			String platName = inputJson.getString("platName");
+			String platId = inputJson.getString("platId");
 			if(platName == null || platId == null) {
 				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
 			Account account = new Account(platName, platId);
-			String cmd = jsonObject.getString("cmd");
+			
+			String cmd = inputJson.getString("cmd");
 			boolean result;
 			int accountId = INVALID_ID;
 			switch(cmd) {
 			case "upload":
-				account.fromJson(jsonObject);
+				account.fromJson(inputJson);
 				accountId = account.getId();
 				if(accountId == INVALID_ID) {
 					result = account.insert();
@@ -149,7 +149,7 @@ public class AccountServlet extends HttpServlet {
 				if(account.retrieve()) {
 					JSONObject json = new JSONObject();
 					json.put("account", account.toJson());
-					ServletUtil.dataResponse(response, json);
+					ServletUtil.jsonResponse(response, json);
 				} else {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				}
@@ -162,8 +162,6 @@ public class AccountServlet extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 			ServletUtil.codeResponse(response, OTHER_ERR);
-		} finally {
-			streamReader.close();
 		}
 	}
 	

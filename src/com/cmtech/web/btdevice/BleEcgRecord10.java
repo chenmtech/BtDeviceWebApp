@@ -1,22 +1,35 @@
 package com.cmtech.web.btdevice;
 
+import static com.cmtech.web.MyConstant.INVALID_TIME;
+
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+import com.cmtech.web.dbUtil.DbUtil;
+
 public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportTime", "content", "status"};
+	
+	public static final int STATUS_DONE = 0;
+    public static final int STATUS_REQUEST = 1;
+    public static final int STATUS_PROCESS = 2;
+    
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     private String ecgData; // ecg data
-    private BleEcgReport10 report; // ecg diagnose report
+    
+    private long reportTime = INVALID_TIME; // diagnose report time
+    private String content = ""; // diagnose result
+    private int status = STATUS_DONE; // diagnose status
+
 
     public BleEcgRecord10(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
-    	report = new BleEcgReport10(createTime, devAddress);
     }
     
     public int getSampleRate() {
@@ -51,10 +64,6 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		this.ecgData = ecgData;
 	}
 	
-	public JSONObject getReportJson() {
-		return report.toJson();
-	}
-	
 	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
@@ -67,6 +76,12 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		caliValue = json.getInt("caliValue");
 		leadTypeCode = json.getInt("leadTypeCode");
 		ecgData = json.getString("ecgData");
+		if(json.has("report")) {
+			JSONObject reportJson = json.getJSONObject("report");
+			reportTime = reportJson.getLong("reportTime");
+			content = reportJson.getString("content");
+			status = reportJson.getInt("status");
+		}
 	}
 	
 	@Override
@@ -76,46 +91,71 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
-		json.put("report", report.toJson());
+		JSONObject reportJson = new JSONObject();
+		reportJson.put("reportTime", reportTime);
+		reportJson.put("content", content);
+		reportJson.put("status", status);
+		json.put("report", reportJson);
 		return json;
 	}
 	
 	@Override
-	public void getPropertiesFromResultSet(ResultSet rs) throws SQLException {
-		super.getPropertiesFromResultSet(rs);
+	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
+		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		ecgData = rs.getString("ecgData");
+		reportTime = rs.getLong("reportTime");
+		content = rs.getString("content");
+		status = rs.getInt("status");
 	}
 	
 	@Override
-	public int setPropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
-		int begin = super.setPropertiesToPreparedStatement(ps);
+	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
+		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
 		ps.setInt(begin++, caliValue);
 		ps.setInt(begin++, leadTypeCode);
 		ps.setString(begin++, ecgData);
+		ps.setLong(begin++, reportTime);
+		ps.setString(begin++, content);
+		ps.setInt(begin++, status);
 		return begin;
 	}
-
-	@Override
-	public boolean retrieve() {
-		boolean result = super.retrieve();
-		if(result)
-			report.retrieve();
-		return result;
-	}
-
-	@Override
-	public boolean delete() {
-		report.delete();
-		return super.delete();
+	
+	// UPDATE
+    @Override
+	public boolean update() {
+    	String tableName = RecordType.ECG.getTableName();
+    	
+    	Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update " + tableName + " set reportTime=?, content=?, status=?, note = ? where createTime = ? and devAddress = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setLong(1, reportTime);
+			ps.setString(2, content);
+			ps.setInt(3, status);
+			ps.setString(4, getNote());
+			ps.setLong(5, getCreateTime());
+			ps.setString(6, getDevAddress());
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
 	}
 	
 	@Override
 	public int requestDiagnose() {
-		if(!report.retrieve()) {
+		/*if(!report.retrieve()) {
 			report.setStatus(BleEcgReport10.REQUEST);
 			if(report.insert())
 				return IDiagnosable.CODE_REPORT_ADD_NEW;
@@ -128,30 +168,34 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 			} else {
 				return IDiagnosable.CODE_REPORT_PROCESSING;
 			}
-		}
+		}*/
+		return IDiagnosable.CODE_REPORT_FAILURE;
 	}
 
 	@Override
 	public int retrieveDiagnoseResult() {
-		if(report.retrieve()) {
+		/*if(report.retrieve()) {
 			return IDiagnosable.CODE_REPORT_SUCCESS;
 		} else {
 			return IDiagnosable.CODE_REPORT_NO_NEW;
-		}
+		}*/
+		return IDiagnosable.CODE_REPORT_NO_NEW;
 	}
 
 	@Override
 	public boolean updateDiagnoseResult(long reportTime, String content) {
-		report.setReportTime(reportTime);
+		/*report.setReportTime(reportTime);
 		report.setContent(content);
 		report.setStatus(BleEcgReport10.DONE);
-		return report.updateIfBeing(BleEcgReport10.PROCESS);
+		return report.updateIfBeing(BleEcgReport10.PROCESS);*/
+		return false;
 	}
 	
 	@Override
 	public boolean applyProcessingDiagnose() {
-		report.setStatus(BleEcgReport10.PROCESS);
-		return report.updateStatusIfBeing(BleEcgReport10.REQUEST);
+		/*report.setStatus(BleEcgReport10.PROCESS);
+		return report.updateStatusIfBeing(BleEcgReport10.REQUEST);*/
+		return false;
 	}
 	
 	public static BleEcgRecord10 getFirstRequestRecord() {

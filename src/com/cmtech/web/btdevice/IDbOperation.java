@@ -6,5 +6,5 @@ public interface IDbOperation {
 	boolean insert(); // 插入一条记录到数据库
 	boolean delete(); // 删除一条记录
 	boolean update(); // 更新数据库中的记录信息
-	//void setFromResultSet(ResultSet rs) throws SQLException;
+	boolean retrieveBasicInfo(); // 从数据库获取记录的基本信息
 }

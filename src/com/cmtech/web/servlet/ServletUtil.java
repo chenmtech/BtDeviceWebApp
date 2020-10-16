@@ -13,12 +13,12 @@ import com.cmtech.web.btdevice.ReturnCode;
 
 public class ServletUtil {
 	
-	public static void dataResponse(HttpServletResponse resp, JSONObject data) throws IOException {
-		if(resp == null || data == null) {
+	public static void jsonResponse(HttpServletResponse resp, JSONObject json) throws IOException {
+		if(resp == null || json == null) {
 			throw new NullPointerException();
 		}
-		data.put("code", SUCCESS.getCode());
-		doResponse(resp, data);
+		json.put("code", SUCCESS.getCode());
+		doResponse(resp, json);
 	}
 	
 	public static void codeResponse(HttpServletResponse resp, ReturnCode code) throws IOException {
@@ -29,7 +29,6 @@ public class ServletUtil {
 		JSONObject json = new JSONObject();
 		json.put("code", code.getCode());
 		ServletUtil.doResponse(resp, json);
-		//System.out.println(exception.getDescription());
 	}
 	
 	public static void doResponse(HttpServletResponse resp, JSONObject json) throws IOException {

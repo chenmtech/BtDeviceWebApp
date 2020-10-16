@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
@@ -55,9 +56,7 @@ public class RecordServlet extends HttpServlet {
 		int id = RecordWebUtil.getId(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
-		ServletUtil.dataResponse(response, json);
-		
-		System.out.println("The found record id = "+id);
+		ServletUtil.jsonResponse(response, json);
 	}
 
 	/**
@@ -70,23 +69,21 @@ public class RecordServlet extends HttpServlet {
 	 *  Return the result with json object
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		BufferedReader streamReader = null;
-		try {
-			String charEncoding = request.getCharacterEncoding();
-	        if (charEncoding == null) {
-	            charEncoding = "UTF-8";
-	        }
-			streamReader = new BufferedReader( new InputStreamReader(request.getInputStream(), charEncoding));
-			StringBuilder strBuilder = new StringBuilder();
-			String inputStr;
-			while ((inputStr = streamReader.readLine()) != null)
-				strBuilder.append(inputStr);
-			JSONObject jsonObject = new JSONObject(strBuilder.toString());
-			System.out.println(jsonObject.toString());
+		String charEncoding = request.getCharacterEncoding();
+        if (charEncoding == null) {
+            charEncoding = "UTF-8";
+        }
+        try (BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), charEncoding))) {
+        	StringBuilder strBuilder = new StringBuilder();
+			String s;
+			while ((s = streamReader.readLine()) != null)
+				strBuilder.append(s);
+			JSONObject inputJson = new JSONObject(strBuilder.toString());
+			System.out.println(inputJson.toString());
 			
 			// 验证用户是否有效
-			String platName = jsonObject.getString("platName");
-			String platId = jsonObject.getString("platId");
+			String platName = inputJson.getString("platName");
+			String platId = inputJson.getString("platId");
 			if(platName == null || platId == null) {
 				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
@@ -97,18 +94,16 @@ public class RecordServlet extends HttpServlet {
 			}			
 
 			// 执行命令
-			String cmd = jsonObject.getString("cmd");
-			RecordType type = null;
-			if(!jsonObject.isNull("recordTypeCode"))
-				type = RecordType.fromCode(jsonObject.getInt("recordTypeCode"));
+			String cmd = inputJson.getString("cmd");
+			RecordType type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 			
 			boolean cmdResult = false;
-			JSONObject jsonResult = null;
-			long createTime;
+			JSONObject returnJson = null;
+			long createTime = INVALID_TIME;
 			String devAddress;
-			switch(cmd) {			
+			switch(cmd) {
 			case "upload":
-				cmdResult = RecordWebUtil.upload(type, jsonObject);
+				cmdResult = RecordWebUtil.upload(type, inputJson);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
@@ -116,54 +111,24 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "updateNote":
-				createTime = jsonObject.getLong("createTime");
-				devAddress = jsonObject.getString("devAddress");
-				String note = jsonObject.getString("note");
-				cmdResult = RecordWebUtil.updateNote(type, createTime, devAddress, note);
-				if(cmdResult) {
-					ServletUtil.codeResponse(response, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(response, UPDATE_ERR);
-				}
-				break;
-				
-			case "downloadBasicInfo":
-				long fromTime = jsonObject.getLong("fromTime");
-				String creatorPlat = jsonObject.getString("creatorPlat");
-				String creatorId = jsonObject.getString("creatorId");
-				int num = jsonObject.getInt("num");
-				String noteSearchStr = jsonObject.getString("noteSearchStr");
-				JSONArray jsonArr = RecordWebUtil.downloadBasicInfo(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
-				
-				if(jsonArr == null) {
-					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
-				} else {
-					System.out.println(jsonArr.toString());
-					jsonResult = new JSONObject();
-					jsonResult.put("records", jsonArr);
-					ServletUtil.dataResponse(response, jsonResult);
-				}
-				break;
-				
 			case "download":
-				createTime = jsonObject.getLong("createTime");
-				devAddress = jsonObject.getString("devAddress");
+				createTime = inputJson.getLong("createTime");
+				devAddress = inputJson.getString("devAddress");
 				JSONObject json = RecordWebUtil.download(type, createTime, devAddress);
 				
 				if(json == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(json.toString());
-					jsonResult = new JSONObject();
-					jsonResult.put("record", json);
-					ServletUtil.dataResponse(response, jsonResult);
+					returnJson = new JSONObject();
+					returnJson.put("record", json);
+					ServletUtil.jsonResponse(response, returnJson);
 				}
 				break;
 				
 			case "delete":
-				createTime = jsonObject.getLong("createTime");
-				devAddress = jsonObject.getString("devAddress");
+				createTime = inputJson.getLong("createTime");
+				devAddress = inputJson.getString("devAddress");
 				cmdResult = RecordWebUtil.delete(type, createTime, devAddress);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
@@ -172,45 +137,61 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
+			case "downloadList":
+				long fromTime = inputJson.getLong("fromTime");
+				String creatorPlat = inputJson.getString("creatorPlat");
+				String creatorId = inputJson.getString("creatorId");
+				int num = inputJson.getInt("num");
+				String noteSearchStr = inputJson.getString("noteSearchStr");
+				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+				
+				if(jsonArr == null) {
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
+				} else {
+					System.out.println(jsonArr.toString());
+					returnJson = new JSONObject();
+					returnJson.put("records", jsonArr);
+					ServletUtil.jsonResponse(response, returnJson);
+				}
+				break;
+				
 			case "downloadReport":
-				createTime = jsonObject.getLong("createTime");
-		        devAddress = jsonObject.getString("devAddress");
-		        JSONObject json1 = RecordWebUtil.downloadDiagnoseResult(createTime, devAddress);		        
+				createTime = inputJson.getLong("createTime");
+		        devAddress = inputJson.getString("devAddress");
+		        JSONObject json1 = RecordWebUtil.downloadDiagnoseReport(createTime, devAddress);		        
 				
 				if(json1 == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(json1.toString());
-					jsonResult = new JSONObject();
-					jsonResult.put("reportResult", json1);
-					ServletUtil.dataResponse(response, jsonResult);
+					returnJson = new JSONObject();
+					returnJson.put("reportResult", json1);
+					ServletUtil.jsonResponse(response, returnJson);
 				}
 				break;
 				
 			case "requestReport":
-				createTime = jsonObject.getLong("createTime");
-		        devAddress = jsonObject.getString("devAddress");
+				createTime = inputJson.getLong("createTime");
+		        devAddress = inputJson.getString("devAddress");
 		        JSONObject report = RecordWebUtil.requestDiagnose(createTime, devAddress);		        
 				
 				if(report == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
 					System.out.println(report.toString());
-					jsonResult = new JSONObject();
-					jsonResult.put("reportResult", report);
-					ServletUtil.dataResponse(response, jsonResult);
+					returnJson = new JSONObject();
+					returnJson.put("reportResult", report);
+					ServletUtil.jsonResponse(response, returnJson);
 				}
 				break;	
 				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
-					break;				
+					break;
 			}
-		} catch (Exception e) {
+        } catch (JSONException e) {
 			e.printStackTrace();
 			ServletUtil.codeResponse(response, OTHER_ERR);
-		} finally {
-			streamReader.close();
-		}
+		} 
 	}
 }
