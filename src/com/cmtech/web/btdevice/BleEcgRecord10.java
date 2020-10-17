@@ -12,7 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportTime", "content", "status"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportTime", "content", "status", "aveHr"};
 	
 	public static final int STATUS_DONE = 0;
     public static final int STATUS_REQUEST = 1;
@@ -26,6 +26,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
     private long reportTime = INVALID_TIME; // diagnose report time
     private String content = ""; // diagnose result
     private int status = STATUS_DONE; // diagnose status
+    private int aveHr = 0; // average hr
 
 
     public BleEcgRecord10(long createTime, String devAddress) {
@@ -81,6 +82,8 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 			reportTime = reportJson.getLong("reportTime");
 			content = reportJson.getString("content");
 			status = reportJson.getInt("status");
+			if(reportJson.has("aveHr"))
+				aveHr = reportJson.getInt("aveHr");
 		}
 	}
 	
@@ -95,6 +98,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		reportJson.put("reportTime", reportTime);
 		reportJson.put("content", content);
 		reportJson.put("status", status);
+		reportJson.put("aveHr", aveHr);
 		json.put("report", reportJson);
 		return json;
 	}
@@ -109,6 +113,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		reportTime = rs.getLong("reportTime");
 		content = rs.getString("content");
 		status = rs.getInt("status");
+		aveHr = rs.getInt("aveHr");
 	}
 	
 	@Override
@@ -121,6 +126,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		ps.setLong(begin++, reportTime);
 		ps.setString(begin++, content);
 		ps.setInt(begin++, status);
+		ps.setInt(begin++, aveHr);
 		return begin;
 	}
 	
@@ -133,15 +139,16 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set reportTime=?, content=?, status=?, note = ? where createTime = ? and devAddress = ?";
+		String sql = "update " + tableName + " set reportTime=?, content=?, status=?, aveHr = ?, note = ? where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setLong(1, reportTime);
 			ps.setString(2, content);
 			ps.setInt(3, status);
-			ps.setString(4, getNote());
-			ps.setLong(5, getCreateTime());
-			ps.setString(6, getDevAddress());
+			ps.setInt(4, aveHr);
+			ps.setString(5, getNote());
+			ps.setLong(6, getCreateTime());
+			ps.setString(7, getDevAddress());
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
