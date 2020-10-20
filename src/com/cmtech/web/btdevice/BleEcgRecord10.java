@@ -12,7 +12,7 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportTime", "content", "status", "aveHr"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportVer", "reportTime", "content", "status", "aveHr"};
 	
 	public static final int STATUS_DONE = 0;
     public static final int STATUS_REQUEST = 1;
@@ -23,6 +23,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
     private int leadTypeCode; // lead type code
     private String ecgData; // ecg data
     
+    private String reportVer = "0.0";
     private long reportTime = INVALID_TIME; // diagnose report time
     private String content = ""; // diagnose result
     private int status = STATUS_DONE; // diagnose status
@@ -79,6 +80,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		ecgData = json.getString("ecgData");
 		if(json.has("report")) {
 			JSONObject reportJson = json.getJSONObject("report");
+			reportVer = reportJson.getString("reportVer");
 			reportTime = reportJson.getLong("reportTime");
 			content = reportJson.getString("content");
 			status = reportJson.getInt("status");
@@ -95,6 +97,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
 		JSONObject reportJson = new JSONObject();
+		reportJson.put("reportVer", reportVer);
 		reportJson.put("reportTime", reportTime);
 		reportJson.put("content", content);
 		reportJson.put("status", status);
@@ -110,6 +113,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		ecgData = rs.getString("ecgData");
+		reportVer = rs.getString("reportVer");
 		reportTime = rs.getLong("reportTime");
 		content = rs.getString("content");
 		status = rs.getInt("status");
@@ -123,6 +127,7 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, caliValue);
 		ps.setInt(begin++, leadTypeCode);
 		ps.setString(begin++, ecgData);
+		ps.setString(begin++, reportVer);
 		ps.setLong(begin++, reportTime);
 		ps.setString(begin++, content);
 		ps.setInt(begin++, status);
@@ -139,16 +144,18 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set reportTime=?, content=?, status=?, aveHr = ?, note = ? where createTime = ? and devAddress = ?";
+		String sql = "update " + tableName + " set reportVer= ?, reportTime=?, content=?, status=?, aveHr = ?, note = ? where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setLong(1, reportTime);
-			ps.setString(2, content);
-			ps.setInt(3, status);
-			ps.setInt(4, aveHr);
-			ps.setString(5, getNote());
-			ps.setLong(6, getCreateTime());
-			ps.setString(7, getDevAddress());
+			int begin = 1;
+			ps.setString(begin++, reportVer);
+			ps.setLong(begin++, reportTime);
+			ps.setString(begin++, content);
+			ps.setInt(begin++, status);
+			ps.setInt(begin++, aveHr);
+			ps.setString(begin++, getNote());
+			ps.setLong(begin++, getCreateTime());
+			ps.setString(begin++, getDevAddress());
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
