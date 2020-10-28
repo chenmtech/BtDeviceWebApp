@@ -17,6 +17,7 @@ public class AppUpdateInfo implements IDbOperation, IJsonable{
 	private String verName;
 	private String note;
 	private String url;
+    private double size; // unit: MB
 	
 	public AppUpdateInfo() {
 		id = getId();
@@ -35,6 +36,7 @@ public class AppUpdateInfo implements IDbOperation, IJsonable{
 		json.put("verName", verName);
 		json.put("note", note);
 		json.put("url", url);
+		json.put("size", size);
 		
 		return json;
 	}
@@ -70,7 +72,7 @@ public class AppUpdateInfo implements IDbOperation, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select verCode, verName, note, url from AppUpdateInfo where id = ?";
+		String sql = "select verCode, verName, note, url, size from AppUpdateInfo where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -93,6 +95,7 @@ public class AppUpdateInfo implements IDbOperation, IJsonable{
 		verName = rs.getString("verName");
 		note = rs.getString("note");
 		url = rs.getString("url");
+		size = rs.getDouble("size");
 	}
 
 	@Override
