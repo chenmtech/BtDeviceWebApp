@@ -11,8 +11,9 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
-public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
+public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportVer", "reportTime", "content", "status", "aveHr"};
+	private static final String DEFAULT_REPORT_VER = "0.0";
 	
 	public static final int STATUS_DONE = 0;
     public static final int STATUS_REQUEST = 1;
@@ -23,14 +24,14 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
     private int leadTypeCode; // lead type code
     private String ecgData; // ecg data
     
-    private String reportVer = "0.0";
+    private String reportVer = DEFAULT_REPORT_VER;
     private long reportTime = INVALID_TIME; // diagnose report time
     private String content = ""; // diagnose result
     private int status = STATUS_DONE; // diagnose status
     private int aveHr = 0; // average hr
 
 
-    public BleEcgRecord10(long createTime, String devAddress) {
+    public BleEcgRecord(long createTime, String devAddress) {
     	super(RecordType.ECG, createTime, devAddress);
     }
     
@@ -212,10 +213,10 @@ public class BleEcgRecord10 extends BasicRecord implements IDiagnosable{
 		return false;
 	}
 	
-	public static BleEcgRecord10 getFirstRequestRecord() {
-		BleEcgReport10 report = BleEcgReport10.getFirstRequestReport();
+	public static BleEcgRecord getFirstRequestRecord() {
+		BleEcgReport report = BleEcgReport.getFirstRequestReport();
 		if(report != null) {
-			return new BleEcgRecord10(report.getCreateTime(), report.getDevAddress());
+			return new BleEcgRecord(report.getCreateTime(), report.getDevAddress());
 		}
 		return null;
 	}

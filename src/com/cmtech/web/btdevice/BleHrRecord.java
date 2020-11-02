@@ -6,14 +6,14 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-public class BleHrRecord10 extends BasicRecord {
+public class BleHrRecord extends BasicRecord {
 	private static final String[] PROPERTIES = {"hrList", "hrMax", "hrAve", "hrHist"};
 	private String hrList; // list of the filtered HR
     private short hrMax;
     private short hrAve;
     private String hrHist; // HR histogram value
 
-    public BleHrRecord10(long createTime, String devAddress) {
+    public BleHrRecord(long createTime, String devAddress) {
     	super(RecordType.HR, createTime, devAddress);
     }
 

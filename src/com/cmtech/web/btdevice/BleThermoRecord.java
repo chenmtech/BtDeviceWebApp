@@ -6,11 +6,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-public class BleThermoRecord10 extends BasicRecord {
+public class BleThermoRecord extends BasicRecord {
 	private static final String[] PROPERTIES = {"temp"};
 	private String temp;
     
-    public BleThermoRecord10(long createTime, String devAddress) {
+    public BleThermoRecord(long createTime, String devAddress) {
     	super(RecordType.THERMO, createTime, devAddress);
     }
     

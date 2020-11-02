@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BleEcgReport10 implements IDbOperation, IJsonable{
+public class BleEcgReport implements IDbOperation, IJsonable{
     public static final int DONE = 0;
     public static final int REQUEST = 1;
     public static final int PROCESS = 2;
@@ -23,7 +23,7 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
     private long createTime = INVALID_TIME;
     private String devAddress = "";
 	
-	public BleEcgReport10(long createTime, String devAddress) {
+	public BleEcgReport(long createTime, String devAddress) {
 		this.createTime = createTime;
 		this.devAddress = devAddress;
 	}
@@ -275,7 +275,7 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 		return false;	
 	}
 	
-	public static BleEcgReport10 getFirstRequestReport() {
+	public static BleEcgReport getFirstRequestReport() {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return null;
 		
@@ -284,12 +284,12 @@ public class BleEcgReport10 implements IDbOperation, IJsonable{
 		String sql = "select createTime, devAddress from EcgReport where status = ? order by id limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, BleEcgReport10.REQUEST);
+			ps.setInt(1, BleEcgReport.REQUEST);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
-				return new BleEcgReport10(createTime, devAddress);
+				return new BleEcgReport(createTime, devAddress);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -6,14 +6,14 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-public class BleEegRecord10 extends BasicRecord{
+public class BleEegRecord extends BasicRecord{
 	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "eegData"};
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     private String eegData; // eeg data
     
-    public BleEegRecord10(long createTime, String devAddress) {
+    public BleEegRecord(long createTime, String devAddress) {
     	super(RecordType.EEG, createTime, devAddress);
     }
 
