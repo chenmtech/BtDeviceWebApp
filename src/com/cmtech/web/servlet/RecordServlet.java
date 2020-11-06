@@ -88,8 +88,8 @@ public class RecordServlet extends HttpServlet {
 				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
-			if(new Account(platName, platId).getId() == INVALID_ID) {
-				ServletUtil.codeResponse(response, ACCOUNT_ERR);
+			if(!new Account(platName, platId).login()) {
+				ServletUtil.codeResponse(response, LOGIN_ERR);
 				return;
 			}			
 

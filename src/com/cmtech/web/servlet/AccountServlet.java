@@ -63,11 +63,11 @@ public class AccountServlet extends HttpServlet {
 		if(cmd == null || platName == null || platId == null) {
 			ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 		} else {
-			Account acount = new Account(platName, platId);
+			Account account = new Account(platName, platId);
 			//System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
-				if(acount.login()) {
+				if(account.login()) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(resp, LOGIN_ERR);
@@ -75,7 +75,7 @@ public class AccountServlet extends HttpServlet {
 				break;
 				
 			case "signUp":
-				if(acount.signUp()) {
+				if(account.signUp()) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(resp, SIGNUP_ERR);
@@ -83,10 +83,10 @@ public class AccountServlet extends HttpServlet {
 				break;
 				
 			case "signUporLogin":
-				if(acount.login() || acount.signUp()) {
+				if(account.login() || account.signUp()) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.codeResponse(resp, OTHER_ERR);
+					ServletUtil.codeResponse(resp, LOGIN_ERR);
 				}
 				break;
 				
@@ -124,6 +124,10 @@ public class AccountServlet extends HttpServlet {
 				return;
 			}
 			Account account = new Account(platName, platId);
+			if(!account.login()) {
+				ServletUtil.codeResponse(response, LOGIN_ERR);
+				return;
+			}
 			
 			String cmd = inputJson.getString("cmd");
 			boolean result;
