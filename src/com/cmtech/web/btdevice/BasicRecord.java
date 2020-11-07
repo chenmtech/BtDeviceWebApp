@@ -17,13 +17,12 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public abstract class BasicRecord implements IDbOperation, IJsonable{
-	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorPlat", "creatorId", "note", "recordSecond"};
+	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", "recordSecond"};
     private final RecordType type; // record type
     private final long createTime; // record create time
     private final String devAddress; // record device address
     private String ver; // record version
-    private String creatorPlat; // record creator plat name
-    private String creatorId; // record creator plat id
+    private int creatorId; // record creator id
     private String note; // record note
     private int recordSecond; // record time length, unit: second
 
@@ -32,8 +31,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         this.createTime = createTime;
         this.devAddress = devAddress;
     	ver = DEFAULT_VER;
-        creatorPlat = "";
-        creatorId = "";
+        creatorId = INVALID_ID;
         note = "";
         recordSecond = 0;
     }
@@ -58,11 +56,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         return createTime + devAddress;
     }
 
-    public String getCreatorPlat() {
-        return creatorPlat;
-    }
-
-    public String getCreatorId() {
+    public int getCreatorId() {
     	return creatorId;
     }
 
@@ -83,8 +77,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     	} else {
     		ver = DEFAULT_VER;
     	}
-		creatorPlat = json.getString("creatorPlat");
-		creatorId = json.getString("creatorId");
+		creatorId = json.getInt("creatorId");
 		note = json.getString("note");
 		recordSecond = json.getInt("recordSecond");
     }
@@ -100,7 +93,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		json.put("createTime", createTime);
 		json.put("devAddress", devAddress);
     	json.put("ver", ver);
-		json.put("creatorPlat", creatorPlat);
 		json.put("creatorId", creatorId);
 		json.put("note", note);
 		json.put("recordSecond", recordSecond);
@@ -113,8 +105,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	
 	private void readBasicPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
-		creatorPlat = rs.getString("creatorPlat");
-		creatorId = rs.getString("creatorId");
+		creatorId = rs.getInt("creatorId");
 		note = rs.getString("note");
 		recordSecond = rs.getInt("recordSecond");
 	}
@@ -124,8 +115,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		ps.setLong(begin++, createTime);
 		ps.setString(begin++, devAddress);
 		ps.setString(begin++, ver);
-		ps.setString(begin++, creatorPlat);
-		ps.setString(begin++, creatorId);
+		ps.setInt(begin++, creatorId);
 		ps.setString(begin++, note);
 		ps.setInt(begin++, recordSecond);
 		return begin;
@@ -292,7 +282,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
 	@Override
     public String toString() {
-        return type + "-" + createTime + "-" + devAddress + "-" + creatorPlat + "-" + creatorId + "-" + note;
+        return type + "-" + createTime + "-" + devAddress + "-" + creatorId + "-" + note;
     }
 
     @Override
@@ -341,7 +331,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return builder.toString();
     }
     
-    public static List<BasicRecord> findRecords(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
+    public static List<BasicRecord> findRecords(RecordType type, int creatorId, long fromTime, String noteSearchStr, int num) {
     	if(num <= 0) return null;
 		
 		List<RecordType> types = new ArrayList<>();
@@ -357,7 +347,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		List<BasicRecord> found = new ArrayList<>();
 		for(RecordType t : types) {
-			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecords(t, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecords(t, creatorId, fromTime, noteSearchStr, num);
 			if(tmp != null && !tmp.isEmpty())
 				found.addAll(tmp);
 		}
@@ -380,7 +370,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return found;
     }
 
-	private static List<BasicRecord> searchOneTypeRecords(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
+	private static List<BasicRecord> searchOneTypeRecords(RecordType type, int creatorId, long fromTime, String noteSearchStr, int num) {
 		if(num <= 0) return null;
 		String tableName = type.getTableName();
 		if("".equals(tableName)) return null;
@@ -393,10 +383,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		try {
 			String sql = "select createTime, devAddress from " + tableName;
 			String where = " where ";
-			if(!"".equals(creatorPlat)) {
-				where += "creatorPlat = ? and ";
-			}
-			if(!"".equals(creatorId)) {
+			if(creatorId != INVALID_ID) {
 				where += "creatorId = ? and "; 
 			}
 			if(!"".equals(noteSearchStr)) {
@@ -407,11 +394,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 			
 			ps = conn.prepareStatement(sql);
 			int i = 1;
-			if(!"".equals(creatorPlat)) {
-				ps.setString(i++, creatorPlat);
-			}
-			if(!"".equals(creatorId)) {
-				ps.setString(i++, creatorId);
+			if(creatorId != INVALID_ID) {
+				ps.setInt(i++, creatorId);
 			}
 			if(!"".equals(noteSearchStr)) {
 				ps.setString(i++, noteSearchStr);

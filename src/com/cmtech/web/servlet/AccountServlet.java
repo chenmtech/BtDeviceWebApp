@@ -8,6 +8,7 @@
  */
 package com.cmtech.web.servlet;
 
+import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
@@ -15,7 +16,6 @@ import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
-import static com.cmtech.web.MyConstant.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.dbUtil.RecordWebUtil;
 
 /**
  * ClassName: AccountServlet
@@ -64,18 +63,16 @@ public class AccountServlet extends HttpServlet {
 		if(cmd == null || userName == null || password == null) {
 			ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 		} else {
-			Account account = new Account(userName, password);
-			//System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
-				int id = account.login();
+				int id = Account.login(userName, password);
 				JSONObject json = new JSONObject();
 				json.put("id", id);
 				ServletUtil.jsonResponse(resp, json);
 				break;
 				
 			case "signUp":
-				if(account.signUp()) {
+				if(Account.signUp(userName, password)) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(resp, SIGNUP_ERR);
@@ -109,32 +106,31 @@ public class AccountServlet extends HttpServlet {
 			JSONObject inputJson = new JSONObject(strBuilder.toString());
 			// System.out.println(inputJson.toString());
 			
-			String platName = inputJson.getString("platName");
-			String platId = inputJson.getString("platId");
-			if(platName == null || platId == null) {
+			int id = inputJson.getInt("id");
+			if(id == INVALID_ID) {
 				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
-			Account account = new Account(platName, platId);
-			if(!account.login()) {
+			if(!Account.exist(id)) {
 				ServletUtil.codeResponse(response, LOGIN_ERR);
 				return;
 			}
+			Account account = new Account(id);
 			
 			String cmd = inputJson.getString("cmd");
-			boolean result;
-			int accountId = INVALID_ID;
 			switch(cmd) {
 			case "upload":
 				account.fromJson(inputJson);
-				accountId = account.getId();
-				if(accountId == INVALID_ID) {
-					result = account.insert();
+				if(account.insert()) {
+					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
-					result = account.update();
+					ServletUtil.codeResponse(response, UPLOAD_ERR);
 				}
+				break;
 				
-				if(result) {
+			case "update":
+				account.fromJson(inputJson);
+				if(account.update()) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(response, UPLOAD_ERR);

@@ -82,13 +82,12 @@ public class RecordServlet extends HttpServlet {
 			System.out.println(inputJson.toString());
 			
 			// 验证用户是否有效
-			String platName = inputJson.getString("platName");
-			String platId = inputJson.getString("platId");
-			if(platName == null || platId == null) {
+			int accountId = inputJson.getInt("accountId");
+			if(accountId == INVALID_ID) {
 				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 				return;
 			}
-			if(!new Account(platName, platId).login()) {
+			if(!Account.exist(accountId)) {
 				ServletUtil.codeResponse(response, LOGIN_ERR);
 				return;
 			}			
@@ -139,11 +138,10 @@ public class RecordServlet extends HttpServlet {
 				
 			case "downloadList":
 				long fromTime = inputJson.getLong("fromTime");
-				String creatorPlat = inputJson.getString("creatorPlat");
-				String creatorId = inputJson.getString("creatorId");
+				int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
 				String noteSearchStr = inputJson.getString("noteSearchStr");
-				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorId, fromTime, noteSearchStr, num);
 				
 				if(jsonArr == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);

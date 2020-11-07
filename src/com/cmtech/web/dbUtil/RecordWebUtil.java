@@ -55,9 +55,9 @@ public class RecordWebUtil {
 	// when: later than fromTime
 	// include: noteSearchStr
 	// howmuch: num
-	public static JSONArray downloadList(RecordType type, String creatorPlat, String creatorId, long fromTime, String noteSearchStr, int num) {
+	public static JSONArray downloadList(RecordType type, int creatorId, long fromTime, String noteSearchStr, int num) {
 		if(num <= 0) return null;
-		List<BasicRecord> found = BasicRecord.findRecords(type, creatorPlat, creatorId, fromTime, noteSearchStr, num);
+		List<BasicRecord> found = BasicRecord.findRecords(type, creatorId, fromTime, noteSearchStr, num);
 		if(found == null || found.isEmpty()) return null;
 		
 		JSONArray jsonArray = new JSONArray();
