@@ -14,28 +14,20 @@ import com.cmtech.web.util.Base64;
 
 public class Account implements IDbOperation, IJsonable {
 	private String ver = DEFAULT_VER;
-	private String platName;
-	private String platId;
-	private String name;
+	private String userName;
+	private String password;
+	private String nickName;
 	private String note;
 	private byte[] iconData;
 	
-	public Account(String platName, String platId) {
-		this.platName = platName;
-		this.platId = platId;
-	}
-
-	public String getPlatName() {
-		return platName;
-	}
-
-	public String getPlatId() {
-		return platId;
+	public Account(String userName, String password) {
+		this.userName = userName;
+		this.password = password;
 	}
 	
 	@Override
 	public void fromJson(JSONObject json) {
-		name = json.getString("name");
+		nickName = json.getString("nickName");
 		note = json.getString("note");
 		String iconStr = json.getString("iconStr");
 		iconData = Base64.decode(iconStr, Base64.DEFAULT);
@@ -45,9 +37,7 @@ public class Account implements IDbOperation, IJsonable {
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("ver", ver);
-		json.put("platName", platName);
-		json.put("platId", platId);
-		json.put("name", name);
+		json.put("nickName", nickName);
 		json.put("note", note);
 		if(iconData == null)
 			json.put("iconStr", "");
@@ -64,11 +54,11 @@ public class Account implements IDbOperation, IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from Account where platName = ? and platId = ?";
+		String sql = "select id from Account where userName = ? and password = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, platName);
-			ps.setString(2, platId);
+			ps.setString(1, userName);
+			ps.setString(2, password);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				return rs.getInt("id");
@@ -89,11 +79,11 @@ public class Account implements IDbOperation, IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, name, note, icon from Account where platName = ? and platId = ?";
+		String sql = "select ver, nickName, note, icon from Account where userName = ? and password = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, platName);
-			ps.setString(2, platId);
+			ps.setString(1, userName);
+			ps.setString(2, password);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				getFromResultSet(rs);
@@ -110,7 +100,7 @@ public class Account implements IDbOperation, IJsonable {
 	
 	private void getFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
-		name = rs.getString("name");
+		nickName = rs.getString("nickName");
 		note = rs.getString("note");
 		Blob b = rs.getBlob("icon");
 		if(b == null || b.length() < 1) 
@@ -125,12 +115,12 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into Account (platName, platId, name, note, icon) values (?, ?, ?, ?, ?)";
+		String sql = "insert into Account (userName, password, nickName, note, icon) values (?, ?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, platName);
-			ps.setString(2, platId);
-			ps.setString(3, name);
+			ps.setString(1, userName);
+			ps.setString(2, password);
+			ps.setString(3, nickName);
 			ps.setString(4, note);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
@@ -152,16 +142,16 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update Account set name=?, note=?, icon=? where platName = ? and platId = ?";
+		String sql = "update Account set nickName=?, note=?, icon=? where userName = ? and password = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, name);
+			ps.setString(1, nickName);
 			ps.setString(2, note);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
 			ps.setBlob(3, b);
-			ps.setString(4, platName);
-			ps.setString(5, platId);
+			ps.setString(4, userName);
+			ps.setString(5, password);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -188,11 +178,11 @@ public class Account implements IDbOperation, IJsonable {
 	
 	@Override
 	public String toString() {
-		return "platName="+platName+",platId="+platId+",name="+name+",note="+note+",iconDataLength="+iconData.length;
+		return "userName="+userName+",password="+password+",nickName="+nickName+",note="+note+",iconDataLength="+iconData.length;
 	}
 	
-	public boolean login() {
-		return (getId() != INVALID_ID);
+	public int login() {
+		return getId();
 	}
 	
 	public boolean signUp() {

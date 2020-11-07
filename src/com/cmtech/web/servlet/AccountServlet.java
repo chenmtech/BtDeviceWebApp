@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.dbUtil.RecordWebUtil;
 
 /**
  * ClassName: AccountServlet
@@ -57,21 +58,20 @@ public class AccountServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String cmd = req.getParameter("cmd");
-		String platName = req.getParameter("platName");
-		String platId = req.getParameter("platId");
+		String userName = req.getParameter("userName");
+		String password = req.getParameter("password");
 		
-		if(cmd == null || platName == null || platId == null) {
+		if(cmd == null || userName == null || password == null) {
 			ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 		} else {
-			Account account = new Account(platName, platId);
+			Account account = new Account(userName, password);
 			//System.out.println(platName+platId);
 			switch(cmd) {
 			case "login":
-				if(account.login()) {
-					ServletUtil.codeResponse(resp, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(resp, LOGIN_ERR);
-				}
+				int id = account.login();
+				JSONObject json = new JSONObject();
+				json.put("id", id);
+				ServletUtil.jsonResponse(resp, json);
 				break;
 				
 			case "signUp":
@@ -79,14 +79,6 @@ public class AccountServlet extends HttpServlet {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(resp, SIGNUP_ERR);
-				}
-				break;
-				
-			case "signUporLogin":
-				if(account.login() || account.signUp()) {
-					ServletUtil.codeResponse(resp, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(resp, LOGIN_ERR);
 				}
 				break;
 				
