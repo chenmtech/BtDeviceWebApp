@@ -57,33 +57,43 @@ public class AccountServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String cmd = req.getParameter("cmd");
-		String userName = req.getParameter("userName");
-		String password = req.getParameter("password");
 		
-		if(cmd == null || userName == null || password == null) {
+		if(cmd == null) {
 			ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
-		} else {
-			switch(cmd) {
-			case "login":
-				int id = Account.login(userName, password);
-				JSONObject json = new JSONObject();
-				json.put("id", id);
-				ServletUtil.jsonResponse(resp, json);
-				break;
-				
-			case "signUp":
-				if(Account.signUp(userName, password)) {
-					ServletUtil.codeResponse(resp, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(resp, SIGNUP_ERR);
-				}
-				break;
-				
-				default:
-					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
-					break;
-			}
+			return;
 		}
+		
+		if(cmd.equals("signUp")) {
+			String userName = req.getParameter("userName");
+			String password = req.getParameter("password");
+			if(userName == null || password == null) {
+				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+				return;
+			}
+			int id = Account.signUp(userName, password);
+			JSONObject json = new JSONObject();
+			json.put("id", id);
+			ServletUtil.jsonResponse(resp, json);
+			return;			
+		}
+		
+		if(cmd.equals("login")) {
+			String userName = req.getParameter("userName");
+			String password = req.getParameter("password");
+			if(userName == null || password == null) {
+				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+				return;
+			}
+			if(Account.login(userName, password)) {
+				ServletUtil.codeResponse(resp, SUCCESS);
+			} else {
+				ServletUtil.codeResponse(resp, SIGNUP_ERR);
+			}
+			return;
+		}
+		
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+		return;
 	}
 
 	/**

@@ -30,14 +30,16 @@ public class Account implements IDbOperation, IJsonable {
 		this.password = password;
 	}
 	
-	public static int login(String userName, String password) {
-		return getIdFromDb(userName, password);
+	public static boolean login(String userName, String password) {
+		return (getIdFromDb(userName, password) != INVALID_ID);
 	}
 	
-	public static boolean signUp(String userName, String password) {
-		if(exist(userName)) return false;
+	public static int signUp(String userName, String password) {
+		if(Account.exist(userName)) return INVALID_ID;
 		
-		return new Account(userName, password).insert();
+		if(!new Account(userName, password).insert()) return INVALID_ID;
+		
+		return getIdFromDb(userName, password);
 	}
 	
 	@Override

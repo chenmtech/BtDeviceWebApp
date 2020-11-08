@@ -90,7 +90,7 @@ public class RecordServlet extends HttpServlet {
 			if(!Account.exist(accountId)) {
 				ServletUtil.codeResponse(response, LOGIN_ERR);
 				return;
-			}			
+			}
 
 			// 执行命令
 			String cmd = inputJson.getString("cmd");
