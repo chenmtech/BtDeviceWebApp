@@ -70,11 +70,12 @@ public class AccountServlet extends HttpServlet {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
 			}
-			int id = Account.signUp(userName, password);
-			JSONObject json = new JSONObject();
-			json.put("id", id);
-			ServletUtil.jsonResponse(resp, json);
-			return;			
+			if(Account.signUp(userName, password)) {
+				ServletUtil.codeResponse(resp, SUCCESS);
+			} else {
+				ServletUtil.codeResponse(resp, SIGNUP_ERR);
+			}
+			return;
 		}
 		
 		if(cmd.equals("login")) {
@@ -84,11 +85,11 @@ public class AccountServlet extends HttpServlet {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
 			}
-			if(Account.login(userName, password)) {
-				ServletUtil.codeResponse(resp, SUCCESS);
-			} else {
-				ServletUtil.codeResponse(resp, SIGNUP_ERR);
-			}
+
+			int id = Account.login(userName, password);
+			JSONObject json = new JSONObject();
+			json.put("id", id);
+			ServletUtil.jsonResponse(resp, json);
 			return;
 		}
 		
@@ -131,16 +132,7 @@ public class AccountServlet extends HttpServlet {
 			switch(cmd) {
 			case "upload":
 				account.fromJson(inputJson);
-				if(account.insert()) {
-					ServletUtil.codeResponse(response, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(response, UPLOAD_ERR);
-				}
-				break;
-				
-			case "update":
-				account.fromJson(inputJson);
-				if(account.update()) {
+				if(account.insert() || account.update()) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(response, UPLOAD_ERR);
