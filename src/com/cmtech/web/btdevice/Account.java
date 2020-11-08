@@ -48,7 +48,10 @@ public class Account implements IDbOperation, IJsonable {
 		nickName = json.getString("nickName");
 		note = json.getString("note");
 		String iconStr = json.getString("iconStr");
-		iconData = Base64.decode(iconStr, Base64.DEFAULT);
+		if(iconStr.equals(""))
+			iconData = new byte[0];
+		else
+			iconData = Base64.decode(iconStr, Base64.DEFAULT);
 	}
 
 	@Override
@@ -116,18 +119,12 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into Account (ver, userName, password, nickName, note, icon) values (?, ?, ?, ?, ?, ?)";
+		String sql = "insert into Account (ver, userName, password) values (?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
-			int index = 1;
-			ps.setString(index++, "ver");
-			ps.setString(index++, userName);
-			ps.setString(index++, password);
-			ps.setString(index++, nickName);
-			ps.setString(index++, note);
-			Blob b = conn.createBlob();
-			b.setBytes(1, iconData);
-			ps.setBlob(index++, b);
+			ps.setString(1, ver);
+			ps.setString(2, userName);
+			ps.setString(3, password);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {

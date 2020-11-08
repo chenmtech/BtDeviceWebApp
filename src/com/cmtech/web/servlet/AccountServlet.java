@@ -132,7 +132,7 @@ public class AccountServlet extends HttpServlet {
 			switch(cmd) {
 			case "upload":
 				account.fromJson(inputJson);
-				if(account.insert() || account.update()) {
+				if(account.update()) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
 					ServletUtil.codeResponse(response, UPLOAD_ERR);
