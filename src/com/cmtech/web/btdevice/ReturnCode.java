@@ -11,7 +11,7 @@ public enum ReturnCode {
 	UPLOAD_ERR(7),
 	DOWNLOAD_ERR(8),
 	DELETE_ERR(9),
-	OTHER_ERR(10);
+	DATA_ERR(10);
 	
 	private final int code;
 	

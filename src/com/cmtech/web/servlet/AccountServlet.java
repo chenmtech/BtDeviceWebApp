@@ -12,7 +12,7 @@ import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.OTHER_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
@@ -155,7 +155,7 @@ public class AccountServlet extends HttpServlet {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			ServletUtil.codeResponse(response, OTHER_ERR);
+			ServletUtil.codeResponse(response, DATA_ERR);
 		}
 	}
 	

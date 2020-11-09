@@ -189,7 +189,7 @@ public class RecordServlet extends HttpServlet {
 			}
         } catch (JSONException e) {
 			e.printStackTrace();
-			ServletUtil.codeResponse(response, OTHER_ERR);
+			ServletUtil.codeResponse(response, DATA_ERR);
 		} 
 	}
 }
