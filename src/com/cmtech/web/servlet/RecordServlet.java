@@ -143,14 +143,10 @@ public class RecordServlet extends HttpServlet {
 				String noteSearchStr = inputJson.getString("noteSearchStr");
 				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorId, fromTime, noteSearchStr, num);
 				
-				if(jsonArr == null) {
-					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
-				} else {
-					System.out.println(jsonArr.toString());
-					returnJson = new JSONObject();
-					returnJson.put("records", jsonArr);
-					ServletUtil.jsonResponse(response, returnJson);
-				}
+				//System.out.println(jsonArr.toString());
+				returnJson = new JSONObject();
+				returnJson.put("records", jsonArr);
+				ServletUtil.jsonResponse(response, returnJson);
 				break;
 				
 			case "downloadReport":
