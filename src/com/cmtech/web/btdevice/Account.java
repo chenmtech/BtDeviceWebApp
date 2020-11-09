@@ -43,7 +43,7 @@ public class Account implements IDbOperation, IJsonable {
 	@Override
 	public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
-		userName = json.getString("userName");
+		//userName = json.getString("userName");
 		password = json.getString("password");
 		nickName = json.getString("nickName");
 		note = json.getString("note");
@@ -58,8 +58,8 @@ public class Account implements IDbOperation, IJsonable {
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("ver", ver);
-		json.put("userName", userName);
-		json.put("password", password);
+		//json.put("userName", userName);
+		//json.put("password", password);
 		json.put("nickName", nickName);
 		json.put("note", note);
 		if(iconData == null)
@@ -142,15 +142,16 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update Account set nickName=?, note=?, icon=? where id = ?";
+		String sql = "update Account set password=?, nickName=?, note=?, icon=? where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, nickName);
-			ps.setString(2, note);
+			ps.setString(1, password);
+			ps.setString(2, nickName);
+			ps.setString(3, note);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
-			ps.setBlob(3, b);
-			ps.setInt(4, id);
+			ps.setBlob(4, b);
+			ps.setInt(5, id);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
