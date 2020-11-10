@@ -16,6 +16,9 @@ import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
+
+import static com.cmtech.web.btdevice.Account.LOGIN_WAY_PASSWORD;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -80,16 +83,38 @@ public class AccountServlet extends HttpServlet {
 		
 		if(cmd.equals("login")) {
 			String userName = req.getParameter("userName");
-			String password = req.getParameter("password");
-			if(userName == null || password == null) {
+			String loginWayStr = req.getParameter("loginWay");
+
+			if(userName == null || loginWayStr == null) {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
 			}
+			
+			int id = INVALID_ID;
+			int loginWay = Integer.parseInt(loginWayStr);
+			switch(loginWay) {
+			case LOGIN_WAY_PASSWORD: // 密码登录
+				String password = req.getParameter("password");
+				if(password == null) {
+					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+					return;
+				}
 
-			int id = Account.login(userName, password);
-			JSONObject json = new JSONObject();
-			json.put("id", id);
-			ServletUtil.jsonResponse(resp, json);
+				id = Account.login(userName, password);
+				break;
+				
+				default:
+					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+					return;
+			}			
+			
+			if(id == INVALID_ID) {
+				ServletUtil.codeResponse(resp, LOGIN_ERR);
+			} else {
+				JSONObject json = new JSONObject();
+				json.put("id", id);
+				ServletUtil.jsonResponse(resp, json);
+			}
 			return;
 		}
 		
@@ -123,7 +148,7 @@ public class AccountServlet extends HttpServlet {
 				return;
 			}
 			if(!Account.exist(id)) {
-				ServletUtil.codeResponse(response, LOGIN_ERR);
+				ServletUtil.codeResponse(response, ACCOUNT_ERR);
 				return;
 			}
 			Account account = new Account(id);

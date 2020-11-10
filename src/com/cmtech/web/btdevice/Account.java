@@ -13,6 +13,11 @@ import static com.cmtech.web.MyConstant.*;
 import com.cmtech.web.util.Base64;
 
 public class Account implements IDbOperation, IJsonable {
+	public static final int LOGIN_WAY_PASSWORD = 0;
+    public static final int LOGIN_WAY_QR_CODE = 1;
+    public static final int LOGIN_WAY_QQ = 2;
+    public static final int LOGIN_WAY_WECHAT = 3;
+    
 	private int id = INVALID_ID;
 	private String ver = DEFAULT_VER;
 	private String userName;

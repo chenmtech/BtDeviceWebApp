@@ -88,7 +88,7 @@ public class RecordServlet extends HttpServlet {
 				return;
 			}
 			if(!Account.exist(accountId)) {
-				ServletUtil.codeResponse(response, LOGIN_ERR);
+				ServletUtil.codeResponse(response, ACCOUNT_ERR);
 				return;
 			}
 
