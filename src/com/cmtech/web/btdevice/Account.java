@@ -25,6 +25,10 @@ public class Account implements IDbOperation, IJsonable {
 	private String nickName;
 	private String note;
 	private byte[] iconData;
+	private int gender = 0;
+    private long birthday = INVALID_TIME;
+    private int weight = 0;
+    private int height = 0;
 	
 	public Account(int id) {
 		this.id = id;
@@ -57,6 +61,10 @@ public class Account implements IDbOperation, IJsonable {
 			iconData = new byte[0];
 		else
 			iconData = Base64.decode(iconStr, Base64.DEFAULT);
+		gender = json.getInt("gender");
+		birthday = json.getLong("birthday");
+		weight = json.getInt("weight");
+		height = json.getInt("height");
 	}
 
 	@Override
@@ -71,6 +79,10 @@ public class Account implements IDbOperation, IJsonable {
 			json.put("iconStr", "");
 		else
 			json.put("iconStr", Base64.encodeToString(iconData, Base64.DEFAULT));
+		json.put("gender", gender);
+		json.put("birthday", birthday);
+		json.put("weight", weight);
+		json.put("height", height);
 	
 		return json;
 	}
@@ -87,7 +99,8 @@ public class Account implements IDbOperation, IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, userName, password, nickName, note, icon from Account where id = ?";
+		String sql = "select ver, userName, password, nickName, note, icon, gender, birthday, weight, height "
+				+ "from Account where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
@@ -116,6 +129,10 @@ public class Account implements IDbOperation, IJsonable {
 			iconData = null;
 		else
 			iconData = b.getBytes(1, (int)b.length());
+		gender = rs.getInt("gender");
+		birthday = rs.getLong("birthday");
+		weight = rs.getInt("weight");
+		height = rs.getInt("height");
 	}
 
 	@Override
@@ -147,16 +164,21 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update Account set password=?, nickName=?, note=?, icon=? where id = ?";
+		String sql = "update Account set password=?, nickName=?, note=?, icon=?, gender=?, birthday=?, weight=?, height=? where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, password);
-			ps.setString(2, nickName);
-			ps.setString(3, note);
+			int index = 1;
+			ps.setString(index++, password);
+			ps.setString(index++, nickName);
+			ps.setString(index++, note);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
-			ps.setBlob(4, b);
-			ps.setInt(5, id);
+			ps.setBlob(index++, b);
+			ps.setInt(index++, gender);
+			ps.setLong(index++, birthday);
+			ps.setInt(index++, weight);
+			ps.setInt(index++, height);
+			ps.setInt(index++, id);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
