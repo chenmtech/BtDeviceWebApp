@@ -53,7 +53,7 @@ public class Account implements IDbOperation, IJsonable {
 	public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
 		//userName = json.getString("userName");
-		password = json.getString("password");
+		//password = json.getString("password");
 		nickName = json.getString("nickName");
 		note = json.getString("note");
 		String iconStr = json.getString("iconStr");
@@ -164,11 +164,10 @@ public class Account implements IDbOperation, IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update Account set password=?, nickName=?, note=?, icon=?, gender=?, birthday=?, weight=?, height=? where id = ?";
+		String sql = "update Account set nickName=?, note=?, icon=?, gender=?, birthday=?, weight=?, height=? where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			int index = 1;
-			ps.setString(index++, password);
 			ps.setString(index++, nickName);
 			ps.setString(index++, note);
 			Blob b = conn.createBlob();
