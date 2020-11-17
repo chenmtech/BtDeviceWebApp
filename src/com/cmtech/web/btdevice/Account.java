@@ -49,6 +49,10 @@ public class Account implements IDbOperation, IJsonable {
 		return new Account(userName, password).insert();
 	}
 	
+	public boolean isNeedWebLogin() {
+		return false;
+	}
+	
 	@Override
 	public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
@@ -83,6 +87,7 @@ public class Account implements IDbOperation, IJsonable {
 		json.put("birthday", birthday);
 		json.put("weight", weight);
 		json.put("height", height);
+		json.put("needWebLogin", isNeedWebLogin());
 	
 		return json;
 	}
