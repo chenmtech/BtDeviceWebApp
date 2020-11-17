@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.util.MD5Utils;
 
 /**
  * ClassName: AccountServlet
@@ -68,7 +69,7 @@ public class AccountServlet extends HttpServlet {
 		
 		if(cmd.equals("signUp")) {
 			String userName = req.getParameter("userName");
-			String password = req.getParameter("password");
+			String password = MD5Utils.getMD5Code(req.getParameter("password"));
 			if(userName == null || password == null) {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
@@ -94,7 +95,7 @@ public class AccountServlet extends HttpServlet {
 			int loginWay = Integer.parseInt(loginWayStr);
 			switch(loginWay) {
 			case LOGIN_WAY_PASSWORD: // 密码登录
-				String password = req.getParameter("password");
+				String password = MD5Utils.getMD5Code(req.getParameter("password"));
 				if(password == null) {
 					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 					return;
