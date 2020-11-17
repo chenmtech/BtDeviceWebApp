@@ -14,7 +14,7 @@ import static com.cmtech.web.MyConstant.*;
 import com.cmtech.web.util.Base64;
 
 public class Account implements IDbOperation, IJsonable {
-	private static final int HOUR_NEED_LOGIN = 1;
+	private static final int HOUR_NEED_LOGIN = 24*30;
 	
 	public static final int LOGIN_WAY_PASSWORD = 0;
     public static final int LOGIN_WAY_QR_CODE = 1;
