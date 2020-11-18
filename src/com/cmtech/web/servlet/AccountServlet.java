@@ -9,16 +9,14 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
+import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
-
-import static com.cmtech.web.btdevice.Account.LOGIN_WAY_PASSWORD;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,11 +67,12 @@ public class AccountServlet extends HttpServlet {
 		
 		if(cmd.equals("signUp")) {
 			String userName = req.getParameter("userName");
-			String password = MD5Utils.getMD5Code(req.getParameter("password"));
+			String password = req.getParameter("password");
 			if(userName == null || password == null) {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
 			}
+			password = MD5Utils.getMD5Code(password);
 			if(Account.signUp(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
@@ -84,30 +83,13 @@ public class AccountServlet extends HttpServlet {
 		
 		if(cmd.equals("login")) {
 			String userName = req.getParameter("userName");
-			String loginWayStr = req.getParameter("loginWay");
-
-			if(userName == null || loginWayStr == null) {
+			String password = req.getParameter("password");
+			if(userName == null || password == null) {
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				return;
 			}
-			
-			int id = INVALID_ID;
-			int loginWay = Integer.parseInt(loginWayStr);
-			switch(loginWay) {
-			case LOGIN_WAY_PASSWORD: // 密码登录
-				String password = MD5Utils.getMD5Code(req.getParameter("password"));
-				if(password == null) {
-					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
-					return;
-				}
-
-				id = Account.login(userName, password);
-				break;
-				
-				default:
-					ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
-					return;
-			}			
+			password = MD5Utils.getMD5Code(password);
+			int id = Account.login(userName, password);
 			
 			if(id == INVALID_ID) {
 				ServletUtil.codeResponse(resp, LOGIN_ERR);
@@ -143,15 +125,13 @@ public class AccountServlet extends HttpServlet {
 			JSONObject inputJson = new JSONObject(strBuilder.toString());
 			// System.out.println(inputJson.toString());
 			
+			// 验证账户是否有效
 			int id = inputJson.getInt("id");
-			if(id == INVALID_ID) {
-				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
-				return;
-			}
-			if(!Account.exist(id)) {
+			if(!Account.isAccountValid(id)) {
 				ServletUtil.codeResponse(response, ACCOUNT_ERR);
 				return;
 			}
+			
 			Account account = new Account(id);
 			
 			String cmd = inputJson.getString("cmd");

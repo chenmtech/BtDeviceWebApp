@@ -79,15 +79,11 @@ public class RecordServlet extends HttpServlet {
 			while ((s = streamReader.readLine()) != null)
 				strBuilder.append(s);
 			JSONObject inputJson = new JSONObject(strBuilder.toString());
-			System.out.println(inputJson.toString());
+			//System.out.println(inputJson.toString());
 			
-			// 验证用户是否有效
+			// 验证账户是否有效
 			int accountId = inputJson.getInt("accountId");
-			if(accountId == INVALID_ID) {
-				ServletUtil.codeResponse(response, INVALID_PARA_ERR);
-				return;
-			}
-			if(!Account.exist(accountId)) {
+			if(!Account.isAccountValid(accountId)) {
 				ServletUtil.codeResponse(response, ACCOUNT_ERR);
 				return;
 			}

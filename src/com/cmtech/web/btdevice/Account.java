@@ -45,6 +45,7 @@ public class Account implements IDbOperation, IJsonable {
 	
 	public static int login(String userName, String password) {
 		int id = getIdFromDb(userName, password);
+		if(id == INVALID_ID) return id;
 		
 		Connection conn = DbUtil.connect();
 		if(conn == null) return INVALID_ID;
@@ -65,13 +66,19 @@ public class Account implements IDbOperation, IJsonable {
 		} finally {
 			DbUtil.close(null, ps, conn);
 		}
-		return INVALID_ID;		
+		return INVALID_ID;
 	}
 	
 	public static boolean signUp(String userName, String password) {
 		if(Account.exist(userName)) return false;
 		
 		return new Account(userName, password).insert();
+	}
+	
+	// 验证账户是否有效
+	// 目前仅仅验证该账户id是否存在
+	public static boolean isAccountValid(int id) {
+		return Account.exist(id);
 	}
 	
 	public boolean isNeedWebLogin() {
@@ -241,6 +248,8 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	public static boolean exist(int id) {
+		if(id == INVALID_ID) return false;
+		
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
