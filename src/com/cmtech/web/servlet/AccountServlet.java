@@ -101,6 +101,22 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
+		if(cmd.equals("changePassword")) {
+			String userName = req.getParameter("userName");
+			String password = req.getParameter("password");
+			if(userName == null || password == null) {
+				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+				return;
+			}
+			password = MD5Utils.getMD5Code(password);
+			if(Account.signUp(userName, password)) {
+				ServletUtil.codeResponse(resp, SUCCESS);
+			} else {
+				ServletUtil.codeResponse(resp, SIGNUP_ERR);
+			}
+			return;
+		}
+		
 		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 		return;
 	}

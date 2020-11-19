@@ -56,8 +56,6 @@ public class Account implements IDbOperation, IJsonable {
 	@Override
 	public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
-		//userName = json.getString("userName");
-		//password = json.getString("password");
 		nickName = json.getString("nickName");
 		note = json.getString("note");
 		String iconStr = json.getString("iconStr");
@@ -75,8 +73,6 @@ public class Account implements IDbOperation, IJsonable {
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("ver", ver);
-		//json.put("userName", userName);
-		//json.put("password", password);
 		json.put("nickName", nickName);
 		json.put("note", note);
 		if(iconData == null)

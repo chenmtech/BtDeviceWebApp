@@ -14,7 +14,7 @@ import com.cmtech.web.btdevice.ReturnCode;
 public class ServletUtil {
 	
 	public static void contentResponse(HttpServletResponse resp, Object content) throws IOException {
-		if(resp == null || content == null) {
+		if(resp == null) {
 			throw new NullPointerException();
 		}
 		JSONObject json = new JSONObject();
