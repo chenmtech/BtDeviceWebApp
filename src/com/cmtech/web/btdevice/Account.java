@@ -1,26 +1,21 @@
 package com.cmtech.web.btdevice;
 
+import static com.cmtech.web.MyConstant.DEFAULT_VER;
+import static com.cmtech.web.MyConstant.INVALID_ID;
+import static com.cmtech.web.MyConstant.INVALID_TIME;
+
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import static com.cmtech.web.MyConstant.*;
 import com.cmtech.web.util.Base64;
 
 public class Account implements IDbOperation, IJsonable {
-	private static final int HOUR_NEED_LOGIN = 24*30;
-	
-	public static final int LOGIN_WAY_PASSWORD = 0;
-    public static final int LOGIN_WAY_QR_CODE = 1;
-    public static final int LOGIN_WAY_QQ = 2;
-    public static final int LOGIN_WAY_WECHAT = 3;
-    
 	private int id = INVALID_ID;
 	private String ver = DEFAULT_VER;
 	private String userName;
@@ -32,7 +27,6 @@ public class Account implements IDbOperation, IJsonable {
     private long birthday = INVALID_TIME;
     private int weight = 0;
     private int height = 0;
-    private long lastLoginTime = 0;
 	
 	public Account(int id) {
 		this.id = id;
@@ -44,29 +38,7 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	public static int login(String userName, String password) {
-		int id = getIdFromDb(userName, password);
-		if(id == INVALID_ID) return id;
-		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return INVALID_ID;
-		
-		PreparedStatement ps = null;
-		String sql = "update Account set lastLoginTime=? where id = ?";
-		try {
-			long lastLoginTime = new Date().getTime();
-			ps = conn.prepareStatement(sql);
-			ps.setLong(1, lastLoginTime);
-			ps.setInt(2, id);
-			if(ps.executeUpdate() != 0) {
-				return id;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return INVALID_ID;
+		return getIdFromDb(userName, password);
 	}
 	
 	public static boolean signUp(String userName, String password) {
@@ -79,12 +51,6 @@ public class Account implements IDbOperation, IJsonable {
 	// 目前仅仅验证该账户id是否存在
 	public static boolean isAccountValid(int id) {
 		return Account.exist(id);
-	}
-	
-	public boolean isNeedWebLogin() {
-		long currentTime = new Date().getTime();
-		
-		return (currentTime - lastLoginTime > HOUR_NEED_LOGIN*60*60*1000L);
 	}
 	
 	@Override
@@ -121,7 +87,6 @@ public class Account implements IDbOperation, IJsonable {
 		json.put("birthday", birthday);
 		json.put("weight", weight);
 		json.put("height", height);
-		json.put("needWebLogin", isNeedWebLogin());
 	
 		return json;
 	}
@@ -138,7 +103,7 @@ public class Account implements IDbOperation, IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select ver, userName, password, nickName, note, icon, gender, birthday, weight, height, lastLoginTime "
+		String sql = "select ver, userName, password, nickName, note, icon, gender, birthday, weight, height "
 				+ "from Account where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -172,7 +137,6 @@ public class Account implements IDbOperation, IJsonable {
 		birthday = rs.getLong("birthday");
 		weight = rs.getInt("weight");
 		height = rs.getInt("height");
-		lastLoginTime = rs.getLong("lastLoginTime");
 	}
 
 	@Override

@@ -11,8 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
-
 import com.cmtech.web.btdevice.AppUpdateInfo;
 
 @WebServlet(name="AppUpdateServlet", urlPatterns="/AppUpdateInfo")
@@ -36,9 +34,7 @@ public class AppUpdateServlet extends HttpServlet {
 		} else {
 			AppUpdateInfo updateInfo = new AppUpdateInfo();
 			if(updateInfo.retrieve()) {
-				JSONObject json = new JSONObject();
-				json.put("appUpdateInfo", updateInfo.toJson());
-				ServletUtil.jsonResponse(response, json);
+				ServletUtil.contentResponse(response, updateInfo.toJson());
 			} else {
 				ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 			}

@@ -96,7 +96,7 @@ public class AccountServlet extends HttpServlet {
 			} else {
 				JSONObject json = new JSONObject();
 				json.put("id", id);
-				ServletUtil.jsonResponse(resp, json);
+				ServletUtil.contentResponse(resp, json);
 			}
 			return;
 		}
@@ -147,9 +147,7 @@ public class AccountServlet extends HttpServlet {
 				
 			case "download":
 				if(account.retrieve()) {
-					JSONObject json = new JSONObject();
-					json.put("account", account.toJson());
-					ServletUtil.jsonResponse(response, json);
+					ServletUtil.contentResponse(response, account.toJson());
 				} else {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				}

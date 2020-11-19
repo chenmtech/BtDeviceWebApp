@@ -1,7 +1,13 @@
 package com.cmtech.web.servlet;
 
-import static com.cmtech.web.btdevice.ReturnCode.*;
-import static com.cmtech.web.MyConstant.*;
+import static com.cmtech.web.MyConstant.INVALID_TIME;
+import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
+import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,7 +62,7 @@ public class RecordServlet extends HttpServlet {
 		int id = RecordWebUtil.getId(type, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
-		ServletUtil.jsonResponse(response, json);
+		ServletUtil.contentResponse(response, json);
 	}
 
 	/**
@@ -93,7 +99,6 @@ public class RecordServlet extends HttpServlet {
 			RecordType type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 			
 			boolean cmdResult = false;
-			JSONObject returnJson = null;
 			long createTime = INVALID_TIME;
 			String devAddress;
 			switch(cmd) {
@@ -114,10 +119,8 @@ public class RecordServlet extends HttpServlet {
 				if(json == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
-					System.out.println(json.toString());
-					returnJson = new JSONObject();
-					returnJson.put("record", json);
-					ServletUtil.jsonResponse(response, returnJson);
+					//System.out.println(json.toString());
+					ServletUtil.contentResponse(response, json);
 				}
 				break;
 				
@@ -139,10 +142,7 @@ public class RecordServlet extends HttpServlet {
 				String noteSearchStr = inputJson.getString("noteSearchStr");
 				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorId, fromTime, noteSearchStr, num);
 				
-				//System.out.println(jsonArr.toString());
-				returnJson = new JSONObject();
-				returnJson.put("records", jsonArr);
-				ServletUtil.jsonResponse(response, returnJson);
+				ServletUtil.contentResponse(response, jsonArr);
 				break;
 				
 			case "downloadReport":
@@ -153,10 +153,8 @@ public class RecordServlet extends HttpServlet {
 				if(json1 == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
-					System.out.println(json1.toString());
-					returnJson = new JSONObject();
-					returnJson.put("reportResult", json1);
-					ServletUtil.jsonResponse(response, returnJson);
+					//System.out.println(json1.toString());
+					ServletUtil.contentResponse(response, json1);
 				}
 				break;
 				
@@ -168,10 +166,8 @@ public class RecordServlet extends HttpServlet {
 				if(report == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
-					System.out.println(report.toString());
-					returnJson = new JSONObject();
-					returnJson.put("reportResult", report);
-					ServletUtil.jsonResponse(response, returnJson);
+					//System.out.println(report.toString());
+					ServletUtil.contentResponse(response, report);
 				}
 				break;	
 				

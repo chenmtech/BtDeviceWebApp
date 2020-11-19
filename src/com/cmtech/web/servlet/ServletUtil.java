@@ -13,11 +13,13 @@ import com.cmtech.web.btdevice.ReturnCode;
 
 public class ServletUtil {
 	
-	public static void jsonResponse(HttpServletResponse resp, JSONObject json) throws IOException {
-		if(resp == null || json == null) {
+	public static void contentResponse(HttpServletResponse resp, Object content) throws IOException {
+		if(resp == null || content == null) {
 			throw new NullPointerException();
 		}
+		JSONObject json = new JSONObject();
 		json.put("code", SUCCESS.getCode());
+		json.put("content", content);
 		doResponse(resp, json);
 	}
 	
