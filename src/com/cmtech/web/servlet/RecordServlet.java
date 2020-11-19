@@ -141,8 +141,10 @@ public class RecordServlet extends HttpServlet {
 				int num = inputJson.getInt("num");
 				String noteSearchStr = inputJson.getString("noteSearchStr");
 				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorId, fromTime, noteSearchStr, num);
-				
-				ServletUtil.contentResponse(response, jsonArr);
+				if(jsonArr == null)
+					ServletUtil.codeResponse(response, SUCCESS);
+				else
+					ServletUtil.contentResponse(response, jsonArr);
 				break;
 				
 			case "downloadReport":
