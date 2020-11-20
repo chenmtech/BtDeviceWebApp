@@ -47,6 +47,28 @@ public class Account implements IDbOperation, IJsonable {
 		return new Account(userName, password).insert();
 	}
 	
+	public static boolean changePassword(String userName, String password) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update Account set password=? where userName = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, password);
+			ps.setString(2, userName);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+	}
+	
 	// 验证账户是否有效
 	// 目前仅仅验证该账户id是否存在
 	public static boolean isAccountValid(int id) {

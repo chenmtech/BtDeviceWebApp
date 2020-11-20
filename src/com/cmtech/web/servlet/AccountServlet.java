@@ -9,14 +9,7 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
-import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,10 +102,10 @@ public class AccountServlet extends HttpServlet {
 				return;
 			}
 			password = MD5Utils.getMD5Code(password);
-			if(Account.signUp(userName, password)) {
+			if(Account.changePassword(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
-				ServletUtil.codeResponse(resp, SIGNUP_ERR);
+				ServletUtil.codeResponse(resp, CHANGE_PASSWORD_ERR);
 			}
 			return;
 		}
