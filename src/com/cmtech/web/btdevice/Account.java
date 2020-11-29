@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.util.Base64;
+import com.cmtech.web.util.MD5Utils;
 
 public class Account implements IDbOperation, IJsonable {
 	private int id = INVALID_ID;
@@ -38,16 +39,22 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	public static int login(String userName, String password) {
-		return getIdFromDb(userName, password);
+		String md5Password = getPasswordFromDb(userName);
+		if(MD5Utils.verify(password, md5Password))
+			return getIdFromDb(userName);
+		else
+			return INVALID_ID;
 	}
 	
 	public static boolean signUp(String userName, String password) {
 		if(Account.exist(userName)) return false;
-		
+		password = MD5Utils.generate(password);
+		if("".equals(password)) return false;
 		return new Account(userName, password).insert();
 	}
 	
 	public static boolean changePassword(String userName, String password) {
+		password = MD5Utils.generate(password);
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -277,17 +284,16 @@ public class Account implements IDbOperation, IJsonable {
 		return false;		
 	}
 	
-	private static int getIdFromDb(String userName, String password) {
+	private static int getIdFromDb(String userName) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return INVALID_ID;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from Account where userName = ? and password = ?";
+		String sql = "select id from Account where userName = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, userName);
-			ps.setString(2, password);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				return rs.getInt("id");
@@ -299,5 +305,28 @@ public class Account implements IDbOperation, IJsonable {
 			DbUtil.close(rs, ps, conn);
 		}
 		return INVALID_ID;		
+	}
+	
+	private static String getPasswordFromDb(String userName) {
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return "";
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select password from Account where userName = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, userName);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				return rs.getString("password");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return "";		
 	}
 }
