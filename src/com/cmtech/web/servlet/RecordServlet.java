@@ -96,13 +96,14 @@ public class RecordServlet extends HttpServlet {
 
 			// 执行命令
 			String cmd = inputJson.getString("cmd");
-			RecordType type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
-			
+			RecordType type;			
 			boolean cmdResult = false;
 			long createTime = INVALID_TIME;
 			String devAddress;
+			
 			switch(cmd) {
 			case "upload":
+				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				cmdResult = RecordWebUtil.upload(type, inputJson);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
@@ -112,6 +113,7 @@ public class RecordServlet extends HttpServlet {
 				break;
 				
 			case "download":
+				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
 				JSONObject json = RecordWebUtil.download(type, createTime, devAddress);
@@ -125,6 +127,7 @@ public class RecordServlet extends HttpServlet {
 				break;
 				
 			case "delete":
+				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
 				cmdResult = RecordWebUtil.delete(type, createTime, devAddress);
@@ -136,11 +139,17 @@ public class RecordServlet extends HttpServlet {
 				break;
 				
 			case "downloadList":
+				String typeStr = inputJson.getString("recordTypeCode");
+				String[] typeStrArr = typeStr.split(",");
+				RecordType[] types = new RecordType[typeStrArr.length];
+				for(int i = 0; i < typeStrArr.length; i++) {
+					types[i] = RecordType.fromCode(Integer.parseInt(typeStrArr[i]));
+				}
 				long fromTime = inputJson.getLong("fromTime");
 				int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
 				String noteSearchStr = inputJson.getString("noteSearchStr");
-				JSONArray jsonArr = RecordWebUtil.downloadList(type, creatorId, fromTime, noteSearchStr, num);
+				JSONArray jsonArr = RecordWebUtil.downloadList(types, creatorId, fromTime, noteSearchStr, num);
 				if(jsonArr == null)
 					ServletUtil.codeResponse(response, SUCCESS);
 				else

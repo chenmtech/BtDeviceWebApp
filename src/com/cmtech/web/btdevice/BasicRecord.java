@@ -331,22 +331,15 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return builder.toString();
     }
     
-    public static List<BasicRecord> findRecords(RecordType type, int creatorId, long fromTime, String noteSearchStr, int num) {
+    public static List<BasicRecord> findRecords(RecordType[] types, int creatorId, long fromTime, String noteSearchStr, int num) {
     	if(num <= 0) return null;
-		
-		List<RecordType> types = new ArrayList<>();
-		if(type == RecordType.ALL) {
-			for(RecordType t : RecordType.values()) {
-				if(t != RecordType.ALL && t != RecordType.TH) {
-					types.add(t);
-				}
-			}
-		}
-		else
-			types.add(type);
 		
 		List<BasicRecord> found = new ArrayList<>();
 		for(RecordType t : types) {
+			// 不支持ALL和TH类型的记录
+			if(t == RecordType.ALL || t == RecordType.TH) {
+				continue;
+			}
 			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecords(t, creatorId, fromTime, noteSearchStr, num);
 			if(tmp != null && !tmp.isEmpty())
 				found.addAll(tmp);
