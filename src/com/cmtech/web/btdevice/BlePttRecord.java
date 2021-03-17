@@ -15,7 +15,7 @@ public class BlePttRecord extends BasicRecord{
     private String ppgData; // ppg data
     
     public BlePttRecord(long createTime, String devAddress) {
-    	super(RecordType.PPG, createTime, devAddress);
+    	super(RecordType.PTT, createTime, devAddress);
     }
 
 	public int getSampleRate() {
