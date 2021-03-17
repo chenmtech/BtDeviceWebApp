@@ -17,6 +17,8 @@ public class RecordFactory {
 			return null;
 		case EEG:
 			return new BleEegRecord(createTime, devAddress);
+		case PPG:
+			return new BlePpgRecord(createTime, devAddress);
 		default:
 			break;
 		}
