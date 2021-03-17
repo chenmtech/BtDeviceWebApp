@@ -19,6 +19,8 @@ public class RecordFactory {
 			return new BleEegRecord(createTime, devAddress);
 		case PPG:
 			return new BlePpgRecord(createTime, devAddress);
+		case PTT:
+			return new BlePttRecord(createTime, devAddress);
 		default:
 			break;
 		}

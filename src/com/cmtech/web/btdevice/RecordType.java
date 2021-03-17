@@ -7,7 +7,8 @@ public enum RecordType {
 	THERMO(3, "体温", "ThermoRecord"), 
 	TH(4, "温湿度", ""), 
 	EEG(5, "脑电", "EegRecord"),
-	PPG(6, "脉搏", "PpgRecord");   
+	PPG(6, "脉搏", "PpgRecord"),
+	PTT(7, "PTT", "PttRecord");   
 
     private final int code;  
     private final String name;  
