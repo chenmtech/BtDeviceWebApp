@@ -102,6 +102,7 @@ public class Account implements IDbOperation, IJsonable {
 	public JSONObject toJson() {
 		JSONObject json = new JSONObject();
 		json.put("ver", ver);
+		json.put("userName", userName);
 		json.put("nickName", nickName);
 		json.put("note", note);
 		if(iconData == null)
