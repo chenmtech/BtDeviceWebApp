@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BasicRecord;
+import com.cmtech.web.btdevice.BleEcgRecord;
+import com.cmtech.web.btdevice.IDiagnosable;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
@@ -90,14 +92,13 @@ public class RecordWebUtil {
 	
 	// DOWNLOAD DIAGNOSE REPORT
 	public static JSONObject downloadDiagnoseReport(long createTime, String devAddress) {
-		/*BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		int reportCode = record.retrieveDiagnoseResult();
 		JSONObject reportResult = new JSONObject();
 		reportResult.put("reportCode", reportCode);
 		if(reportCode == IDiagnosable.CODE_REPORT_SUCCESS)
 			reportResult.put("report", record.getReportJson());
-		return reportResult;*/
-		return null;
+		return reportResult;
 	}
 
 	// UPLOAD DIAGNOSE REPORT

@@ -145,15 +145,10 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set reportVer= ?, reportTime=?, content=?, status=?, aveHr = ?, note = ? where createTime = ? and devAddress = ?";
+		String sql = "update " + tableName + " set note = ? where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			int begin = 1;
-			ps.setString(begin++, reportVer);
-			ps.setLong(begin++, reportTime);
-			ps.setString(begin++, content);
-			ps.setInt(begin++, status);
-			ps.setInt(begin++, aveHr);
+			int begin = 1;			
 			ps.setString(begin++, getNote());
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
@@ -189,12 +184,10 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 
 	@Override
 	public int retrieveDiagnoseResult() {
-		/*if(report.retrieve()) {
+		if(retrieve())
 			return IDiagnosable.CODE_REPORT_SUCCESS;
-		} else {
+		else
 			return IDiagnosable.CODE_REPORT_NO_NEW;
-		}*/
-		return IDiagnosable.CODE_REPORT_NO_NEW;
 	}
 
 	@Override
@@ -219,5 +212,15 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			return new BleEcgRecord(report.getCreateTime(), report.getDevAddress());
 		}
 		return null;
+	}
+	
+	public JSONObject getReportJson() {
+		JSONObject reportJson = new JSONObject();
+		reportJson.put("reportVer", reportVer);
+		reportJson.put("reportTime", reportTime);
+		reportJson.put("content", content);
+		reportJson.put("status", status);
+		reportJson.put("aveHr", aveHr);
+		return reportJson;
 	}
 }

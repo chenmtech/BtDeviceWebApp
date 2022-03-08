@@ -159,13 +159,13 @@ public class RecordServlet extends HttpServlet {
 			case "downloadReport":
 				createTime = inputJson.getLong("createTime");
 		        devAddress = inputJson.getString("devAddress");
-		        JSONObject json1 = RecordWebUtil.downloadDiagnoseReport(createTime, devAddress);		        
+		        JSONObject reportJson = RecordWebUtil.downloadDiagnoseReport(createTime, devAddress);		        
 				
-				if(json1 == null) {
+				if(reportJson == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
 				} else {
-					//System.out.println(json1.toString());
-					ServletUtil.contentResponse(response, json1);
+					//System.out.println(reportJson.toString());
+					ServletUtil.contentResponse(response, reportJson);
 				}
 				break;
 				
