@@ -198,14 +198,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return false;
 	}
 	
-	public static BleEcgRecord getFirstRequestRecord() {
-		BleEcgReport report = BleEcgReport.getFirstRequestReport();
-		if(report != null) {
-			return new BleEcgRecord(report.getCreateTime(), report.getDevAddress());
-		}
-		return null;
-	}
-	
 	public JSONObject getReportJson() {
 		JSONObject reportJson = new JSONObject();
 		reportJson.put("reportVer", reportVer);
@@ -243,5 +235,13 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			DbUtil.close(null, ps, conn);
 		}
 		return false;	
+	}
+	
+	public static BleEcgRecord getFirstRequestRecord() {
+		BleEcgReport report = BleEcgReport.getFirstRequestReport();
+		if(report != null) {
+			return new BleEcgRecord(report.getCreateTime(), report.getDevAddress());
+		}
+		return null;
 	}
 }

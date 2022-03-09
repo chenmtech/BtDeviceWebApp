@@ -77,14 +77,14 @@ public class RecordWebUtil {
 	}
 	
 	// REQUEST DIAGNOSE
-	public static JSONObject requestDiagnose1(long createTime, String devAddress) {
-		/*BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+/*	public static JSONObject requestDiagnose1(long createTime, String devAddress) {
+		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		int reportCode = record.requestDiagnose();
 		JSONObject reportResult = new JSONObject();
 		reportResult.put("reportCode", reportCode);
-		return reportResult;*/
+		return reportResult;
 		return null;
-	}
+	}*/
 	
 	// APPLY FOR DIAGNOSE
 	// Return the json object of the record if exist the request record
