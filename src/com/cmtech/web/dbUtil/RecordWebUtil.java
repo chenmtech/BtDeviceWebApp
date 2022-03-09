@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord;
-import com.cmtech.web.btdevice.IDiagnosable;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
@@ -70,8 +69,15 @@ public class RecordWebUtil {
 		return jsonArray;
 	}
 	
+	// REQUEST ECG DIAGNOSE AND GET REPORT IF READY
+	public static JSONObject requestDiagnoseReport(long createTime, String devAddress) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+		if(record == null || !record.retrieve()) return null;
+		return record.getDiagnoseReport();
+	}
+	
 	// REQUEST DIAGNOSE
-	public static JSONObject requestDiagnose(long createTime, String devAddress) {
+	public static JSONObject requestDiagnose1(long createTime, String devAddress) {
 		/*BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		int reportCode = record.requestDiagnose();
 		JSONObject reportResult = new JSONObject();
@@ -90,17 +96,6 @@ public class RecordWebUtil {
 		return null;
 	}
 	
-	// DOWNLOAD DIAGNOSE REPORT
-	public static JSONObject downloadDiagnoseReport(long createTime, String devAddress) {
-		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		int reportCode = record.retrieveDiagnoseResult();
-		JSONObject reportResult = new JSONObject();
-		reportResult.put("reportCode", reportCode);
-		if(reportCode == IDiagnosable.CODE_REPORT_SUCCESS)
-			reportResult.put("report", record.getReportJson());
-		return reportResult;
-	}
-
 	// UPLOAD DIAGNOSE REPORT
 	public static boolean uploadDiagnoseReport(long createTime, String devAddress, long reportTime, String content) {
 		/*BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);

@@ -34,6 +34,14 @@ import com.cmtech.web.dbUtil.RecordWebUtil;
 @WebServlet(name="RecordServlet", urlPatterns="/Record")
 public class RecordServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private static final String CMD_UPLOAD = "upload";
+	private static final String CMD_DOWNLOAD = "download";
+	private static final String CMD_DELETE = "delete";
+	private static final String CMD_DOWNLOAD_LIST = "downloadList";
+	private static final String CMD_REQUEST_DIAGNOSE_REPORT = "requestDiagnoseReport";
+	
+	
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -102,7 +110,7 @@ public class RecordServlet extends HttpServlet {
 			String devAddress;
 			
 			switch(cmd) {
-			case "upload":
+			case CMD_UPLOAD:
 				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				cmdResult = RecordWebUtil.upload(type, inputJson);
 				if(cmdResult) {
@@ -112,7 +120,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "download":
+			case CMD_DOWNLOAD:
 				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
@@ -126,7 +134,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "delete":
+			case CMD_DELETE:
 				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
@@ -138,7 +146,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "downloadList":
+			case CMD_DOWNLOAD_LIST:
 				String typeStr = inputJson.getString("recordTypeCode");
 				String[] typeStrArr = typeStr.split(",");
 				RecordType[] types = new RecordType[typeStrArr.length];
@@ -156,10 +164,10 @@ public class RecordServlet extends HttpServlet {
 					ServletUtil.contentResponse(response, jsonArr);
 				break;
 				
-			case "downloadReport":
+			case CMD_REQUEST_DIAGNOSE_REPORT:
 				createTime = inputJson.getLong("createTime");
 		        devAddress = inputJson.getString("devAddress");
-		        JSONObject reportJson = RecordWebUtil.downloadDiagnoseReport(createTime, devAddress);		        
+		        JSONObject reportJson = RecordWebUtil.requestDiagnoseReport(createTime, devAddress);		        
 				
 				if(reportJson == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -169,7 +177,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case "requestReport":
+/*			case "requestReport":
 				createTime = inputJson.getLong("createTime");
 		        devAddress = inputJson.getString("devAddress");
 		        JSONObject report = RecordWebUtil.requestDiagnose(createTime, devAddress);		        
@@ -180,7 +188,7 @@ public class RecordServlet extends HttpServlet {
 					//System.out.println(report.toString());
 					ServletUtil.contentResponse(response, report);
 				}
-				break;	
+				break;	*/
 				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
