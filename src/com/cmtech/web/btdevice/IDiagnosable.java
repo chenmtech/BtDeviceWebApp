@@ -10,8 +10,7 @@ public interface IDiagnosable {
     int CODE_REPORT_REQUEST_AGAIN = 4;
     int CODE_REPORT_NO_NEW = 5;
     
-	JSONObject getDiagnoseReport(); // 获取诊断报告
-	boolean applyProcessingDiagnose(); // 申请处理诊断
-	int retrieveDiagnoseResult(); // 获取诊断结果
-	boolean updateDiagnoseResult(long reportTime, String content); // 更新诊断结果
+	JSONObject retrieveDiagnose(); // 如果有新的诊断结果，则获取，如果没有，则申请
+	boolean applyForDiagnose(); // 申请诊断
+	boolean updateDiagnose(long reportTime, String content); // 更新诊断
 }

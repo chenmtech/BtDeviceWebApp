@@ -147,12 +147,12 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public JSONObject getDiagnoseReport() {
+	public JSONObject retrieveDiagnose() {
 		boolean rlt = true;
 		
 		switch(status) {
 			case STATUS_DONE:
-				rlt = updateStatusIfBeing(STATUS_REQUEST);
+				rlt = updateStatus(status, STATUS_REQUEST);
 				break;				
 				
 			case STATUS_REQUEST:
@@ -160,7 +160,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 				break;
 				
 			case STATUS_WAIT_READ:
-				rlt = updateStatusIfBeing(STATUS_DONE);
+				rlt = updateStatus(status, STATUS_DONE);
 				break;
 				
 				default:
@@ -173,29 +173,42 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		else
 			return null;
 	}
-
+	
 	@Override
-	public int retrieveDiagnoseResult() {
-		if(retrieve())
-			return IDiagnosable.CODE_REPORT_SUCCESS;
-		else
-			return IDiagnosable.CODE_REPORT_NO_NEW;
-	}
-
-	@Override
-	public boolean updateDiagnoseResult(long reportTime, String content) {
-		/*report.setReportTime(reportTime);
-		report.setContent(content);
-		report.setStatus(BleEcgReport10.DONE);
-		return report.updateIfBeing(BleEcgReport10.PROCESS);*/
-		return false;
+	public boolean applyForDiagnose() {
+		boolean rlt = updateStatus(STATUS_REQUEST, STATUS_PROCESS);
+		if(rlt) {
+			status = STATUS_PROCESS;
+		}
+		return rlt;
 	}
 	
 	@Override
-	public boolean applyProcessingDiagnose() {
-		/*report.setStatus(BleEcgReport10.PROCESS);
-		return report.updateStatusIfBeing(BleEcgReport10.REQUEST);*/
-		return false;
+	public boolean updateDiagnose(long reportTime, String content) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "update EcgRecord set reportTime = ?, content = ?, status = ? " 
+				+ "where createTime = ? and devAddress = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			int begin = 1;
+			ps.setLong(begin++, reportTime);
+			ps.setString(begin++, content);
+			ps.setInt(begin++, STATUS_WAIT_READ);
+			ps.setLong(begin++, getCreateTime());
+			ps.setString(begin++, getDevAddress());
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return false;	
 	}
 	
 	public JSONObject getReportJson() {
@@ -209,7 +222,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return reportJson;
 	}
 	
-	private boolean updateStatusIfBeing(int toStatus) {
+	private boolean updateStatus(int fromStatus, int toStatus) {
 		String tableName = RecordType.ECG.getTableName();
 		
 		Connection conn = DbUtil.connect();
@@ -224,7 +237,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			ps.setInt(begin++, REPORT_CLIENT_REMOTE);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
-			ps.setInt(begin++, status);
+			ps.setInt(begin++, fromStatus);
 			if(ps.executeUpdate() != 0) {
 				status = toStatus;
 				return true;
@@ -238,9 +251,27 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	public static BleEcgRecord getFirstRequestRecord() {
-		BleEcgReport report = BleEcgReport.getFirstRequestReport();
-		if(report != null) {
-			return new BleEcgRecord(report.getCreateTime(), report.getDevAddress());
+		String tableName = RecordType.ECG.getTableName();
+		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select createTime, devAddress from " + tableName + " where status = ? order by id limit 1";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, STATUS_REQUEST);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				return new BleEcgRecord(createTime, devAddress);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
 		}
 		return null;
 	}

@@ -73,34 +73,23 @@ public class RecordWebUtil {
 	public static JSONObject requestDiagnoseReport(long createTime, String devAddress) {
 		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		if(record == null || !record.retrieve()) return null;
-		return record.getDiagnoseReport();
+		return record.retrieveDiagnose();
 	}
 	
-	// REQUEST DIAGNOSE
-/*	public static JSONObject requestDiagnose1(long createTime, String devAddress) {
-		BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		int reportCode = record.requestDiagnose();
-		JSONObject reportResult = new JSONObject();
-		reportResult.put("reportCode", reportCode);
-		return reportResult;
-		return null;
-	}*/
-	
-	// APPLY FOR DIAGNOSE
-	// Return the json object of the record if exist the request record
+	// APPLY FOR DIAGNOSE A ECGRECORD
+	// Return the json object of the record if the diagnose request of a record exists
 	public static JSONObject applyForDiagnose() {
-		/*BleEcgRecord10 record = BleEcgRecord10.getFirstRequestRecord();
-		if(record != null && record.applyProcessingDiagnose() && record.retrieve()) {
+		BleEcgRecord record = BleEcgRecord.getFirstRequestRecord();
+		if(record != null && record.applyForDiagnose() && record.retrieve()) {
 			return record.toJson();
-		}*/
+		}
 		return null;
 	}
 	
-	// UPLOAD DIAGNOSE REPORT
-	public static boolean uploadDiagnoseReport(long createTime, String devAddress, long reportTime, String content) {
-		/*BleEcgRecord10 record = (BleEcgRecord10)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+	// UPDATE DIAGNOSE
+	public static boolean updateDiagnose(long createTime, String devAddress, String ver, long reportTime, String content) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		if(record == null) return false;		
-		return record.updateDiagnoseResult(reportTime, content);*/
-		return false;
+		return record.updateDiagnose(reportTime, content);
 	}
 }
