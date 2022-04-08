@@ -143,19 +143,19 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public boolean updateDiagnose(long reportTime, String content) {
+	public boolean updateDiagnose(long reportTime, String reportContent) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update EcgRecord set reportTime = ?, content = ?, status = ? " 
+		String sql = "update EcgRecord set reportTime = ?, reportContent = ?, reportStatus = ? " 
 				+ "where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			int begin = 1;
 			ps.setLong(begin++, reportTime);
-			ps.setString(begin++, content);
+			ps.setString(begin++, reportContent);
 			ps.setInt(begin++, STATUS_WAIT_READ);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
@@ -175,8 +175,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		reportJson.put("reportVer", getReportVer());
 		reportJson.put("reportClient", getReportClient());
 		reportJson.put("reportTime", getReportTime());
-		reportJson.put("content", getReportContent());
-		reportJson.put("status", getReportStatus());
+		reportJson.put("reportContent", getReportContent());
+		reportJson.put("reportStatus", getReportStatus());
 		reportJson.put("aveHr", aveHr);
 		return reportJson;
 	}
@@ -188,7 +188,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName +" set status = ?, reportClient = ? where createTime = ? and devAddress = ? and status = ?";
+		String sql = "update " + tableName +" set reportStatus = ?, reportClient = ? where createTime = ? and devAddress = ? and status = ?";
 		try {
 			int begin = 1;
 			ps = conn.prepareStatement(sql);
@@ -217,7 +217,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress from " + tableName + " where status = ? order by id limit 1";
+		String sql = "select createTime, devAddress from " + tableName + " where reportStatus = ? order by id limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, STATUS_REQUEST);
