@@ -143,17 +143,18 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public boolean updateDiagnose(long reportTime, String reportContent) {
+	public boolean updateDiagnose(String reportVer, long reportTime, String reportContent) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update EcgRecord set reportTime = ?, reportContent = ?, reportStatus = ? " 
+		String sql = "update EcgRecord set reportVer = ?, reportTime = ?, reportContent = ?, reportStatus = ? " 
 				+ "where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			int begin = 1;
+			ps.setString(begin++, reportVer);
 			ps.setLong(begin++, reportTime);
 			ps.setString(begin++, reportContent);
 			ps.setInt(begin++, STATUS_WAIT_READ);

@@ -87,9 +87,9 @@ public class RecordWebUtil {
 	}
 	
 	// UPDATE DIAGNOSE
-	public static boolean updateDiagnose(long createTime, String devAddress, String ver, long reportTime, String content) {
+	public static boolean updateDiagnose(long createTime, String devAddress, String reportVer, long reportTime, String content) {
 		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
 		if(record == null) return false;		
-		return record.updateDiagnose(reportTime, content);
+		return record.updateDiagnose(reportVer, reportTime, content);
 	}
 }

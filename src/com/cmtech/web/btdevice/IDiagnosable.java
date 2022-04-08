@@ -12,5 +12,5 @@ public interface IDiagnosable {
     
 	JSONObject retrieveDiagnose(); // 如果有新的诊断结果，则获取，如果没有，则申请
 	boolean applyForDiagnose(); // 申请诊断
-	boolean updateDiagnose(long reportTime, String content); // 更新诊断
+	boolean updateDiagnose(String reportVer, long reportTime, String content); // 更新诊断
 }
