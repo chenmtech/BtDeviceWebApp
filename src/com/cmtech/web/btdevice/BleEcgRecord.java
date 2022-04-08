@@ -1,6 +1,5 @@
 package com.cmtech.web.btdevice;
 
-import static com.cmtech.web.MyConstant.INVALID_TIME;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,28 +11,13 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "reportVer", "reportClient", "reportTime", "content", "status", "aveHr"};
-	private static final String DEFAULT_REPORT_VER = "0.0";
-	
-	public static final int STATUS_DONE = 0;
-    public static final int STATUS_REQUEST = 1;
-    public static final int STATUS_PROCESS = 2;
-    public static final int STATUS_WAIT_READ = 3;
-    
-    public static final int REPORT_CLIENT_LOCAL = 0;
-    public static final int REPORT_CLIENT_REMOTE = 1;
-    
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "aveHr"};
     
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     private String ecgData; // ecg data
     
-    private String reportVer = DEFAULT_REPORT_VER;
-    private int reportClient = REPORT_CLIENT_LOCAL;
-    private long reportTime = INVALID_TIME; // diagnose report time
-    private String content = ""; // diagnose result
-    private int status = STATUS_DONE; // diagnose status
     private int aveHr = 0; // average hr
 
 
@@ -85,16 +69,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		caliValue = json.getInt("caliValue");
 		leadTypeCode = json.getInt("leadTypeCode");
 		ecgData = json.getString("ecgData");
-		if(json.has("report")) {
-			JSONObject reportJson = json.getJSONObject("report");
-			reportVer = reportJson.getString("reportVer");
-			reportClient = reportJson.getInt("reportClient");
-			reportTime = reportJson.getLong("reportTime");
-			content = reportJson.getString("content");
-			status = reportJson.getInt("status");
-			if(reportJson.has("aveHr"))
-				aveHr = reportJson.getInt("aveHr");
-		}
+		aveHr = json.getInt("aveHr");
 	}
 	
 	@Override
@@ -104,14 +79,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
-		JSONObject reportJson = new JSONObject();
-		reportJson.put("reportVer", reportVer);
-		reportJson.put("reportClient", reportClient);
-		reportJson.put("reportTime", reportTime);
-		reportJson.put("content", content);
-		reportJson.put("status", status);
-		reportJson.put("aveHr", aveHr);
-		json.put("report", reportJson);
+		json.put("aveHr", aveHr);
 		return json;
 	}
 	
@@ -122,11 +90,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		ecgData = rs.getString("ecgData");
-		reportVer = rs.getString("reportVer");
-		reportClient = rs.getInt("reportClient");
-		reportTime = rs.getLong("reportTime");
-		content = rs.getString("content");
-		status = rs.getInt("status");
 		aveHr = rs.getInt("aveHr");
 	}
 	
@@ -137,11 +100,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, caliValue);
 		ps.setInt(begin++, leadTypeCode);
 		ps.setString(begin++, ecgData);
-		ps.setString(begin++, reportVer);
-		ps.setInt(begin++, reportClient);
-		ps.setLong(begin++, reportTime);
-		ps.setString(begin++, content);
-		ps.setInt(begin++, status);
 		ps.setInt(begin++, aveHr);
 		return begin;
 	}
@@ -150,6 +108,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public JSONObject retrieveDiagnose() {
 		boolean rlt = true;
 		
+		int status = getReportStatus();
 		switch(status) {
 			case STATUS_DONE:
 				rlt = updateStatus(status, STATUS_REQUEST);
@@ -178,7 +137,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public boolean applyForDiagnose() {
 		boolean rlt = updateStatus(STATUS_REQUEST, STATUS_PROCESS);
 		if(rlt) {
-			status = STATUS_PROCESS;
+			setReportStatus(STATUS_PROCESS);
 		}
 		return rlt;
 	}
@@ -213,11 +172,11 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	
 	public JSONObject getReportJson() {
 		JSONObject reportJson = new JSONObject();
-		reportJson.put("reportVer", reportVer);
-		reportJson.put("reportClient", reportClient);
-		reportJson.put("reportTime", reportTime);
-		reportJson.put("content", content);
-		reportJson.put("status", status);
+		reportJson.put("reportVer", getReportVer());
+		reportJson.put("reportClient", getReportClient());
+		reportJson.put("reportTime", getReportTime());
+		reportJson.put("content", getReportContent());
+		reportJson.put("status", getReportStatus());
 		reportJson.put("aveHr", aveHr);
 		return reportJson;
 	}
@@ -239,7 +198,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			ps.setString(begin++, getDevAddress());
 			ps.setInt(begin++, fromStatus);
 			if(ps.executeUpdate() != 0) {
-				status = toStatus;
+				setReportStatus(toStatus);
 				return true;
 			}
 		} catch (SQLException e) {

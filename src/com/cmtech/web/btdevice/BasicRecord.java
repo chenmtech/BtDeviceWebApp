@@ -2,6 +2,7 @@ package com.cmtech.web.btdevice;
 
 import static com.cmtech.web.MyConstant.DEFAULT_VER;
 import static com.cmtech.web.MyConstant.INVALID_ID;
+import static com.cmtech.web.MyConstant.INVALID_TIME;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,14 +18,35 @@ import org.json.JSONObject;
 import com.cmtech.web.dbUtil.DbUtil;
 
 public abstract class BasicRecord implements IDbOperation, IJsonable{
-	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", "recordSecond"};
-    private final RecordType type; // record type
+	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
+			"recordSecond", "reportVer", "reportClient", "reportTime", "reportContent", "reportStatus"};
+	
+	private static final String DEFAULT_REPORT_VER = "0.0";
+	
+	public static final int STATUS_DONE = 0;
+    public static final int STATUS_REQUEST = 1;
+    public static final int STATUS_PROCESS = 2;
+    public static final int STATUS_WAIT_READ = 3;
+    
+    public static final int REPORT_CLIENT_LOCAL = 0;
+    public static final int REPORT_CLIENT_REMOTE = 1;
+	
+	
+	private final RecordType type; // record type
     private final long createTime; // record create time
     private final String devAddress; // record device address
     private String ver; // record version
     private int creatorId; // record creator id
     private String note; // record note
     private int recordSecond; // record time length, unit: second
+    
+
+    private String reportVer = DEFAULT_REPORT_VER;
+    private int reportClient = REPORT_CLIENT_LOCAL;
+    private long reportTime = INVALID_TIME; // diagnose report time
+    private String reportContent = ""; // diagnose result
+    private int reportStatus = STATUS_DONE; // diagnose status
+    
 
     BasicRecord(RecordType type, long createTime, String devAddress) {
     	this.type = type;
@@ -67,7 +89,31 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     public int getRecordSecond() {
 		return recordSecond;
 	}
-	
+    
+	public String getReportVer() {
+		return reportVer;
+	}
+
+	public int getReportClient() {
+		return reportClient;
+	}
+
+	public long getReportTime() {
+		return reportTime;
+	}
+
+	public String getReportContent() {
+		return reportContent;
+	}
+
+	public int getReportStatus() {
+		return reportStatus;
+	}
+
+	public void setReportStatus(int status) {
+		this.reportStatus = status;
+	}
+
 	public abstract String[] getProperties();
     
 	@Override
@@ -80,6 +126,12 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		creatorId = json.getInt("creatorId");
 		note = json.getString("note");
 		recordSecond = json.getInt("recordSecond");
+		
+		reportVer = json.getString("reportVer");
+		reportClient = json.getInt("reportClient");
+		reportTime = json.getLong("reportTime");
+		reportContent = json.getString("reportContent");
+		reportStatus = json.getInt("reportStatus");
     }
     
     @Override
@@ -96,6 +148,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		json.put("creatorId", creatorId);
 		json.put("note", note);
 		json.put("recordSecond", recordSecond);
+		json.put("reportVer", reportVer);
+		json.put("reportClient", reportClient);
+		json.put("reportTime", reportTime);
+		json.put("reportContent", reportContent);
+		json.put("reportStatus", reportStatus);
 		return json;
     }
 
@@ -108,6 +165,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		creatorId = rs.getInt("creatorId");
 		note = rs.getString("note");
 		recordSecond = rs.getInt("recordSecond");
+		reportVer = rs.getString("reportVer");
+		reportClient = rs.getInt("reportClient");
+		reportTime = rs.getLong("reportTime");
+		reportContent = rs.getString("reportContent");
+		reportStatus = rs.getInt("reportStatus");
 	}
 	
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
@@ -118,6 +180,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		ps.setInt(begin++, creatorId);
 		ps.setString(begin++, note);
 		ps.setInt(begin++, recordSecond);
+		ps.setString(begin++, reportVer);
+		ps.setInt(begin++, reportClient);
+		ps.setLong(begin++, reportTime);
+		ps.setString(begin++, reportContent);
+		ps.setInt(begin++, reportStatus);
 		return begin;
 	}
 
