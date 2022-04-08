@@ -188,7 +188,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName +" set reportStatus = ?, reportClient = ? where createTime = ? and devAddress = ? and status = ?";
+		String sql = "update " + tableName +" set reportStatus = ?, reportClient = ? where createTime = ? and devAddress = ? and reportStatus = ?";
 		try {
 			int begin = 1;
 			ps = conn.prepareStatement(sql);
