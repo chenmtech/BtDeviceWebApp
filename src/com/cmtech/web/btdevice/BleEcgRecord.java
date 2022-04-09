@@ -106,12 +106,14 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	
 	@Override
 	public JSONObject retrieveDiagnose() {
+		return getReportJson();
+		/*
 		boolean rlt = true;
 		
 		int status = getReportStatus();
 		switch(status) {
 			case STATUS_DONE:
-				rlt = updateStatus(status, STATUS_REQUEST);
+				rlt = updateReportStatus(status, STATUS_REQUEST);
 				break;				
 				
 			case STATUS_REQUEST:
@@ -119,7 +121,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 				break;
 				
 			case STATUS_WAIT_READ:
-				rlt = updateStatus(status, STATUS_DONE);
+				rlt = updateReportStatus(status, STATUS_DONE);
 				break;
 				
 				default:
@@ -131,11 +133,13 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			return getReportJson();
 		else
 			return null;
+		*/
+		
 	}
 	
 	@Override
 	public boolean applyForDiagnose() {
-		boolean rlt = updateStatus(STATUS_REQUEST, STATUS_PROCESS);
+		boolean rlt = updateReportStatus(STATUS_DONE, STATUS_PROCESS);
 		if(rlt) {
 			setReportStatus(STATUS_PROCESS);
 		}
@@ -157,7 +161,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			ps.setString(begin++, reportVer);
 			ps.setLong(begin++, reportTime);
 			ps.setString(begin++, reportContent);
-			ps.setInt(begin++, STATUS_WAIT_READ);
+			ps.setInt(begin++, STATUS_DONE);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
 			if(ps.executeUpdate() != 0) {
@@ -182,7 +186,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return reportJson;
 	}
 	
-	private boolean updateStatus(int fromStatus, int toStatus) {
+	private boolean updateReportStatus(int fromStatus, int toStatus) {
 		String tableName = RecordType.ECG.getTableName();
 		
 		Connection conn = DbUtil.connect();
@@ -210,6 +214,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return false;	
 	}
 	
+	/*
 	public static BleEcgRecord getFirstRequestRecord() {
 		String tableName = RecordType.ECG.getTableName();
 		
@@ -222,6 +227,35 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, STATUS_REQUEST);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				return new BleEcgRecord(createTime, devAddress);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;
+	}
+	*/
+	
+	public static BleEcgRecord getFirstDiagnoseRecord(String reportVer) {
+		String tableName = RecordType.ECG.getTableName();
+		
+		Connection conn = DbUtil.connect();
+		if(conn == null) return null;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select createTime, devAddress from " + tableName + 
+				" where reportStatus = ? and reportVer < ? order by id limit 1";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, STATUS_DONE);
+			ps.setString(2, reportVer);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				long createTime = rs.getLong("createTime");

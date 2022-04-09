@@ -24,9 +24,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	private static final String DEFAULT_REPORT_VER = "0.0";
 	
 	public static final int STATUS_DONE = 0;
-    public static final int STATUS_REQUEST = 1;
     public static final int STATUS_PROCESS = 2;
-    public static final int STATUS_WAIT_READ = 3;
     
     public static final int REPORT_CLIENT_LOCAL = 0;
     public static final int REPORT_CLIENT_REMOTE = 1;

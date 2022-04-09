@@ -78,8 +78,8 @@ public class RecordWebUtil {
 	
 	// APPLY FOR DIAGNOSE A ECGRECORD
 	// Return the json object of the record if the diagnose request of a record exists
-	public static JSONObject applyForDiagnose() {
-		BleEcgRecord record = BleEcgRecord.getFirstRequestRecord();
+	public static JSONObject applyForDiagnose(String reportVer) {
+		BleEcgRecord record = BleEcgRecord.getFirstDiagnoseRecord(reportVer);
 		if(record != null && record.applyForDiagnose() && record.retrieve()) {
 			return record.toJson();
 		}
