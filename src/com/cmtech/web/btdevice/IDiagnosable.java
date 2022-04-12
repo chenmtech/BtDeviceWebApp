@@ -2,6 +2,11 @@ package com.cmtech.web.btdevice;
 
 import org.json.JSONObject;
 
+/**
+ * 可诊断类接口
+ * @author gdmc
+ *
+ */
 public interface IDiagnosable {
     int CODE_REPORT_SUCCESS = 0;
     int CODE_REPORT_FAILURE = 1;
@@ -10,7 +15,12 @@ public interface IDiagnosable {
     int CODE_REPORT_REQUEST_AGAIN = 4;
     int CODE_REPORT_NO_NEW = 5;
     
-	JSONObject retrieveDiagnose(); // 如果有新的诊断结果，则获取，如果没有，则申请
-	boolean applyForDiagnose(); // 申请诊断
-	boolean updateDiagnose(String reportVer, long reportTime, String content); // 更新诊断
+    // 获取诊断报告
+	JSONObject retrieveDiagnoseReport(); 
+	
+	// 申请诊断
+	boolean applyForDiagnose(); 
+	
+	// 更新诊断报告
+	boolean updateDiagnoseReport(String reportVer, long reportTime, String content); 
 }

@@ -217,12 +217,6 @@ public class BleEcgReport implements IDbOperation, IJsonable{
 		}
 		return false;	
 	}
-	
-	@Override
-	public boolean retrieveBasicInfo() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	public boolean updateIfBeing(int beforeStatus) {
 		Connection conn = DbUtil.connect();

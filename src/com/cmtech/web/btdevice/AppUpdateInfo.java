@@ -116,10 +116,4 @@ public class AppUpdateInfo implements IDbOperation, IJsonable{
 		return false;
 	}
 
-	@Override
-	public boolean retrieveBasicInfo() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

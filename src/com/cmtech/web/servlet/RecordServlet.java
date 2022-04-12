@@ -30,6 +30,8 @@ import com.cmtech.web.dbUtil.RecordWebUtil;
 
 /**
  * Servlet implementation class RecordServlet
+ * 为手机端App提供记录操作的Servlet类
+ * 注意：PC端App不需要这个类，它是通过直接连接数据库来操作记录的
  */
 @WebServlet(name="RecordServlet", urlPatterns="/Record")
 public class RecordServlet extends HttpServlet {
@@ -38,8 +40,8 @@ public class RecordServlet extends HttpServlet {
 	private static final String CMD_UPLOAD = "upload";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_DELETE = "delete";
-	private static final String CMD_DOWNLOAD_LIST = "downloadList";
-	private static final String CMD_REQUEST_DIAGNOSE_REPORT = "requestDiagnoseReport";
+	private static final String CMD_DOWNLOAD_BASICRECORDS = "downloadBasicRecords";
+	private static final String CMD_RETRIEVE_DIAGNOSE_REPORT = "retrieveDiagnoseReport";
 	
 	
        
@@ -146,7 +148,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case CMD_DOWNLOAD_LIST:
+			case CMD_DOWNLOAD_BASICRECORDS:
 				String typeStr = inputJson.getString("recordTypeCode");
 				String[] typeStrArr = typeStr.split(",");
 				RecordType[] types = new RecordType[typeStrArr.length];
@@ -156,18 +158,18 @@ public class RecordServlet extends HttpServlet {
 				long fromTime = inputJson.getLong("fromTime");
 				int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
-				String noteSearchStr = inputJson.getString("noteSearchStr");
-				JSONArray jsonArr = RecordWebUtil.downloadList(types, creatorId, fromTime, noteSearchStr, num);
+				String filterStr = inputJson.getString("filterStr");
+				JSONArray jsonArr = RecordWebUtil.downloadBasicRecords(types, creatorId, fromTime, filterStr, num);
 				if(jsonArr == null)
 					ServletUtil.codeResponse(response, SUCCESS);
 				else
 					ServletUtil.contentResponse(response, jsonArr);
 				break;
 				
-			case CMD_REQUEST_DIAGNOSE_REPORT:
+			case CMD_RETRIEVE_DIAGNOSE_REPORT:
 				createTime = inputJson.getLong("createTime");
 		        devAddress = inputJson.getString("devAddress");
-		        JSONObject reportJson = RecordWebUtil.requestDiagnoseReport(createTime, devAddress);		        
+		        JSONObject reportJson = RecordWebUtil.retrieveDiagnoseReport(RecordType.ECG, createTime, devAddress);		        
 				
 				if(reportJson == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -176,19 +178,6 @@ public class RecordServlet extends HttpServlet {
 					ServletUtil.contentResponse(response, reportJson);
 				}
 				break;
-				
-/*			case "requestReport":
-				createTime = inputJson.getLong("createTime");
-		        devAddress = inputJson.getString("devAddress");
-		        JSONObject report = RecordWebUtil.requestDiagnose(createTime, devAddress);		        
-				
-				if(report == null) {
-					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
-				} else {
-					//System.out.println(report.toString());
-					ServletUtil.contentResponse(response, report);
-				}
-				break;	*/
 				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);

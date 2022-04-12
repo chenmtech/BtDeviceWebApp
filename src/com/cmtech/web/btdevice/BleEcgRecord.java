@@ -10,14 +10,28 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
+/**
+ * 心电记录类
+ * @author gdmc
+ *
+ */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
+	// 心电记录中要进行数据库读写的属性字段名数组
 	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "aveHr"};
     
+	// 信号采样率
 	private int sampleRate; // sample rate
+	
+	// 信号标定值
     private int caliValue; // calibration value of 1mV
-    private int leadTypeCode; // lead type code
-    private String ecgData; // ecg data
     
+    // 导联类型
+    private int leadTypeCode; // lead type code
+    
+    // 心电数据字符串
+    private String ecgData; // ecg data    
+    
+    // 平均心率：次/分钟
     private int aveHr = 0; // average hr
 
 
@@ -57,6 +71,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		this.ecgData = ecgData;
 	}
 	
+	// 获取该记录中包含的要进行数据库操作的属性字段名数组，不包括BasicRecord中的字段
 	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
@@ -105,49 +120,28 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public JSONObject retrieveDiagnose() {
-		return getReportJson();
-		/*
-		boolean rlt = true;
-		
-		int status = getReportStatus();
-		switch(status) {
-			case STATUS_DONE:
-				rlt = updateReportStatus(status, STATUS_REQUEST);
-				break;				
-				
-			case STATUS_REQUEST:
-			case STATUS_PROCESS:
-				break;
-				
-			case STATUS_WAIT_READ:
-				rlt = updateReportStatus(status, STATUS_DONE);
-				break;
-				
-				default:
-					rlt = false;
-					break;
-		}		
-		
-		if(rlt)
-			return getReportJson();
-		else
-			return null;
-		*/
-		
+	public JSONObject retrieveDiagnoseReport() {
+		JSONObject reportJson = new JSONObject();
+		reportJson.put("reportVer", getReportVer());
+		reportJson.put("reportClient", getReportClient());
+		reportJson.put("reportTime", getReportTime());
+		reportJson.put("reportContent", getReportContent());
+		reportJson.put("reportStatus", getReportStatus());
+		reportJson.put("aveHr", aveHr);
+		return reportJson;		
 	}
 	
 	@Override
 	public boolean applyForDiagnose() {
-		boolean rlt = updateReportStatus(STATUS_DONE, STATUS_PROCESS);
+		boolean rlt = updateReportStatus(RecordType.ECG, REPORT_STATUS_DONE, REPORT_STATUS_PROCESS);
 		if(rlt) {
-			setReportStatus(STATUS_PROCESS);
+			setReportStatus(REPORT_STATUS_PROCESS);
 		}
 		return rlt;
 	}
 	
 	@Override
-	public boolean updateDiagnose(String reportVer, long reportTime, String reportContent) {
+	public boolean updateDiagnoseReport(String reportVer, long reportTime, String reportContent) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -161,7 +155,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			ps.setString(begin++, reportVer);
 			ps.setLong(begin++, reportTime);
 			ps.setString(begin++, reportContent);
-			ps.setInt(begin++, STATUS_DONE);
+			ps.setInt(begin++, REPORT_STATUS_DONE);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
 			if(ps.executeUpdate() != 0) {
@@ -175,74 +169,13 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return false;	
 	}
 	
-	public JSONObject getReportJson() {
-		JSONObject reportJson = new JSONObject();
-		reportJson.put("reportVer", getReportVer());
-		reportJson.put("reportClient", getReportClient());
-		reportJson.put("reportTime", getReportTime());
-		reportJson.put("reportContent", getReportContent());
-		reportJson.put("reportStatus", getReportStatus());
-		reportJson.put("aveHr", aveHr);
-		return reportJson;
-	}
 	
-	private boolean updateReportStatus(int fromStatus, int toStatus) {
-		String tableName = RecordType.ECG.getTableName();
-		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "update " + tableName +" set reportStatus = ?, reportClient = ? where createTime = ? and devAddress = ? and reportStatus = ?";
-		try {
-			int begin = 1;
-			ps = conn.prepareStatement(sql);
-			ps.setInt(begin++, toStatus);
-			ps.setInt(begin++, REPORT_CLIENT_REMOTE);
-			ps.setLong(begin++, getCreateTime());
-			ps.setString(begin++, getDevAddress());
-			ps.setInt(begin++, fromStatus);
-			if(ps.executeUpdate() != 0) {
-				setReportStatus(toStatus);
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;	
-	}
-	
-	/*
-	public static BleEcgRecord getFirstRequestRecord() {
-		String tableName = RecordType.ECG.getTableName();
-		
-		Connection conn = DbUtil.connect();
-		if(conn == null) return null;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select createTime, devAddress from " + tableName + " where reportStatus = ? order by id limit 1";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, STATUS_REQUEST);
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				long createTime = rs.getLong("createTime");
-				String devAddress = rs.getString("devAddress");
-				return new BleEcgRecord(createTime, devAddress);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return null;
-	}
-	*/
-	
-	public static BleEcgRecord getFirstDiagnoseRecord(String reportVer) {
+	/**
+	 * 获取第一个需要诊断的心电记录，是否需要诊断，依据记录的报告状态reportStatus是否为DONE，以及reportVer是否比newReportVer小
+	 * @param newReportVer：心电诊断报告版本
+	 * @return
+	 */
+	public static BleEcgRecord getFirstNeedDiagnoseRecord(String newReportVer) {
 		String tableName = RecordType.ECG.getTableName();
 		
 		Connection conn = DbUtil.connect();
@@ -254,8 +187,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 				" where reportStatus = ? and reportVer < ? order by id limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, STATUS_DONE);
-			ps.setString(2, reportVer);
+			ps.setInt(1, REPORT_STATUS_DONE);
+			ps.setString(2, newReportVer);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				long createTime = rs.getLong("createTime");

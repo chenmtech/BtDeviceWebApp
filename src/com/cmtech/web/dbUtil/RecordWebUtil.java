@@ -12,17 +12,31 @@ import com.cmtech.web.btdevice.BleEcgRecord;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 
+/**
+ * 用于执行记录相关的网络操作类
+ * @author gdmc
+ *
+ */
 public class RecordWebUtil {	
-	// QUERY ID
+	/**
+	 * 获取记录的ID号
+	 * @param type：记录类型
+	 * @param createTime：记录创建时间
+	 * @param devAddress：记录设备
+	 * @return 记录在数据表中的ID号
+	 */
 	public static int getId(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return INVALID_ID;
 		return record.getId();
 	}
 	
-	// UPLOAD
-	// If the record do not exist, then do uploading operation
-	// otherwise, do updating operation
+	/**
+	 * 上传一条记录，如果记录存在，则更新；如果记录不存在，则插入
+	 * @param type：记录类型
+	 * @param json：包含记录属性值的JSON Obj
+	 * @return
+	 */
 	public static boolean upload(RecordType type, JSONObject json) {
 		long createTime = json.getLong("createTime");
 		String devAddress = json.getString("devAddress");
@@ -35,7 +49,13 @@ public class RecordWebUtil {
 			return record.update();
 	}
 	
-	// DOWNLOAD
+	/**
+	 * 下载一条记录，将其属性值打包成JSON Obj
+	 * @param type
+	 * @param createTime
+	 * @param devAddress
+	 * @return: 记录属性值打包后的JSON Obj
+	 */
 	public static JSONObject download(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return null;
@@ -44,52 +64,84 @@ public class RecordWebUtil {
 		return record.toJson();
 	}
 	
-	// DELETE
+	/**
+	 * 删除一条记录
+	 * @param type
+	 * @param createTime
+	 * @param devAddress
+	 * @return
+	 */
 	public static boolean delete(RecordType type, long createTime, String devAddress) {
 		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;
 		return record.delete();
 	}
 	
-	// DOWNLOAD RECORD LIST
-	// who: creatorPlat+creatorId
-	// when: later than fromTime
-	// include: noteSearchStr
-	// howmuch: num
-	public static JSONArray downloadList(RecordType[] types, int creatorId, long fromTime, String noteSearchStr, int num) {
+	/**
+	 * 下载符合条件的BasicRecord记录列表，将其打包为JSON Array
+	 * @param types:记录类型
+	 * @param creatorId：创建者ID
+	 * @param fromTime: 起始采集时间
+	 * @param filterStr：过滤字符串
+	 * @param num：记录数
+	 * @return：记录打包为JSON Array
+	 */
+	public static JSONArray downloadBasicRecords(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
-		List<BasicRecord> found = BasicRecord.findRecords(types, creatorId, fromTime, noteSearchStr, num);
+		List<BasicRecord> found = BasicRecord.retrieveBasicRecords(types, creatorId, fromTime, filterStr, num);
 		if(found == null || found.isEmpty()) return null;
 		
 		JSONArray jsonArray = new JSONArray();
 		for(BasicRecord record : found) {
-			jsonArray.put(record.basicToJson());
+			jsonArray.put(record.basicPropertiesToJson());
 		}
 		
 		return jsonArray;
-	}
-	
-	// REQUEST ECG DIAGNOSE AND GET REPORT IF READY
-	public static JSONObject requestDiagnoseReport(long createTime, String devAddress) {
-		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
-		if(record == null || !record.retrieve()) return null;
-		return record.retrieveDiagnose();
-	}
-	
-	// APPLY FOR DIAGNOSE A ECGRECORD
-	// Return the json object of the record if the diagnose request of a record exists
-	public static JSONObject applyForDiagnose(String reportVer) {
-		BleEcgRecord record = BleEcgRecord.getFirstDiagnoseRecord(reportVer);
+	}	
+
+	/**
+	 * 申请对记录进行诊断，记录是否需要诊断，依据当前记录的诊断报告版本号与新的诊断报告版本号的比较
+	 * 如果有记录需要诊断，则将其属性值打包为JSON Obj
+	 * 目前仅支持心电记录
+	 * @param newReportVer：新的诊断版本号
+	 * @return：
+	 */
+	public static JSONObject applyForDiagnose(String newReportVer) {
+		BleEcgRecord record = BleEcgRecord.getFirstNeedDiagnoseRecord(newReportVer);
 		if(record != null && record.applyForDiagnose() && record.retrieve()) {
 			return record.toJson();
 		}
 		return null;
 	}
 	
-	// UPDATE DIAGNOSE
-	public static boolean updateDiagnose(long createTime, String devAddress, String reportVer, long reportTime, String content) {
-		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(RecordType.ECG, createTime, devAddress);
+	/**
+	 * 获取记录的诊断报告，并将其属性值打包为JSON Obj.
+	 * 目前仅支持心电诊断报告
+	 * @param type
+	 * @param createTime
+	 * @param devAddress
+	 * @return
+	 */
+	public static JSONObject retrieveDiagnoseReport(RecordType type, long createTime, String devAddress) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, createTime, devAddress);
+		if(record == null || !record.retrieve()) return null;
+		return record.retrieveDiagnoseReport();
+	}
+	
+	/**
+	 * 更新记录的诊断报告
+	 * 目前仅支持心电记录
+	 * @param type
+	 * @param createTime
+	 * @param devAddress
+	 * @param reportVer
+	 * @param reportTime
+	 * @param content
+	 * @return
+	 */
+	public static boolean updateDiagnoseReport(RecordType type, long createTime, String devAddress, String reportVer, long reportTime, String content) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;		
-		return record.updateDiagnose(reportVer, reportTime, content);
+		return record.updateDiagnoseReport(reportVer, reportTime, content);
 	}
 }

@@ -227,12 +227,6 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	@Override
-	public boolean retrieveBasicInfo() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	@Override
 	public String toString() {
 		return "userName="+userName+",password="+password+",nickName="+nickName+",note="+note+",iconDataLength="+iconData.length;
 	}
