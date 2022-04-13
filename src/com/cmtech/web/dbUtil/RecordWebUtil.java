@@ -135,13 +135,14 @@ public class RecordWebUtil {
 	 * @param createTime
 	 * @param devAddress
 	 * @param reportVer
+	 * @param reportProvider
 	 * @param reportTime
 	 * @param content
 	 * @return
 	 */
-	public static boolean updateDiagnoseReport(RecordType type, long createTime, String devAddress, String reportVer, long reportTime, String content) {
+	public static boolean updateDiagnoseReport(RecordType type, long createTime, String devAddress, String reportVer, String reportProvider, long reportTime, String content) {
 		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, createTime, devAddress);
 		if(record == null) return false;		
-		return record.updateDiagnoseReport(reportVer, reportTime, content);
+		return record.updateDiagnoseReport(reportVer, reportProvider, reportTime, content);
 	}
 }

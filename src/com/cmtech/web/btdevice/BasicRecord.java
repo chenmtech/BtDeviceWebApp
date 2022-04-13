@@ -17,10 +17,15 @@ import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
 
+/**
+ * 所有记录的基础类，包含各种记录共有的属性和基本操作
+ * @author gdmc
+ *
+ */
 public abstract class BasicRecord implements IDbOperation, IJsonable{
 	// 基本记录中要进行数据库读写的属性字段名数组
 	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
-			"recordSecond", "reportVer", "reportClient", "reportTime", "reportContent", "reportStatus"};
+			"recordSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
 	private static final String DEFAULT_RECORD_VER = "1.0";
@@ -32,9 +37,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	public static final int REPORT_STATUS_DONE = 0; // 已完成
     public static final int REPORT_STATUS_PROCESS = 1; // 处理中
     
-    // 报告产生的端
-    public static final int REPORT_CLIENT_LOCAL = 0; // 手机本地端
-    public static final int REPORT_CLIENT_REMOTE = 1; // 服务器端
+    // 报告提供者
+    public static final String DEFAULT_REPORT_PROVIDER = "";
 	
 	// 记录类型
 	private final RecordType type;
@@ -62,8 +66,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     // 报告版本号
     private String reportVer = DEFAULT_REPORT_VER;
     
-    // 报告产生的端
-    private int reportClient = REPORT_CLIENT_LOCAL;
+    // 报告提供者
+    private String reportProvider = DEFAULT_REPORT_PROVIDER;
     
     // 报告产生的时间
     private long reportTime = INVALID_TIME;
@@ -121,8 +125,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return reportVer;
 	}
 
-	public int getReportClient() {
-		return reportClient;
+	public String getReportProvider() {
+		return reportProvider;
 	}
 
 	public long getReportTime() {
@@ -146,17 +150,13 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
 	@Override
     public void fromJson(JSONObject json) {
-    	if(json.has("ver")) {
-			ver = json.getString("ver");
-    	} else {
-    		ver = DEFAULT_RECORD_VER;
-    	}
+		ver = json.getString("ver");
 		creatorId = json.getInt("creatorId");
 		note = json.getString("note");
 		recordSecond = json.getInt("recordSecond");
 		
 		reportVer = json.getString("reportVer");
-		reportClient = json.getInt("reportClient");
+		reportProvider = json.getString("reportProvider");
 		reportTime = json.getLong("reportTime");
 		reportContent = json.getString("reportContent");
 		reportStatus = json.getInt("reportStatus");
@@ -181,7 +181,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		json.put("note", note);
 		json.put("recordSecond", recordSecond);
 		json.put("reportVer", reportVer);
-		json.put("reportClient", reportClient);
+		json.put("reportProvider", reportProvider);
 		json.put("reportTime", reportTime);
 		json.put("reportContent", reportContent);
 		json.put("reportStatus", reportStatus);
@@ -203,7 +203,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		note = rs.getString("note");
 		recordSecond = rs.getInt("recordSecond");
 		reportVer = rs.getString("reportVer");
-		reportClient = rs.getInt("reportClient");
+		reportProvider = rs.getString("reportProvider");
 		reportTime = rs.getLong("reportTime");
 		reportContent = rs.getString("reportContent");
 		reportStatus = rs.getInt("reportStatus");
@@ -226,7 +226,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		ps.setString(begin++, note);
 		ps.setInt(begin++, recordSecond);
 		ps.setString(begin++, reportVer);
-		ps.setInt(begin++, reportClient);
+		ps.setString(begin++, reportProvider);
 		ps.setLong(begin++, reportTime);
 		ps.setString(begin++, reportContent);
 		ps.setInt(begin++, reportStatus);
@@ -383,12 +383,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName +" set reportStatus = ?, reportClient = ? where createTime = ? and devAddress = ? and reportStatus = ?";
+		String sql = "update " + tableName +" set reportStatus = ? where createTime = ? and devAddress = ? and reportStatus = ?";
 		try {
 			int begin = 1;
 			ps = conn.prepareStatement(sql);
 			ps.setInt(begin++, toStatus);
-			ps.setInt(begin++, REPORT_CLIENT_REMOTE);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
 			ps.setInt(begin++, fromStatus);

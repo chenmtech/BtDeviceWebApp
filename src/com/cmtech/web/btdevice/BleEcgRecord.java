@@ -123,7 +123,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public JSONObject retrieveDiagnoseReport() {
 		JSONObject reportJson = new JSONObject();
 		reportJson.put("reportVer", getReportVer());
-		reportJson.put("reportClient", getReportClient());
+		reportJson.put("reportProvider", getReportProvider());
 		reportJson.put("reportTime", getReportTime());
 		reportJson.put("reportContent", getReportContent());
 		reportJson.put("reportStatus", getReportStatus());
@@ -141,18 +141,19 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	
 	@Override
-	public boolean updateDiagnoseReport(String reportVer, long reportTime, String reportContent) {
+	public boolean updateDiagnoseReport(String reportVer, String reportProvider, long reportTime, String reportContent) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "update EcgRecord set reportVer = ?, reportTime = ?, reportContent = ?, reportStatus = ? " 
+		String sql = "update EcgRecord set reportVer = ?, reportProvider = ?, reportTime = ?, reportContent = ?, reportStatus = ? " 
 				+ "where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			int begin = 1;
 			ps.setString(begin++, reportVer);
+			ps.setString(begin++, reportProvider);
 			ps.setLong(begin++, reportTime);
 			ps.setString(begin++, reportContent);
 			ps.setInt(begin++, REPORT_STATUS_DONE);

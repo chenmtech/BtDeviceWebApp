@@ -22,5 +22,5 @@ public interface IDiagnosable {
 	boolean applyForDiagnose(); 
 	
 	// 更新诊断报告
-	boolean updateDiagnoseReport(String reportVer, long reportTime, String content); 
+	boolean updateDiagnoseReport(String reportVer, String reportProvider, long reportTime, String content); 
 }
