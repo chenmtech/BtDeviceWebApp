@@ -171,7 +171,9 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	
 	
 	/**
-	 * 获取第一个需要诊断的心电记录，是否需要诊断，依据记录的报告状态reportStatus是否为DONE，以及reportVer是否比newReportVer小
+	 * 获取第一个需要诊断的心电记录
+	 * 是否需要诊断，依据记录的报告状态reportStatus是否为DONE，以及reportVer是否比newReportVer小
+	 * 排序按照ID，最小的ID最先诊断
 	 * @param newReportVer：心电诊断报告版本
 	 * @return
 	 */
