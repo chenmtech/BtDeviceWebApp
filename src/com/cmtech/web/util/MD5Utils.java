@@ -4,10 +4,18 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Random;
 
-//MD5加密
+/**
+ * MD5加密辅助类
+ * @author gdmc
+ *
+ */
 public class MD5Utils {
 
-    //加密字符串
+    /**
+     * 生成MD5密码
+     * @param info
+     * @return
+     */
     public static String getMD5Code(String info) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -29,7 +37,7 @@ public class MD5Utils {
     }
     
     /**
-     * 加盐MD5
+     * 加盐生成MD5密码
      *
      * @param password
      * @return
@@ -60,10 +68,10 @@ public class MD5Utils {
     }
 
     /**
-     * 校验加盐后是否和原文一致
+     * 校验加盐后密码是否与现有密码一致
      *
-     * @param password
-     * @param md5
+     * @param password：加盐前密码
+     * @param md5：现有密码
      * @return
      * @author daniel
      * @time 2016-6-11 下午8:45:39

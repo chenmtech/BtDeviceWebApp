@@ -16,71 +16,65 @@ import com.cmtech.web.dbUtil.DbUtil;
 import com.cmtech.web.util.Base64;
 import com.cmtech.web.util.MD5Utils;
 
+/**
+ * 账户类，与数据库中的账户表对应
+ * @author gdmc
+ *
+ */
 public class Account implements IDbOperation, IJsonable {
+	public static final int MALE = 1;
+	public static final int FEMALE = 2;
+	
+	// ID
 	private int id = INVALID_ID;
+	
+	// 版本号
 	private String ver = DEFAULT_VER;
+	
+	// 用户名
 	private String userName;
+	
+	// 密码
 	private String password;
+	
+	// 昵称
 	private String nickName;
+	
+	// 备注
 	private String note;
+	
+	// 头像图标数据
 	private byte[] iconData;
-	private int gender = 0;
+	
+	// 性别
+	private int gender = MALE;
+	
+	// 生日
     private long birthday = INVALID_TIME;
+    
+    // 体重
     private int weight = 0;
+    
+    // 身高
     private int height = 0;
 	
+    /**
+     * 用ID号构造
+     * @param id
+     */
 	public Account(int id) {
 		this.id = id;
 	}
 	
+	/**
+	 * 通过用户名和密码构造，只能在注册新用户的signUp函数中调用
+	 * @param userName
+	 * @param password
+	 */
 	private Account(String userName, String password) {
 		this.userName = userName;
 		this.password = password;
-	}
-	
-	public static int login(String userName, String password) {
-		String md5Password = getPasswordFromDb(userName);
-		if(MD5Utils.verify(password, md5Password))
-			return getIdFromDb(userName);
-		else
-			return INVALID_ID;
-	}
-	
-	public static boolean signUp(String userName, String password) {
-		if(Account.exist(userName)) return false;
-		password = MD5Utils.generate(password);
-		if("".equals(password)) return false;
-		return new Account(userName, password).insert();
-	}
-	
-	public static boolean changePassword(String userName, String password) {
-		password = MD5Utils.generate(password);
-		Connection conn = DbUtil.connect();
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		String sql = "update Account set password=? where userName = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, password);
-			ps.setString(2, userName);
-			if(ps.executeUpdate() != 0) {
-				return true;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(null, ps, conn);
-		}
-		return false;
-	}
-	
-	// 验证账户是否有效
-	// 目前仅仅验证该账户id是否存在
-	public static boolean isAccountValid(int id) {
-		return Account.exist(id);
-	}
+	}	
 	
 	@Override
 	public void fromJson(JSONObject json) {
@@ -197,17 +191,17 @@ public class Account implements IDbOperation, IJsonable {
 		String sql = "update Account set nickName=?, note=?, icon=?, gender=?, birthday=?, weight=?, height=? where id = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			int index = 1;
-			ps.setString(index++, nickName);
-			ps.setString(index++, note);
+			int begin = 1;
+			ps.setString(begin++, nickName);
+			ps.setString(begin++, note);
 			Blob b = conn.createBlob();
 			b.setBytes(1, iconData);
-			ps.setBlob(index++, b);
-			ps.setInt(index++, gender);
-			ps.setLong(index++, birthday);
-			ps.setInt(index++, weight);
-			ps.setInt(index++, height);
-			ps.setInt(index++, id);
+			ps.setBlob(begin++, b);
+			ps.setInt(begin++, gender);
+			ps.setLong(begin++, birthday);
+			ps.setInt(begin++, weight);
+			ps.setInt(begin++, height);
+			ps.setInt(begin++, id);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -222,7 +216,7 @@ public class Account implements IDbOperation, IJsonable {
 	
 	@Override
 	public boolean delete() {
-		// TODO Auto-generated method stub
+		// 暂时不能删除账户
 		return false;
 	}
 	
@@ -231,6 +225,81 @@ public class Account implements IDbOperation, IJsonable {
 		return "userName="+userName+",password="+password+",nickName="+nickName+",note="+note+",iconDataLength="+iconData.length;
 	}
 	
+
+	/*
+	 * 静态函数
+	 */
+	
+	/**
+	 * 登录
+	 * @param userName
+	 * @param password
+	 * @return 登录成功返回用户在数据库中的ID
+	 */
+	public static int login(String userName, String password) {
+		String md5Password = getPasswordFromDb(userName);
+		if(MD5Utils.verify(password, md5Password))
+			return getIdFromDb(userName);
+		else
+			return INVALID_ID;
+	}
+	
+	/**
+	 * 注册新用户
+	 * @param userName
+	 * @param password
+	 * @return
+	 */
+	public static boolean signUp(String userName, String password) {
+		if(Account.exist(userName)) return false;
+		password = MD5Utils.generate(password);
+		if("".equals(password)) return false;
+		return new Account(userName, password).insert();
+	}
+	
+	/**
+	 * 修改密码
+	 * @param userName
+	 * @param newPassword：新密码
+	 * @return
+	 */
+	public static boolean changePassword(String userName, String newPassword) {
+		newPassword = MD5Utils.generate(newPassword);
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update Account set password=? where userName = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, newPassword);
+			ps.setString(2, userName);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+	}
+	
+	/**
+	 * 验证账户ID号是否有效
+	 * @param id
+	 * @return
+	 */
+	public static boolean isAccountValid(int id) {
+		return Account.exist(id);
+	}
+	
+	/**
+	 * 判断用户ID号是否存在
+	 * @param id
+	 * @return
+	 */
 	public static boolean exist(int id) {
 		if(id == INVALID_ID) return false;
 		
@@ -256,6 +325,11 @@ public class Account implements IDbOperation, IJsonable {
 		return false;		
 	}
 	
+	/**
+	 * 判断用户是否存在
+	 * @param userName
+	 * @return
+	 */
 	private static boolean exist(String userName) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
@@ -279,6 +353,11 @@ public class Account implements IDbOperation, IJsonable {
 		return false;		
 	}
 	
+	/**
+	 * 从数据库获取用户ID
+	 * @param userName
+	 * @return
+	 */
 	private static int getIdFromDb(String userName) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return INVALID_ID;
@@ -302,6 +381,11 @@ public class Account implements IDbOperation, IJsonable {
 		return INVALID_ID;		
 	}
 	
+	/**
+	 * 从数据库获取用户密码
+	 * @param userName
+	 * @return
+	 */
 	private static String getPasswordFromDb(String userName) {
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return "";

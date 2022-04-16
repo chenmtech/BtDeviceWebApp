@@ -35,9 +35,8 @@ import com.cmtech.web.btdevice.Account;
 
 /**
  * ClassName: AccountServlet
- * Function: TODO ADD FUNCTION. 
- * Reason: TODO ADD REASON(��ѡ). 
- * date: 2020��4��9�� ����7:18:21 
+ * Function: 账户Servlet，响应手机端对账户的有关操作
+ * date: 2020年4月
  *
  * @author bme
  * @version 
@@ -53,8 +52,7 @@ public class AccountServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 	SignUp or Login using platName and platId
-	 *  Return isSuccess and errStr with json
+	 * 	实现手机端登录、注册和修改密码操作
 	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -71,6 +69,7 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
+		// 注册新用户
 		if(cmd.equals("signUp")) {
 			if(Account.signUp(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
@@ -80,6 +79,7 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
+		// 登录，如果成功，返回账户ID号
 		if(cmd.equals("login")) {
 			int id = Account.login(userName, password);
 			
@@ -93,6 +93,7 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
+		// 修改密码
 		if(cmd.equals("changePassword")) {
 			if(Account.changePassword(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
@@ -107,9 +108,7 @@ public class AccountServlet extends HttpServlet {
 	}
 
 	/**
-	 *  Upload a account
-	 *  Download a account
-	 *  Return the result with json object
+	 *  实现手机端用户信息的上传（更新）和下载操作
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -137,6 +136,8 @@ public class AccountServlet extends HttpServlet {
 			
 			String cmd = inputJson.getString("cmd");
 			switch(cmd) {
+			
+			// 上传
 			case "upload":
 				account.fromJson(inputJson);
 				if(account.update()) {
@@ -146,6 +147,7 @@ public class AccountServlet extends HttpServlet {
 				}
 				break;
 				
+			// 下载	
 			case "download":
 				if(account.retrieve()) {
 					ServletUtil.contentResponse(response, account.toJson());
