@@ -17,7 +17,8 @@ import com.cmtech.web.dbUtil.DbUtil;
  */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "aveHr"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "ecgData", "aveHr", 
+			"breakPos", "breakTime"};
     
 	// 信号采样率
 	private int sampleRate; // sample rate
@@ -30,6 +31,12 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     
     // 心电数据字符串
     private String ecgData; // ecg data    
+    
+    // 心电采集时断点的数据位置字符串
+    private String breakPos;
+    
+    // 心电采集时断点的时刻点
+    private String breakTime;
     
     // 平均心率：次/分钟
     private int aveHr = 0; // average hr
@@ -85,6 +92,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		leadTypeCode = json.getInt("leadTypeCode");
 		ecgData = json.getString("ecgData");
 		aveHr = json.getInt("aveHr");
+		breakPos = json.getString("breakPos");
+		breakTime = json.getString("breakTime");
 	}
 	
 	@Override
@@ -95,6 +104,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("ecgData", ecgData);
 		json.put("aveHr", aveHr);
+		json.put("breakPos", breakPos);
+		json.put("breakTime", breakTime);
 		return json;
 	}
 	
@@ -106,6 +117,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		leadTypeCode = rs.getInt("leadTypeCode");
 		ecgData = rs.getString("ecgData");
 		aveHr = rs.getInt("aveHr");
+		breakPos = rs.getString("breakPos");
+		breakTime = rs.getString("breakTime");
 	}
 	
 	@Override
@@ -116,6 +129,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, leadTypeCode);
 		ps.setString(begin++, ecgData);
 		ps.setInt(begin++, aveHr);
+		ps.setString(begin++, breakPos);
+		ps.setString(begin++, breakTime);
 		return begin;
 	}
 	
