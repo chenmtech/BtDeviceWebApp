@@ -21,7 +21,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-@WebServlet(name="/UploadDownloadFileServlet")
+@WebServlet(name="UploadDownloadFileServlet", urlPatterns="/File")
 public class UploadDownloadFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private ServletFileUpload uploader = null;
@@ -87,10 +87,10 @@ public class UploadDownloadFileServlet extends HttpServlet {
 				fileItem.write(file);
 				out.write("File "+fileItem.getName()+ " uploaded successfully.");
 				out.write("<br>");
-				out.write("<a href=\"UploadDownloadFileServlet?fileName="+fileItem.getName()+"\">Download "+fileItem.getName()+"</a>");
+				out.write("<a href=\"File?fileName="+fileItem.getName()+"\">Download "+fileItem.getName()+"</a>");
 			}
 		} catch (FileUploadException e) {
-			out.write("Exception in uploading file.");
+			out.write("FileUploadException in uploading file.");
 		} catch (Exception e) {
 			out.write("Exception in uploading file.");
 		}
