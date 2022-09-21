@@ -4,6 +4,7 @@ package com.cmtech.web.btdevice;
 import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.MyConstant.INVALID_TIME;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +40,9 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
     // 报告提供者
     public static final String DEFAULT_REPORT_PROVIDER = "";
+    
+    // 信号数据文件路径
+    public static File SIG_PATH = new File(System.getProperty("catalina.home")+File.separator + "DATA");
 	
 	// 记录类型
 	private final RecordType type;
@@ -324,7 +328,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	 * 从数据库中删除该记录
 	 */
     @Override
-	public final boolean delete() {
+	public boolean delete() {
     	String tableName = type.getTableName();
     	if("".equals(tableName)) return false;
     	

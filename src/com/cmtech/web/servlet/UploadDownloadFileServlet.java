@@ -19,6 +19,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.cmtech.web.btdevice.BasicRecord;
+
 /**
  * 实现信号数据文件的上传和下载
  * @author chenm
@@ -28,7 +30,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 public class UploadDownloadFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private ServletFileUpload uploader = null;
-	private File sigPath = new File(System.getProperty("catalina.home")+File.separator + "DATA");
+	public File sigPath = BasicRecord.SIG_PATH;
     
 	@Override
 	public void init() throws ServletException{

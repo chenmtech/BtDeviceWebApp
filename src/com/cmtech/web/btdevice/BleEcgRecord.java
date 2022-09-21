@@ -1,6 +1,7 @@
 package com.cmtech.web.btdevice;
 
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.servlet.UploadDownloadFileServlet;
 
 /**
  * 心电记录类
@@ -186,6 +188,21 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			DbUtil.close(rs, ps, conn);
 		}
 		return false;	
+	}
+	
+	public String getSigFileName() {
+        return getDevAddress().replace(":", "")+getCreateTime();
+    }
+	
+	@Override
+	public boolean delete() {
+		boolean success = super.delete();
+		if(success) {
+			File sigPath = new File(BasicRecord.SIG_PATH, "ECG");
+			File file = new File(sigPath, getSigFileName());
+			if(file.exists()) success = file.delete();
+		}
+		return success;
 	}
 	
 	
