@@ -190,21 +190,10 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return false;	
 	}
 	
-	public String getSigFileName() {
-        return getDevAddress().replace(":", "")+getCreateTime();
-    }
-	
 	@Override
-	public boolean delete() {
-		boolean success = super.delete();
-		if(success) {
-			File sigPath = new File(BasicRecord.SIG_PATH, "ECG");
-			File file = new File(sigPath, getSigFileName());
-			if(file.exists()) success = file.delete();
-		}
-		return success;
-	}
-	
+	public File getSigFilePath() {
+		return new File(super.getSigFilePath(), "ECG");
+	}	
 	
 	/**
 	 * 获取第一个需要诊断的心电记录

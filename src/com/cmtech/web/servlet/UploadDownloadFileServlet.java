@@ -19,24 +19,26 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import com.cmtech.web.btdevice.BasicRecord;
-
 /**
- * 实现信号数据文件的上传和下载
+ * 实现文件的上传和下载
  * @author chenm
  *
  */
 @WebServlet(name="UploadDownloadFileServlet", urlPatterns="/File")
 public class UploadDownloadFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	// 文件上传器
 	private ServletFileUpload uploader = null;
-	public File sigPath = BasicRecord.SIG_PATH;
+	
+	// 存放文件根路径
+	private final File rootPath = new File(System.getProperty("catalina.home")+File.separator + "DATA");
     
 	@Override
 	public void init() throws ServletException{
-    	if(!sigPath.exists()) sigPath.mkdirs();
+    	if(!rootPath.exists()) rootPath.mkdirs();
 		DiskFileItemFactory fileFactory = new DiskFileItemFactory();
-		fileFactory.setRepository(sigPath);
+		fileFactory.setRepository(rootPath);
 		this.uploader = new ServletFileUpload(fileFactory);
 	}
 	
@@ -44,26 +46,27 @@ public class UploadDownloadFileServlet extends HttpServlet {
 	 * 用于实现文件下载服务
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String sigType = request.getParameter("sigType"); 
+		// 文件类型参数，决定了要下载的文件从根目录的哪个子目录中去寻找。比如type="ECG"，则从rootPath/ECG目录中寻找文件
+		String fileType = request.getParameter("fileType"); 
 		String fileName = request.getParameter("fileName"); 
-		 if(fileName == null || fileName.equals("")){ 
-			 throw new ServletException("File Name can't be null or empty"); 
-		 } 
+		if(fileName == null || fileName.equals("")){ 
+			throw new ServletException("File Name can't be null or empty"); 
+		} 
 		 
-		 File typePath = new File(sigPath, sigType); 
-		 File file = new File(typePath, fileName);
-		 if(!file.exists()){ 
-			  throw new ServletException("File doesn't exists on server:" + file.getAbsolutePath());
-		 }
-		 //System.out.println("File location on server::"+file.getAbsolutePath());
+		File typePath = new File(rootPath, fileType); 
+		File file = new File(typePath, fileName);
+		if(!file.exists()){ 
+			 throw new ServletException("File doesn't exists on server:" + file.getAbsolutePath());
+		}
+		//System.out.println("File location on server::"+file.getAbsolutePath());
 		 
 		ServletContext ctx = getServletContext();
-		InputStream fis = new FileInputStream(file);
 		String mimeType = ctx.getMimeType(file.getAbsolutePath());
 		response.setContentType(mimeType != null? mimeType:"application/octet-stream");
 		response.setContentLength((int) file.length());
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-				
+
+		InputStream fis = new FileInputStream(file);
 		ServletOutputStream os       = response.getOutputStream();
 		byte[] bufferData = new byte[1024];
 		int read=0;
@@ -95,10 +98,11 @@ public class UploadDownloadFileServlet extends HttpServlet {
 				//System.out.println("ContentType="+fileItem.getContentType());
 				//System.out.println("Size in bytes="+fileItem.getSize());
 				
-				File typePath = new File(sigPath, fileItem.getFieldName());
-				if(!typePath.exists()) typePath.mkdirs();
-				
-				file = new File(typePath, fileItem.getName());
+				String fileType = fileItem.getFieldName(); // fieldName包含文件的类型
+				String fileName = fileItem.getName();
+				File typePath = new File(rootPath, fileType);
+				if(!typePath.exists()) typePath.mkdirs();				
+				file = new File(typePath, fileName);
 				//System.out.println("Absolute Path at server="+file.getAbsolutePath());
 				
 				if(!file.exists()) {
@@ -106,8 +110,7 @@ public class UploadDownloadFileServlet extends HttpServlet {
 				}
 			}
 		} catch (Exception e) {
-			if(file != null && file.exists())
-				file.delete();
+			throw new IOException("error when writing the data into file.");
 		}
 	}
 

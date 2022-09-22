@@ -40,10 +40,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
     // 报告提供者
     public static final String DEFAULT_REPORT_PROVIDER = "";
-    
-    // 信号数据文件路径
-    public static File SIG_PATH = new File(System.getProperty("catalina.home")+File.separator + "DATA");
-	
+    	
 	// 记录类型
 	private final RecordType type;
 	
@@ -83,6 +80,10 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     private int reportStatus = REPORT_STATUS_DONE;
     
 
+    // 信号文件存放路径
+    private static File sigFilePath = new File(System.getProperty("catalina.home")+File.separator + "DATA");
+    
+    
     BasicRecord(RecordType type, long createTime, String devAddress) {
     	this.type = type;
         this.createTime = createTime;
@@ -149,8 +150,17 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		this.reportStatus = status;
 	}
 
+	public File getSigFilePath() {
+		return sigFilePath;
+	}
+	
+	public String getSigFileName() {
+        return getDevAddress().replace(":", "")+getCreateTime();
+    }
+	
 	// 获取该记录中包含的要进行数据库操作的属性字段名数组，不包括BasicRecord中的字段
 	public abstract String[] getProperties();
+	
     
 	@Override
     public void fromJson(JSONObject json) {
@@ -329,6 +339,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	 */
     @Override
 	public boolean delete() {
+    	boolean success = false;
     	String tableName = type.getTableName();
     	if("".equals(tableName)) return false;
     	
@@ -342,13 +353,19 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 			ps.setLong(1, createTime);
 			ps.setString(2, devAddress);
 			if(ps.executeUpdate() != 0)
-				return true;
+				success = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(null, ps, conn);
 		}
-		return false;
+		
+		// 删除信号文件
+		if(success) {
+			File file = new File(getSigFilePath(), getSigFileName());
+			if(file.exists()) success = file.delete();
+		}
+		return success;
 	}
 
 	/**
