@@ -43,9 +43,10 @@ public class UploadDownloadFileServlet extends HttpServlet {
 	}
 	
 	/**
-	 * 用于实现文件下载服务
+	 * 用于实现文件下载或者判断文件是否存在
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String cmd = request.getParameter("cmd");
 		// 文件类型参数，决定了要下载的文件从根目录的哪个子目录中去寻找。比如type="ECG"，则从rootPath/ECG目录中寻找文件
 		String fileType = request.getParameter("fileType"); 
 		String fileName = request.getParameter("fileName"); 
@@ -59,24 +60,30 @@ public class UploadDownloadFileServlet extends HttpServlet {
 			 throw new ServletException("File doesn't exists on server:" + file.getAbsolutePath());
 		}
 		//System.out.println("File location on server::"+file.getAbsolutePath());
-		 
-		ServletContext ctx = getServletContext();
-		String mimeType = ctx.getMimeType(file.getAbsolutePath());
-		response.setContentType(mimeType != null? mimeType:"application/octet-stream");
-		response.setContentLength((int) file.length());
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-
-		InputStream fis = new FileInputStream(file);
-		ServletOutputStream os       = response.getOutputStream();
-		byte[] bufferData = new byte[1024];
-		int read=0;
-		while((read = fis.read(bufferData))!= -1){
-			os.write(bufferData, 0, read);
+		
+		if(cmd.equals("find")) {
+			return;
+		} else if(cmd.equals("download")) {		 
+			ServletContext ctx = getServletContext();
+			String mimeType = ctx.getMimeType(file.getAbsolutePath());
+			response.setContentType(mimeType != null? mimeType:"application/octet-stream");
+			response.setContentLength((int) file.length());
+			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+	
+			InputStream fis = new FileInputStream(file);
+			ServletOutputStream os       = response.getOutputStream();
+			byte[] bufferData = new byte[1024];
+			int read=0;
+			while((read = fis.read(bufferData))!= -1){
+				os.write(bufferData, 0, read);
+			}
+			os.flush();
+			os.close();
+			fis.close();
+			//System.out.println("File downloaded at client successfully");
+		} else {
+			throw new IOException("The command is wrong.");
 		}
-		os.flush();
-		os.close();
-		fis.close();
-		//System.out.println("File downloaded at client successfully");
 	}
 
 	/**
@@ -107,7 +114,7 @@ public class UploadDownloadFileServlet extends HttpServlet {
 				
 				if(!file.exists()) {
 					fileItem.write(file);
-				}
+				} 
 			}
 		} catch (Exception e) {
 			throw new IOException("error when writing the data into file.");
