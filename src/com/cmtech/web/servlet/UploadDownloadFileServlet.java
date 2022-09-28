@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -47,19 +46,18 @@ public class UploadDownloadFileServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String cmd = request.getParameter("cmd");
-		// 文件类型参数，决定了要下载的文件从根目录的哪个子目录中去寻找。比如type="ECG"，则从rootPath/ECG目录中寻找文件
-		String fileType = request.getParameter("fileType"); 
+		// 信号类型参数，决定了要下载的文件从根目录的哪个子目录中去寻找。比如type="ECG"，则从rootPath/ECG目录中寻找文件
+		String sigType = request.getParameter("sigType"); 
 		String fileName = request.getParameter("fileName"); 
 		if(fileName == null || fileName.equals("")){ 
 			throw new ServletException("File Name can't be null or empty"); 
 		} 
 		 
-		File typePath = new File(rootPath, fileType); 
+		File typePath = new File(rootPath, sigType); 
 		File file = new File(typePath, fileName);
 		if(!file.exists()){ 
-			 throw new ServletException("File doesn't exists on server:" + file.getAbsolutePath());
+			 throw new ServletException("The file doesn't exist at server path:" + file.getAbsolutePath());
 		}
-		//System.out.println("File location on server::"+file.getAbsolutePath());
 		
 		if(cmd.equals("find")) {
 			return;
@@ -71,7 +69,7 @@ public class UploadDownloadFileServlet extends HttpServlet {
 			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 	
 			InputStream fis = new FileInputStream(file);
-			ServletOutputStream os       = response.getOutputStream();
+			ServletOutputStream os = response.getOutputStream();
 			byte[] bufferData = new byte[1024];
 			int read=0;
 			while((read = fis.read(bufferData))!= -1){
@@ -80,7 +78,6 @@ public class UploadDownloadFileServlet extends HttpServlet {
 			os.flush();
 			os.close();
 			fis.close();
-			//System.out.println("File downloaded at client successfully");
 		} else {
 			throw new IOException("The command is wrong.");
 		}
@@ -96,28 +93,19 @@ public class UploadDownloadFileServlet extends HttpServlet {
 		
 		File file = null;
 		try {
-			List<FileItem> fileItemsList = uploader.parseRequest(request);
-			Iterator<FileItem> fileItemsIterator = fileItemsList.iterator();
-			while(fileItemsIterator.hasNext()){
-				FileItem fileItem = fileItemsIterator.next();
-				//System.out.println("FieldName="+fileItem.getFieldName());
-				//System.out.println("FileName="+fileItem.getName());
-				//System.out.println("ContentType="+fileItem.getContentType());
-				//System.out.println("Size in bytes="+fileItem.getSize());
-				
-				String fileType = fileItem.getFieldName(); // fieldName包含文件的类型
+			List<FileItem> fileItemsList = uploader.parseRequest(request);			
+			for(FileItem fileItem : fileItemsList) {
+				String sigType = fileItem.getFieldName();
 				String fileName = fileItem.getName();
-				File typePath = new File(rootPath, fileType);
+				File typePath = new File(rootPath, sigType);
 				if(!typePath.exists()) typePath.mkdirs();				
 				file = new File(typePath, fileName);
-				//System.out.println("Absolute Path at server="+file.getAbsolutePath());
 				
-				if(!file.exists()) {
-					fileItem.write(file);
-				} 
-			}
+				fileItem.write(file); // 写信号文件
+				System.out.println("Success writing the file:" + file.getAbsolutePath());
+			}			
 		} catch (Exception e) {
-			throw new IOException("error when writing the data into file.");
+			throw new IOException("error writing the data into file.");
 		}
 	}
 
