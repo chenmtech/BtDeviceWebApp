@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -26,37 +29,38 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 @WebServlet(name="UploadDownloadFileServlet", urlPatterns="/File")
 public class UploadDownloadFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
-	// 文件上传器
-	private ServletFileUpload uploader = null;
-	
+		
 	// 存放文件根路径
 	private final File rootPath = new File(System.getProperty("catalina.home")+File.separator + "DATA");
+	
+	private static final String[] SUPPORT_FILE_TYPE = {"ECG", "JPG", "EEG", "PTT"}; 
     
 	@Override
 	public void init() throws ServletException{
     	if(!rootPath.exists()) rootPath.mkdirs();
-		DiskFileItemFactory fileFactory = new DiskFileItemFactory();
-		fileFactory.setRepository(rootPath);
-		this.uploader = new ServletFileUpload(fileFactory);
 	}
 	
 	/**
 	 * 用于实现文件下载或者判断文件是否存在
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 文件命令参数
 		String cmd = request.getParameter("cmd");
-		// 信号类型参数，决定了要下载的文件从根目录的哪个子目录中去寻找。比如type="ECG"，则从rootPath/ECG目录中寻找文件
-		String sigType = request.getParameter("sigType"); 
+		
+		// 类型参数，决定要下载的文件从根目录的哪个子目录中去寻找。
+		// 比如type="ECG"，则从rootPath/ECG目录中寻找文件		
+		String type = request.getParameter("type"); 
+		
+		// 文件名参数
 		String fileName = request.getParameter("fileName"); 
 		if(fileName == null || fileName.equals("")){ 
 			throw new ServletException("File Name can't be null or empty"); 
 		} 
 		 
-		File typePath = new File(rootPath, sigType); 
+		File typePath = new File(rootPath, type); 
 		File file = new File(typePath, fileName);
 		if(!file.exists()){ 
-			 throw new ServletException("The file doesn't exist at server path:" + file.getAbsolutePath());
+			 throw new IOException("The file doesn't exist at server path:" + file.getAbsolutePath());
 		}
 		
 		if(cmd.equals("find")) {
@@ -71,15 +75,15 @@ public class UploadDownloadFileServlet extends HttpServlet {
 			InputStream fis = new FileInputStream(file);
 			ServletOutputStream os = response.getOutputStream();
 			byte[] bufferData = new byte[1024];
-			int read=0;
-			while((read = fis.read(bufferData))!= -1){
-				os.write(bufferData, 0, read);
+			int len = 0;
+			while((len = fis.read(bufferData))!= -1){
+				os.write(bufferData, 0, len);
 			}
 			os.flush();
 			os.close();
 			fis.close();
 		} else {
-			throw new IOException("The command is wrong.");
+			throw new ServletException("cmd wrong.");
 		}
 	}
 
@@ -90,22 +94,25 @@ public class UploadDownloadFileServlet extends HttpServlet {
 		if(!ServletFileUpload.isMultipartContent(request)){
 			throw new ServletException("Content type is not multipart/form-data");
 		}
+
+		DiskFileItemFactory fileFactory = new DiskFileItemFactory();
+		fileFactory.setRepository(rootPath);
+		ServletFileUpload uploader = new ServletFileUpload(fileFactory);
 		
-		File file = null;
 		try {
 			List<FileItem> fileItemsList = uploader.parseRequest(request);			
 			for(FileItem fileItem : fileItemsList) {
-				String sigType = fileItem.getFieldName();
-				String fileName = fileItem.getName();
-				File typePath = new File(rootPath, sigType);
-				if(!typePath.exists()) typePath.mkdirs();				
-				file = new File(typePath, fileName);
-				
-				fileItem.write(file); // 写信号文件
-				System.out.println("Success writing the file:" + file.getAbsolutePath());
+				String type = fileItem.getFieldName().toUpperCase(); // field name 就是类型字符串
+				if(Arrays.asList(SUPPORT_FILE_TYPE).contains(type)) {
+					String fileName = fileItem.getName();
+					File typePath = new File(rootPath, type);
+					if(!typePath.exists()) typePath.mkdirs();	
+					File file = new File(typePath, fileName);
+					fileItem.write(file); // 写信号文件
+				}
 			}			
 		} catch (Exception e) {
-			throw new IOException("error writing the data into file.");
+			throw new IOException("error occurs when writing data into file.");
 		}
 	}
 
