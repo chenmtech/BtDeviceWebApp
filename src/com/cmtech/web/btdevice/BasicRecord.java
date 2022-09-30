@@ -34,12 +34,12 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	// 报告的缺省版本号
 	private static final String DEFAULT_REPORT_VER = "0.0";	
 	
+    // 缺省报告提供者
+    private static final String DEFAULT_REPORT_PROVIDER = "";
+	
 	// 报告的状态
 	public static final int REPORT_STATUS_DONE = 0; // 已完成
-    public static final int REPORT_STATUS_PROCESS = 1; // 处理中
-    
-    // 报告提供者
-    public static final String DEFAULT_REPORT_PROVIDER = "";
+    public static final int REPORT_STATUS_PROCESS = 1; // 处理中    
     	
 	// 记录类型
 	private final RecordType type;
