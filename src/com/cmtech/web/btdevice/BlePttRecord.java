@@ -1,5 +1,6 @@
 package com.cmtech.web.btdevice;
 
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,6 +55,11 @@ public class BlePttRecord extends BasicRecord{
     public String[] getProperties() {    	
     	return PROPERTIES;
     }
+	
+	@Override
+	public File getSigFilePath() {
+		return new File(getSigFileRootPath(), "PTT");
+	}	
 
     @Override
 	public void fromJson(JSONObject json) {

@@ -23,10 +23,10 @@ import com.cmtech.web.dbUtil.DbUtil;
  * @author gdmc
  *
  */
-public abstract class BasicRecord implements IDbOperation, IJsonable{
+public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
-	// 基本记录中可以进行数据库读写的属性字段字符串数组
-	private static final String[] DB_PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
+	// 记录中可以进行数据库读写的基本属性字段字符串数组
+	private static final String[] BASIC_PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
 			"recordSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
@@ -86,18 +86,26 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
     //--------------------------------------------------------静态变量
     // 信号文件存放路径
-    private static File sigFilePath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
+    private static File sigFileRootPath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
     
-    
+
     
     //-----------------------------------------------------静态函数
     
     /**
-     * 设置信号文件存储路径
+     * 
+     * @return
+     */
+	public static File getSigFileRootPath() {
+		return sigFileRootPath;
+	}
+    
+    /**
+     * 设置信号文件根路径
      * @param sigPath
      */
-    public static void setSigFilePath(File sigPath) {
-    	sigFilePath = sigPath;
+    public static void setSigFileRootPath(File rootPath) {
+    	sigFileRootPath = rootPath;
     }    
     
 
@@ -203,6 +211,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         recordSecond = 0;
     }
     
+    //-------------------------------------------------------实例方法
     public RecordType getType() {
 		return type;
 	}
@@ -258,17 +267,10 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	public void setReportStatus(int status) {
 		this.reportStatus = status;
 	}
-
-	public File getSigFilePath() {
-		return sigFilePath;
-	}
 	
 	public String getSigFileName() {
         return getDevAddress().replace(":", "")+getCreateTime();
     }
-	
-	// 获取记录中要进行数据库操作的属性字段字符串数组，不包括BasicRecord中的字段
-	public abstract String[] getProperties();
 	
     
 	@Override
@@ -305,10 +307,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
 
     /**
-     * 从数据库操作的ResultSet读取属性值
+     * 从数据库操作的ResultSet中读取属性值
      * @param rs
      * @throws SQLException
      */
+    @Override
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		creatorId = rs.getInt("creatorId");
@@ -322,12 +325,13 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	}	
 	
 	/**
-	 * 将属性值写入数据库操作的PreparedStatement
+	 * 将属性值写入数据库操作的PreparedStatement中
 	 * 注意：写入的字段顺序必须和getPropertiesString()返回的字段顺序一致
 	 * @param ps
 	 * @return
 	 * @throws SQLException
 	 */
+    @Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = 1;
 		ps.setLong(begin++, createTime);
@@ -386,7 +390,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into " + tableName + " (" + getDbPropertiesString() + ") values (" + getInsertQuestionMark() + ")";
+		String sql = "insert into " + tableName + " (" + getPropertiesString() + ") values (" + getInsertQuestionMark() + ")";
 		try {
 			ps = conn.prepareStatement(sql);
 			writePropertiesToPreparedStatement(ps);
@@ -413,7 +417,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select " + getDbPropertiesString() + " from " + tableName + " where createTime = ? and devAddress = ?";
+		String sql = "select " + getPropertiesString() + " from " + tableName + " where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setLong(1, createTime);
@@ -459,7 +463,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		// 删除信号文件
 		if(success) {
-			File file = new File(getSigFilePath(), getSigFileName());
+			File file = new File(getSigFileRootPath(), getSigFileName());
 			if(file.exists()) success = file.delete();
 		}
 		return success;
@@ -539,34 +543,25 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     public int hashCode() {
         return getRecordName().hashCode();
     }
-    
-    /**
-     * 获取基本属性字段用于数据库操作的String
-     * @return：比如"createTime, devAddress"
-     */
-    private String getBasicDbPropertiesString() {
-    	StringBuilder builder = new StringBuilder();
-    	int len = DB_PROPERTIES.length;
-    	for(int i = 0; i < len-1; i++) {
-    		builder.append(DB_PROPERTIES[i]).append(',');
-    	}
-    	builder.append(DB_PROPERTIES[len-1]);
-    	return builder.toString();
-    }
 
     /**
      * 获取属性字段用于数据库操作的String
      * @return
      */
-    private String getDbPropertiesString() {
-    	StringBuilder builder = new StringBuilder(getBasicDbPropertiesString());
-    	builder.append(',');
+    private String getPropertiesString() {
+    	StringBuilder builder = new StringBuilder();
+    	int len = BASIC_PROPERTIES.length;
+    	for(int i = 0; i < len; i++) {
+    		builder.append(BASIC_PROPERTIES[i]).append(',');
+    	}
+    	
     	String[] properties = getProperties();
-    	int len = properties.length;
+    	len = properties.length;
     	for(int i = 0; i < len-1; i++) {
     		builder.append(properties[i]).append(',');
     	}
     	builder.append(properties[len-1]);
+    	
     	return builder.toString();
     }
     
@@ -575,7 +570,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
      * @return：比如"?,?"
      */
     private String getInsertQuestionMark() {
-    	int num = DB_PROPERTIES.length + getProperties().length;
+    	int num = BASIC_PROPERTIES.length + getProperties().length;
     	StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < num-1; i++) {
 			builder.append('?').append(',');

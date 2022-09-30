@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.servlet.UploadDownloadFileServlet;
 
 /**
  * 心电记录类
@@ -83,11 +82,16 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	}
 	*/
 	
-	// 获取该记录中包含的要进行数据库操作的属性字段名数组，不包括BasicRecord中的字段
+	// 获取该记录中包含的要进行数据库操作的属性字段名数组
 	@Override
     public String[] getProperties() {    	
-    	return PROPERTIES;
+		return PROPERTIES;
     }
+	
+	@Override
+	public File getSigFilePath() {
+		return new File(getSigFileRootPath(), "ECG");
+	}	
 	
     @Override
 	public void fromJson(JSONObject json) {
@@ -189,11 +193,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		}
 		return false;	
 	}
-	
-	@Override
-	public File getSigFilePath() {
-		return new File(super.getSigFilePath(), "ECG");
-	}	
 	
 	/**
 	 * 获取第一个需要诊断的心电记录

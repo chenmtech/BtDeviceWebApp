@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +31,7 @@ public class UploadDownloadFileServlet extends HttpServlet {
 	// 存放文件根路径
 	private final File rootPath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
 	
-	private static final String[] SUPPORT_FILE_TYPE = {"ECG", "JPG", "EEG", "PTT"}; 
+	private static final String[] SUPPORT_FILE_TYPE = {"ECG", "EEG", "HR", "PPG", "PTT","THERMO", "JPG"}; 
     
 	@Override
 	public void init() throws ServletException{
