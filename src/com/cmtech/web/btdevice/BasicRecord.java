@@ -24,8 +24,9 @@ import com.cmtech.web.dbUtil.DbUtil;
  *
  */
 public abstract class BasicRecord implements IDbOperation, IJsonable{
-	// 基本记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
+	//------------------------------------------------常量
+	// 基本记录中可以进行数据库读写的属性字段字符串数组
+	private static final String[] DB_PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
 			"recordSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
@@ -39,8 +40,11 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 	
 	// 报告的状态
 	public static final int REPORT_STATUS_DONE = 0; // 已完成
-    public static final int REPORT_STATUS_PROCESS = 1; // 处理中    
+	
+    public static final int REPORT_STATUS_PROCESSING = 1; // 处理中    
     	
+    
+    //------------------------------------------------------实例变量
 	// 记录类型
 	private final RecordType type;
 	
@@ -62,7 +66,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     // 记录信号长度：秒数
     private int recordSecond;
     
-    /* 报告相关字段 */
+    // 诊断报告相关字段 
     
     // 报告版本号
     private String reportVer = DEFAULT_REPORT_VER;
@@ -77,13 +81,118 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     private String reportContent = ""; 
 
     // 报告的状态
-    private int reportStatus = REPORT_STATUS_DONE;
+    private int reportStatus = REPORT_STATUS_DONE;    
+
+    
+    //--------------------------------------------------------静态变量
+    // 信号文件存放路径
+    private static File sigFilePath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
+    
+    
+    
+    //-----------------------------------------------------静态函数
+    
+    /**
+     * 设置信号文件存储路径
+     * @param sigPath
+     */
+    public static void setSigFilePath(File sigPath) {
+    	sigFilePath = sigPath;
+    }    
     
 
-    // 信号文件存放路径
-    private static File sigFilePath = new File(System.getProperty("catalina.home")+File.separator + "DATA");
+    /**
+     * 用于从数据库中查找满足条件的记录，按创建时间排序，并获取记录信息
+     * @param types：要查找的记录类型
+     * @param creatorId：记录创建者ID
+     * @param fromTime：记录起始创建时间
+     * @param filterStr：备注中包含的字符串
+     * @param num：查找的记录数
+     * @return：得到的记录列表
+     */
+    public static List<BasicRecord> retrieveRecordList(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+    	if(num <= 0) return null;
+		
+		List<BasicRecord> found = new ArrayList<>();
+		for(RecordType t : types) {
+			// 不支持ALL和TH类型的记录
+			if(t == RecordType.ALL || t == RecordType.TH) {
+				continue;
+			}
+			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecordList(t, creatorId, fromTime, filterStr, num);
+			if(tmp != null && !tmp.isEmpty())
+				found.addAll(tmp);
+		}
+		Collections.sort(found, new Comparator<BasicRecord>() {
+		    @Override
+		    public int compare(BasicRecord o1, BasicRecord o2) {
+		    	int rlt = 0;
+		        if(o2.getCreateTime() > o1.getCreateTime()) rlt = 1;
+		        else if(o2.getCreateTime() < o1.getCreateTime()) rlt = -1;
+		        return rlt;
+		    }
+		});
+
+		int N = Math.min(num, found.size());
+		found = found.subList(0, N);
+		for(BasicRecord record : found) {
+			record.retrieve();
+		}
+		
+		return found;
+    }
+
+    // 获取一种类型的记录列表，仅包含createTime和devAddress字段信息
+	private static List<BasicRecord> searchOneTypeRecordList(RecordType type, int creatorId, long fromTime, String filterStr, int num) {
+		if(num <= 0) return null;
+		String tableName = type.getTableName();
+		if("".equals(tableName)) return null;
+		
+		Connection conn = DbUtil.connect();		
+		if(conn == null) return null;		
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			String sql = "select createTime, devAddress from " + tableName;
+			String where = " where ";
+			if(creatorId != INVALID_ID) {
+				where += "creatorId = ? and "; 
+			}
+			if(!"".equals(filterStr)) {
+				where += "note REGEXP ? and ";
+			}
+			where += "createTime < ? order by createTime desc limit ?";
+			sql += where;
+			
+			ps = conn.prepareStatement(sql);
+			int i = 1;
+			if(creatorId != INVALID_ID) {
+				ps.setInt(i++, creatorId);
+			}
+			if(!"".equals(filterStr)) {
+				ps.setString(i++, filterStr);
+			}
+			ps.setLong(i++, fromTime);
+			ps.setInt(i++, num);
+			rs = ps.executeQuery();
+
+			List<BasicRecord> found = new ArrayList<>();
+			while(rs.next()) {
+				long createTime = rs.getLong("createTime");
+				String devAddress = rs.getString("devAddress");
+				found.add(RecordFactory.create(type, createTime, devAddress));
+			}			
+			return found;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return null;
+	}
     
-    
+	//------------------------------------------------------构造器
     BasicRecord(RecordType type, long createTime, String devAddress) {
     	this.type = type;
         this.createTime = createTime;
@@ -158,7 +267,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
         return getDevAddress().replace(":", "")+getCreateTime();
     }
 	
-	// 获取该记录中包含的要进行数据库操作的属性字段名数组，不包括BasicRecord中的字段
+	// 获取记录中要进行数据库操作的属性字段字符串数组，不包括BasicRecord中的字段
 	public abstract String[] getProperties();
 	
     
@@ -178,14 +287,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
     
     @Override
 	public JSONObject toJson() {
-		return basicPropertiesToJson();
-	}
-    
-    /**
-     * 将基本属性打包为JSON Object
-     * @return
-     */
-    public JSONObject basicPropertiesToJson() {
     	JSONObject json = new JSONObject();
 		json.put("recordTypeCode", type.getCode());
 		json.put("createTime", createTime);
@@ -200,7 +301,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		json.put("reportContent", reportContent);
 		json.put("reportStatus", reportStatus);
 		return json;
-    }
+	}
+    
 
     /**
      * 从数据库操作的ResultSet读取属性值
@@ -208,10 +310,6 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
      * @throws SQLException
      */
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
-		readBasicPropertiesFromResultSet(rs);
-	}
-	
-	private void readBasicPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		creatorId = rs.getInt("creatorId");
 		note = rs.getString("note");
@@ -221,8 +319,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		reportTime = rs.getLong("reportTime");
 		reportContent = rs.getString("reportContent");
 		reportStatus = rs.getInt("reportStatus");
-	}
-	
+	}	
 	
 	/**
 	 * 将属性值写入数据库操作的PreparedStatement
@@ -289,7 +386,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into " + tableName + " (" + getPropertiesString() + ") values (" + getInsertQuestionMark() + ")";
+		String sql = "insert into " + tableName + " (" + getDbPropertiesString() + ") values (" + getInsertQuestionMark() + ")";
 		try {
 			ps = conn.prepareStatement(sql);
 			writePropertiesToPreparedStatement(ps);
@@ -316,7 +413,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select " + getPropertiesString() + " from " + tableName + " where createTime = ? and devAddress = ?";
+		String sql = "select " + getDbPropertiesString() + " from " + tableName + " where createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setLong(1, createTime);
@@ -447,13 +544,13 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
      * 获取基本属性字段用于数据库操作的String
      * @return：比如"createTime, devAddress"
      */
-    private String getBasicPropertiesString() {
+    private String getBasicDbPropertiesString() {
     	StringBuilder builder = new StringBuilder();
-    	int len = PROPERTIES.length;
+    	int len = DB_PROPERTIES.length;
     	for(int i = 0; i < len-1; i++) {
-    		builder.append(PROPERTIES[i]).append(',');
+    		builder.append(DB_PROPERTIES[i]).append(',');
     	}
-    	builder.append(PROPERTIES[len-1]);
+    	builder.append(DB_PROPERTIES[len-1]);
     	return builder.toString();
     }
 
@@ -461,8 +558,8 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
      * 获取属性字段用于数据库操作的String
      * @return
      */
-    private String getPropertiesString() {
-    	StringBuilder builder = new StringBuilder(getBasicPropertiesString());
+    private String getDbPropertiesString() {
+    	StringBuilder builder = new StringBuilder(getBasicDbPropertiesString());
     	builder.append(',');
     	String[] properties = getProperties();
     	int len = properties.length;
@@ -478,7 +575,7 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
      * @return：比如"?,?"
      */
     private String getInsertQuestionMark() {
-    	int num = PROPERTIES.length + getProperties().length;
+    	int num = DB_PROPERTIES.length + getProperties().length;
     	StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < num-1; i++) {
 			builder.append('?').append(',');
@@ -487,123 +584,5 @@ public abstract class BasicRecord implements IDbOperation, IJsonable{
 		return builder.toString();
     }
     
-    /**
-     * 静态函数，用于从数据库中查找满足条件的记录，按创建时间排序，并将这些记录的基本属性字段值读取出来
-     * @param types：要查找的记录类型
-     * @param creatorId：记录创建者ID
-     * @param fromTime：记录起始创建时间
-     * @param filterStr：备注中包含的字符串
-     * @param num：查找的记录数
-     * @return：得到的BasicRecord列表
-     */
-    public static List<BasicRecord> retrieveBasicRecords(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
-    	if(num <= 0) return null;
-		
-		List<BasicRecord> found = new ArrayList<>();
-		for(RecordType t : types) {
-			// 不支持ALL和TH类型的记录
-			if(t == RecordType.ALL || t == RecordType.TH) {
-				continue;
-			}
-			List<BasicRecord> tmp = BasicRecord.searchTypeRecords(t, creatorId, fromTime, filterStr, num);
-			if(tmp != null && !tmp.isEmpty())
-				found.addAll(tmp);
-		}
-		Collections.sort(found, new Comparator<BasicRecord>() {
-		    @Override
-		    public int compare(BasicRecord o1, BasicRecord o2) {
-		    	int rlt = 0;
-		        if(o2.getCreateTime() > o1.getCreateTime()) rlt = 1;
-		        else if(o2.getCreateTime() < o1.getCreateTime()) rlt = -1;
-		        return rlt;
-		    }
-		});
-
-		int N = Math.min(num, found.size());
-		found = found.subList(0, N);
-		for(BasicRecord record : found) {
-			record.retrieveBasicly();
-		}
-		
-		return found;
-    }
-
-	private static List<BasicRecord> searchTypeRecords(RecordType type, int creatorId, long fromTime, String filterStr, int num) {
-		if(num <= 0) return null;
-		String tableName = type.getTableName();
-		if("".equals(tableName)) return null;
-		
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return null;		
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			String sql = "select createTime, devAddress from " + tableName;
-			String where = " where ";
-			if(creatorId != INVALID_ID) {
-				where += "creatorId = ? and "; 
-			}
-			if(!"".equals(filterStr)) {
-				where += "note REGEXP ? and ";
-			}
-			where += "createTime < ? order by createTime desc limit ?";
-			sql += where;
-			
-			ps = conn.prepareStatement(sql);
-			int i = 1;
-			if(creatorId != INVALID_ID) {
-				ps.setInt(i++, creatorId);
-			}
-			if(!"".equals(filterStr)) {
-				ps.setString(i++, filterStr);
-			}
-			ps.setLong(i++, fromTime);
-			ps.setInt(i++, num);
-			rs = ps.executeQuery();
-
-			List<BasicRecord> found = new ArrayList<>();
-			while(rs.next()) {
-				long createTime = rs.getLong("createTime");
-				String devAddress = rs.getString("devAddress");
-				found.add(RecordFactory.create(type, createTime, devAddress));
-			}			
-			return found;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return null;
-	}
     
-    /**
-     * 从数据库中获取该记录的基本属性字段值，属性应包含于getBasicPropertiesString()的字符串中
-     */
-    private final boolean retrieveBasicly() {
-    	String tableName = type.getTableName();
-    	if("".equals(tableName)) return false;
-    	
-		Connection conn = DbUtil.connect();		
-		if(conn == null) return false;
-		
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		String sql = "select " + getBasicPropertiesString() + " from " + tableName + " where devAddress = ? and createTime = ?";
-		try {
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, getDevAddress());
-			ps.setLong(2, getCreateTime());
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				readBasicPropertiesFromResultSet(rs);
-				return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			DbUtil.close(rs, ps, conn);
-		}
-		return false;
-	}
 }

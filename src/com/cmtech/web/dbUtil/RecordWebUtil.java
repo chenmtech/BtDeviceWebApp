@@ -78,7 +78,7 @@ public class RecordWebUtil {
 	}
 	
 	/**
-	 * 下载符合条件的BasicRecord记录列表，将其打包为JSON Array
+	 * 下载满足条件的记录列表，将其打包为JSON Array
 	 * @param types:记录类型
 	 * @param creatorId：创建者ID
 	 * @param fromTime: 起始采集时间
@@ -86,14 +86,14 @@ public class RecordWebUtil {
 	 * @param num：记录数
 	 * @return：记录打包为JSON Array
 	 */
-	public static JSONArray downloadBasicRecords(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+	public static JSONArray downloadRecordList(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
-		List<BasicRecord> found = BasicRecord.retrieveBasicRecords(types, creatorId, fromTime, filterStr, num);
+		List<BasicRecord> found = BasicRecord.retrieveRecordList(types, creatorId, fromTime, filterStr, num);
 		if(found == null || found.isEmpty()) return null;
 		
 		JSONArray jsonArray = new JSONArray();
 		for(BasicRecord record : found) {
-			jsonArray.put(record.basicPropertiesToJson());
+			jsonArray.put(record.toJson());
 		}
 		
 		return jsonArray;

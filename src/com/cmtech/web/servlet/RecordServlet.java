@@ -37,10 +37,20 @@ import com.cmtech.web.dbUtil.RecordWebUtil;
 public class RecordServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	//---------------------------------------------------------- 记录操作命令
+	// 上传记录
 	private static final String CMD_UPLOAD = "upload";
+	
+	// 下载记录
 	private static final String CMD_DOWNLOAD = "download";
+	
+	// 删除记录
 	private static final String CMD_DELETE = "delete";
-	private static final String CMD_DOWNLOAD_BASICRECORDS = "downloadBasicRecords";
+	
+	// 下载记录列表
+	private static final String CMD_DOWNLOAD_RECORD_LIST = "downloadRecordList";
+	
+	// 获取记录诊断报告
 	private static final String CMD_RETRIEVE_DIAGNOSE_REPORT = "retrieveDiagnoseReport";
 	
 	
@@ -148,7 +158,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case CMD_DOWNLOAD_BASICRECORDS:
+			case CMD_DOWNLOAD_RECORD_LIST:
 				String typeStr = inputJson.getString("recordTypeCode");
 				String[] typeStrArr = typeStr.split(",");
 				RecordType[] types = new RecordType[typeStrArr.length];
@@ -159,7 +169,7 @@ public class RecordServlet extends HttpServlet {
 				int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
 				String filterStr = inputJson.getString("filterStr");
-				JSONArray jsonArr = RecordWebUtil.downloadBasicRecords(types, creatorId, fromTime, filterStr, num);
+				JSONArray jsonArr = RecordWebUtil.downloadRecordList(types, creatorId, fromTime, filterStr, num);
 				if(jsonArr == null)
 					ServletUtil.codeResponse(response, SUCCESS);
 				else

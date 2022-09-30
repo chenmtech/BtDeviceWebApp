@@ -153,9 +153,9 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	
 	@Override
 	public boolean applyForDiagnose() {
-		boolean rlt = updateReportStatus(RecordType.ECG, REPORT_STATUS_DONE, REPORT_STATUS_PROCESS);
+		boolean rlt = updateReportStatus(RecordType.ECG, REPORT_STATUS_DONE, REPORT_STATUS_PROCESSING);
 		if(rlt) {
-			setReportStatus(REPORT_STATUS_PROCESS);
+			setReportStatus(REPORT_STATUS_PROCESSING);
 		}
 		return rlt;
 	}
