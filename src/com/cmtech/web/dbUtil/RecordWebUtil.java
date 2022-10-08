@@ -65,6 +65,28 @@ public class RecordWebUtil {
 	}
 	
 	/**
+	 * 下载满足条件的记录，将其打包为JSON Array
+	 * @param types:记录类型
+	 * @param creatorId：创建者ID
+	 * @param fromTime: 起始采集时间
+	 * @param filterStr：过滤字符串
+	 * @param num：记录数
+	 * @return：记录打包为JSON Array
+	 */
+	public static JSONArray download(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+		if(num <= 0) return null;
+		List<BasicRecord> found = BasicRecord.retrieveRecords(types, creatorId, fromTime, filterStr, num);
+		if(found == null || found.isEmpty()) return null;
+		
+		JSONArray jsonArray = new JSONArray();
+		for(BasicRecord record : found) {
+			jsonArray.put(record.toJson());
+		}
+		
+		return jsonArray;
+	}	
+	
+	/**
 	 * 删除一条记录
 	 * @param type
 	 * @param createTime
@@ -77,28 +99,6 @@ public class RecordWebUtil {
 		return record.delete();
 	}
 	
-	/**
-	 * 下载满足条件的记录列表，将其打包为JSON Array
-	 * @param types:记录类型
-	 * @param creatorId：创建者ID
-	 * @param fromTime: 起始采集时间
-	 * @param filterStr：过滤字符串
-	 * @param num：记录数
-	 * @return：记录打包为JSON Array
-	 */
-	public static JSONArray downloadRecordList(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
-		if(num <= 0) return null;
-		List<BasicRecord> found = BasicRecord.retrieveRecordList(types, creatorId, fromTime, filterStr, num);
-		if(found == null || found.isEmpty()) return null;
-		
-		JSONArray jsonArray = new JSONArray();
-		for(BasicRecord record : found) {
-			jsonArray.put(record.toJson());
-		}
-		
-		return jsonArray;
-	}	
-
 	/**
 	 * 申请对记录进行诊断，记录是否需要诊断，依据当前记录的诊断报告版本号与新的诊断报告版本号的比较
 	 * 如果有记录需要诊断，则将其属性值打包为JSON Obj

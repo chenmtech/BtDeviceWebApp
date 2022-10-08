@@ -8,10 +8,9 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BlePpgRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "ppgData"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue"};
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value
-    private String ppgData; // ppg data
     
     public BlePpgRecord(long createTime, String devAddress) {
     	super(RecordType.PPG, createTime, devAddress);
@@ -33,10 +32,6 @@ public class BlePpgRecord extends BasicRecord{
 		this.caliValue = caliValue;
 	}
 
-	public void setEegData(String ppgData) {
-		this.ppgData = ppgData;
-	}
-
 	@Override
     public String[] getProperties() {    	
     	return PROPERTIES;
@@ -52,7 +47,6 @@ public class BlePpgRecord extends BasicRecord{
 		super.fromJson(json);		
 		sampleRate = json.getInt("sampleRate");
 		caliValue = json.getInt("caliValue");
-		ppgData = json.getString("ppgData");
 	}
 	
 	@Override
@@ -60,7 +54,6 @@ public class BlePpgRecord extends BasicRecord{
 		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
-		json.put("ppgData", ppgData);
 		return json;
 	}
 	
@@ -69,7 +62,6 @@ public class BlePpgRecord extends BasicRecord{
 		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
 		caliValue = rs.getInt("caliValue");
-		ppgData = rs.getString("ppgData");
 	}
 
 	@Override
@@ -77,7 +69,6 @@ public class BlePpgRecord extends BasicRecord{
 		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
 		ps.setInt(begin++, caliValue);
-		ps.setString(begin++, ppgData);
 		return begin;
 	}
 	

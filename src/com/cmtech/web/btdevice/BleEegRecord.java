@@ -8,11 +8,10 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BleEegRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "eegData"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode"};
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
-    private String eegData; // eeg data
     
     public BleEegRecord(long createTime, String devAddress) {
     	super(RecordType.EEG, createTime, devAddress);
@@ -29,10 +28,6 @@ public class BleEegRecord extends BasicRecord{
 	public int getLeadTypeCode() {
 		return leadTypeCode;
 	}
-
-	public String getEegData() {
-		return eegData;
-	}
 	
 	public void setSampleRate(int sampleRate) {
 		this.sampleRate = sampleRate;
@@ -44,10 +39,6 @@ public class BleEegRecord extends BasicRecord{
 
 	public void setLeadTypeCode(int leadTypeCode) {
 		this.leadTypeCode = leadTypeCode;
-	}
-
-	public void setEegData(String eegData) {
-		this.eegData = eegData;
 	}
 
 	@Override
@@ -66,7 +57,6 @@ public class BleEegRecord extends BasicRecord{
 		sampleRate = json.getInt("sampleRate");
 		caliValue = json.getInt("caliValue");
 		leadTypeCode = json.getInt("leadTypeCode");
-		eegData = json.getString("eegData");
 	}
 	
 	@Override
@@ -75,7 +65,6 @@ public class BleEegRecord extends BasicRecord{
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
-		json.put("eegData", eegData);
 		return json;
 	}
 	
@@ -85,7 +74,6 @@ public class BleEegRecord extends BasicRecord{
 		sampleRate = rs.getInt("sampleRate");
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
-		eegData = rs.getString("eegData");
 	}
 
 	@Override
@@ -94,7 +82,6 @@ public class BleEegRecord extends BasicRecord{
 		ps.setInt(begin++, sampleRate);
 		ps.setInt(begin++, caliValue);
 		ps.setInt(begin++, leadTypeCode);
-		ps.setString(begin++, eegData);
 		return begin;
 	}
 	

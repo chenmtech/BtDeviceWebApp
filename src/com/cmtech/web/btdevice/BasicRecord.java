@@ -66,7 +66,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     // 记录信号长度：秒数
     private int recordSecond;
     
-    // 诊断报告相关字段 
+    // ------------------------------------------------------------诊断报告相关实例变量 
     
     // 报告版本号
     private String reportVer = DEFAULT_REPORT_VER;
@@ -118,7 +118,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
      * @param num：查找的记录数
      * @return：得到的记录列表
      */
-    public static List<BasicRecord> retrieveRecordList(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+    public static List<BasicRecord> retrieveRecords(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
     	if(num <= 0) return null;
 		
 		List<BasicRecord> found = new ArrayList<>();
@@ -150,7 +150,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		return found;
     }
 
-    // 获取一种类型的记录列表，仅包含createTime和devAddress字段信息
+    // 获取一种记录类型的记录列表，仅包含createTime和devAddress字段信息
 	private static List<BasicRecord> searchOneTypeRecordList(RecordType type, int creatorId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
 		String tableName = type.getTableName();

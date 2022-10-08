@@ -29,9 +29,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     // 导联类型
     private int leadTypeCode; // lead type code
     
-    // 心电数据字符串
-    //private String ecgData; // ecg data    
-    
     // 心电采集时断点的数据位置字符串
     private String breakPos;
     
@@ -57,12 +54,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public int getLeadTypeCode() {
 		return leadTypeCode;
 	}
-
-	/*
-	public String getEcgData() {
-		return ecgData;
-	}
-	*/
 	
 	public void setSampleRate(int sampleRate) {
 		this.sampleRate = sampleRate;
@@ -75,12 +66,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public void setLeadTypeCode(int leadTypeCode) {
 		this.leadTypeCode = leadTypeCode;
 	}
-
-	/*
-	public void setEcgData(String ecgData) {
-		this.ecgData = ecgData;
-	}
-	*/
 	
 	// 获取该记录中包含的要进行数据库操作的属性字段名数组
 	@Override
@@ -99,7 +84,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		sampleRate = json.getInt("sampleRate");
 		caliValue = json.getInt("caliValue");
 		leadTypeCode = json.getInt("leadTypeCode");
-		//ecgData = json.getString("ecgData");
 		aveHr = json.getInt("aveHr");
 		breakPos = json.getString("breakPos");
 		breakTime = json.getString("breakTime");
@@ -111,7 +95,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("sampleRate", sampleRate);
 		json.put("caliValue", caliValue);
 		json.put("leadTypeCode", leadTypeCode);
-		//json.put("ecgData", ecgData);
 		json.put("aveHr", aveHr);
 		json.put("breakPos", breakPos);
 		json.put("breakTime", breakTime);
@@ -124,7 +107,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		sampleRate = rs.getInt("sampleRate");
 		caliValue = rs.getInt("caliValue");
 		leadTypeCode = rs.getInt("leadTypeCode");
-		//ecgData = rs.getString("ecgData");
 		aveHr = rs.getInt("aveHr");
 		breakPos = rs.getString("breakPos");
 		breakTime = rs.getString("breakTime");
@@ -136,7 +118,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, sampleRate);
 		ps.setInt(begin++, caliValue);
 		ps.setInt(begin++, leadTypeCode);
-		//ps.setString(begin++, ecgData);
 		ps.setInt(begin++, aveHr);
 		ps.setString(begin++, breakPos);
 		ps.setString(begin++, breakTime);

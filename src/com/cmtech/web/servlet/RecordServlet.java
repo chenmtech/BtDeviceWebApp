@@ -48,7 +48,7 @@ public class RecordServlet extends HttpServlet {
 	private static final String CMD_DELETE = "delete";
 	
 	// 下载记录列表
-	private static final String CMD_DOWNLOAD_RECORD_LIST = "downloadRecordList";
+	private static final String CMD_DOWNLOAD_RECORDS= "downloadRecords";
 	
 	// 获取记录诊断报告
 	private static final String CMD_RETRIEVE_DIAGNOSE_REPORT = "retrieveDiagnoseReport";
@@ -158,7 +158,7 @@ public class RecordServlet extends HttpServlet {
 				}
 				break;
 				
-			case CMD_DOWNLOAD_RECORD_LIST:
+			case CMD_DOWNLOAD_RECORDS:
 				String typeStr = inputJson.getString("recordTypeCode");
 				String[] typeStrArr = typeStr.split(",");
 				RecordType[] types = new RecordType[typeStrArr.length];
@@ -169,11 +169,11 @@ public class RecordServlet extends HttpServlet {
 				int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
 				String filterStr = inputJson.getString("filterStr");
-				JSONArray jsonArr = RecordWebUtil.downloadRecordList(types, creatorId, fromTime, filterStr, num);
-				if(jsonArr == null)
+				JSONArray jsonRecords = RecordWebUtil.download(types, creatorId, fromTime, filterStr, num);
+				if(jsonRecords == null)
 					ServletUtil.codeResponse(response, SUCCESS);
 				else
-					ServletUtil.contentResponse(response, jsonArr);
+					ServletUtil.contentResponse(response, jsonRecords);
 				break;
 				
 			case CMD_RETRIEVE_DIAGNOSE_REPORT:
