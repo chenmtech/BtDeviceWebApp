@@ -463,7 +463,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		
 		// 删除信号文件
 		if(success) {
-			File file = new File(getSigFileRootPath(), getSigFileName());
+			File file = new File(getSigFilePath(), getSigFileName());
 			if(file.exists()) success = file.delete();
 		}
 		return success;
