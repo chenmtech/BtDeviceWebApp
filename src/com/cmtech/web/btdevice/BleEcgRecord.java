@@ -18,7 +18,8 @@ import com.cmtech.web.dbUtil.DbUtil;
  */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "aveHr",  "breakPos", "breakTime"};
+	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "aveHr",  
+			"breakPos", "breakTime", "rhythmItemStartTime", "rhythmItemLabel"};
     
 	// 信号采样率
 	private int sampleRate; // sample rate
@@ -34,6 +35,12 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     
     // 心电采集时断点的时刻点
     private String breakTime;
+    
+    // 心律异常条目起始时间列表字符串
+    private String rhythmItemStartTime;
+    
+    // 心律异常条目标签列表字符串
+    private String rhythmItemLabel;
     
     // 平均心率：次/分钟
     private int aveHr = 0; // average hr
@@ -87,6 +94,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		aveHr = json.getInt("aveHr");
 		breakPos = json.getString("breakPos");
 		breakTime = json.getString("breakTime");
+		rhythmItemStartTime = json.getString("rhythmItemStartTime");
+		rhythmItemLabel = json.getString("rhythmItemLabel");
 	}
 	
 	@Override
@@ -98,6 +107,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("aveHr", aveHr);
 		json.put("breakPos", breakPos);
 		json.put("breakTime", breakTime);
+		json.put("rhythmItemStartTime", rhythmItemStartTime);
+		json.put("rhythmItemLabel", rhythmItemLabel);
 		return json;
 	}
 	
@@ -110,6 +121,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		aveHr = rs.getInt("aveHr");
 		breakPos = rs.getString("breakPos");
 		breakTime = rs.getString("breakTime");
+		rhythmItemStartTime = rs.getString("rhythmItemStartTime");
+		rhythmItemLabel = rs.getString("rhythmItemLabel");
 	}
 	
 	@Override
@@ -121,6 +134,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, aveHr);
 		ps.setString(begin++, breakPos);
 		ps.setString(begin++, breakTime);
+		ps.setString(begin++, rhythmItemStartTime);
+		ps.setString(begin++, rhythmItemLabel);
 		return begin;
 	}
 	
