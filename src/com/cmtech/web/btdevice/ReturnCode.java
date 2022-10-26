@@ -12,7 +12,8 @@ public enum ReturnCode {
 	DOWNLOAD_ERR(8),
 	DELETE_ERR(9),
 	DATA_ERR(10),
-	CHANGE_PASSWORD_ERR(11);
+	CHANGE_PASSWORD_ERR(11),
+	SHARE_ERR(12);
 	
 	private final int code;
 	

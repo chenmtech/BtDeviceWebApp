@@ -13,8 +13,8 @@ public class BlePttRecord extends BasicRecord{
     private int ecgCaliValue; // ecg calibration value
     private int ppgCaliValue; // ppg calibration value
     
-    public BlePttRecord(long createTime, String devAddress) {
-    	super(RecordType.PTT, createTime, devAddress);
+    public BlePttRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.PTT, accountId, createTime, devAddress);
     }
 
 	public int getSampleRate() {

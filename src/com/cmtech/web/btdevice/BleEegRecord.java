@@ -13,8 +13,8 @@ public class BleEegRecord extends BasicRecord{
     private int caliValue; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     
-    public BleEegRecord(long createTime, String devAddress) {
-    	super(RecordType.EEG, createTime, devAddress);
+    public BleEegRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.EEG, accountId, createTime, devAddress);
     }
 
 	public int getSampleRate() {

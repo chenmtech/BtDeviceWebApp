@@ -1,6 +1,8 @@
 package com.cmtech.web.dbUtil;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
+import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
+import com.cmtech.web.servlet.ServletUtil;
 
 /**
  * 用于执行记录相关的网络操作类
@@ -25,8 +28,8 @@ public class RecordWebUtil {
 	 * @param devAddress：记录设备
 	 * @return 记录在数据表中的ID号
 	 */
-	public static int getId(RecordType type, long createTime, String devAddress) {
-		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
+	public static int getId(RecordType type, int accountId, long createTime, String devAddress) {
+		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return INVALID_ID;
 		return record.getId();
 	}
@@ -38,9 +41,10 @@ public class RecordWebUtil {
 	 * @return
 	 */
 	public static boolean upload(RecordType type, JSONObject json) {
+		int accountId = json.getInt("accountId");
 		long createTime = json.getLong("createTime");
 		String devAddress = json.getString("devAddress");
-		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
+		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return false;
 		record.fromJson(json);
 		if(record.getId() == INVALID_ID)
@@ -56,8 +60,8 @@ public class RecordWebUtil {
 	 * @param devAddress
 	 * @return: 记录属性值打包后的JSON Obj
 	 */
-	public static JSONObject download(RecordType type, long createTime, String devAddress) {
-		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
+	public static JSONObject download(RecordType type, int accountId,  long createTime, String devAddress) {
+		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return null;
 		
 		if(!record.retrieve()) return null;
@@ -67,15 +71,15 @@ public class RecordWebUtil {
 	/**
 	 * 下载满足条件的记录，将其打包为JSON Array
 	 * @param types:记录类型
-	 * @param creatorId：创建者ID
+	 * @param accountId：记录拥有者ID
 	 * @param fromTime: 起始采集时间
 	 * @param filterStr：过滤字符串
 	 * @param num：记录数
 	 * @return：记录打包为JSON Array
 	 */
-	public static JSONArray download(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+	public static JSONArray download(RecordType[] types, int accountId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
-		List<BasicRecord> found = BasicRecord.retrieveRecords(types, creatorId, fromTime, filterStr, num);
+		List<BasicRecord> found = BasicRecord.retrieveRecords(types, accountId, fromTime, filterStr, num);
 		if(found == null || found.isEmpty()) return null;
 		
 		JSONArray jsonArray = new JSONArray();
@@ -93,10 +97,32 @@ public class RecordWebUtil {
 	 * @param devAddress
 	 * @return
 	 */
-	public static boolean delete(RecordType type, long createTime, String devAddress) {
-		BasicRecord record = RecordFactory.create(type, createTime, devAddress);
+	public static boolean delete(RecordType type, int accountId, long createTime, String devAddress) {
+		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return false;
 		return record.delete();
+	}
+	
+	/**
+	 * 分享一条记录
+	 * @param type
+	 * @param createTime
+	 * @param devAddress
+	 * @return
+	 */
+	public static boolean share(RecordType type, int accountId, long createTime, String devAddress, int shareId) {
+		if(accountId == shareId) return false;
+		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
+		if(record == null) return false;
+		
+		boolean rlt = record.retrieve();
+		if(!rlt) return false;
+		if(accountId != record.getCreatorId()) return false;
+		record.setAccountId(shareId);
+		if(record.getId() == INVALID_ID)
+			return record.insert();
+		else
+			return false;
 	}
 	
 	/**
@@ -122,8 +148,8 @@ public class RecordWebUtil {
 	 * @param devAddress
 	 * @return
 	 */
-	public static JSONObject retrieveDiagnoseReport(RecordType type, long createTime, String devAddress) {
-		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, createTime, devAddress);
+	public static JSONObject retrieveDiagnoseReport(RecordType type, int accountId,  long createTime, String devAddress) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null || !record.retrieve()) return null;
 		return record.retrieveDiagnoseReport();
 	}
@@ -140,8 +166,8 @@ public class RecordWebUtil {
 	 * @param content
 	 * @return
 	 */
-	public static boolean updateDiagnoseReport(RecordType type, long createTime, String devAddress, String reportVer, String reportProvider, long reportTime, String content) {
-		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, createTime, devAddress);
+	public static boolean updateDiagnoseReport(RecordType type, int accountId, long createTime, String devAddress, String reportVer, String reportProvider, long reportTime, String content) {
+		BleEcgRecord record = (BleEcgRecord)RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return false;		
 		return record.updateDiagnoseReport(reportVer, reportProvider, reportTime, content);
 	}

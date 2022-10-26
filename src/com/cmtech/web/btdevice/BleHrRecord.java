@@ -14,8 +14,8 @@ public class BleHrRecord extends BasicRecord {
     private short hrAve;
     private String hrHist; // HR histogram value
 
-    public BleHrRecord(long createTime, String devAddress) {
-    	super(RecordType.HR, createTime, devAddress);
+    public BleHrRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.HR, accountId, createTime, devAddress);
     }
 
 	public String getHrList() {

@@ -46,8 +46,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     private int aveHr = 0; // average hr
 
 
-    public BleEcgRecord(long createTime, String devAddress) {
-    	super(RecordType.ECG, createTime, devAddress);
+    public BleEcgRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.ECG, accountId, createTime, devAddress);
     }
     
     public int getSampleRate() {
@@ -205,7 +205,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select createTime, devAddress from " + tableName + 
+		String sql = "select accountId, createTime, devAddress from " + tableName + 
 				" where reportStatus = ? and reportVer < ? order by id limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -213,9 +213,10 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 			ps.setString(2, newReportVer);
 			rs = ps.executeQuery();
 			if(rs.next()) {
+				int accountId = rs.getInt("accountId");
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
-				return new BleEcgRecord(createTime, devAddress);
+				return new BleEcgRecord(accountId, createTime, devAddress);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

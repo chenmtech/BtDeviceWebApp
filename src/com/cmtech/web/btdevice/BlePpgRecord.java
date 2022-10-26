@@ -12,8 +12,8 @@ public class BlePpgRecord extends BasicRecord{
 	private int sampleRate; // sample rate
     private int caliValue; // calibration value
     
-    public BlePpgRecord(long createTime, String devAddress) {
-    	super(RecordType.PPG, createTime, devAddress);
+    public BlePpgRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.PPG, accountId, createTime, devAddress);
     }
 
 	public int getSampleRate() {

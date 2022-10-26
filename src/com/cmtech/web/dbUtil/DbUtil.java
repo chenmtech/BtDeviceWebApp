@@ -74,6 +74,7 @@ public class DbUtil {
 	public static void close(ResultSet rs, Statement stmt, Connection conn) {
 		closeRS(rs);
 		closeSTMT(stmt);
-		disconnect(conn);
+		if(conn!=null)
+			disconnect(conn);
 	}
 }

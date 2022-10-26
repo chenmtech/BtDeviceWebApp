@@ -11,8 +11,8 @@ public class BleThermoRecord extends BasicRecord {
 	private static final String[] PROPERTIES = {"temp"};
 	private String temp;
     
-    public BleThermoRecord(long createTime, String devAddress) {
-    	super(RecordType.THERMO, createTime, devAddress);
+    public BleThermoRecord(int accountId, long createTime, String devAddress) {
+    	super(RecordType.THERMO, accountId, createTime, devAddress);
     }
     
 	public String getTemp() {

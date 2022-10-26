@@ -26,7 +26,7 @@ import com.cmtech.web.dbUtil.DbUtil;
 public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
 	// 记录中可以进行数据库读写的基本属性字段字符串数组
-	private static final String[] BASIC_PROPERTIES = {"createTime", "devAddress", "ver", "creatorId", "note", 
+	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "note", 
 			"recordSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
@@ -47,6 +47,9 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     //------------------------------------------------------实例变量
 	// 记录类型
 	private final RecordType type;
+
+    // 记录拥有者ID
+    private int accountId;
 	
 	// 记录创建时间
     private final long createTime;
@@ -118,7 +121,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
      * @param num：查找的记录数
      * @return：得到的记录列表
      */
-    public static List<BasicRecord> retrieveRecords(RecordType[] types, int creatorId, long fromTime, String filterStr, int num) {
+    public static List<BasicRecord> retrieveRecords(RecordType[] types, int accountId, long fromTime, String filterStr, int num) {
     	if(num <= 0) return null;
 		
 		List<BasicRecord> found = new ArrayList<>();
@@ -127,7 +130,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 			if(t == RecordType.ALL || t == RecordType.TH) {
 				continue;
 			}
-			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecordList(t, creatorId, fromTime, filterStr, num);
+			List<BasicRecord> tmp = BasicRecord.searchOneTypeRecordList(t, accountId, fromTime, filterStr, num);
 			if(tmp != null && !tmp.isEmpty())
 				found.addAll(tmp);
 		}
@@ -150,8 +153,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		return found;
     }
 
-    // 获取一种记录类型的记录列表，仅包含createTime和devAddress字段信息
-	private static List<BasicRecord> searchOneTypeRecordList(RecordType type, int creatorId, long fromTime, String filterStr, int num) {
+    // 获取一种记录类型的记录列表，仅包含accountId, createTime和devAddress字段信息
+	private static List<BasicRecord> searchOneTypeRecordList(RecordType type, int accountId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
 		String tableName = type.getTableName();
 		if("".equals(tableName)) return null;
@@ -164,8 +167,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		try {
 			String sql = "select createTime, devAddress from " + tableName;
 			String where = " where ";
-			if(creatorId != INVALID_ID) {
-				where += "creatorId = ? and "; 
+			if(accountId != INVALID_ID) {
+				where += "accountId = ? and "; 
 			}
 			if(!"".equals(filterStr)) {
 				where += "note REGEXP ? and ";
@@ -175,8 +178,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 			
 			ps = conn.prepareStatement(sql);
 			int i = 1;
-			if(creatorId != INVALID_ID) {
-				ps.setInt(i++, creatorId);
+			if(accountId != INVALID_ID) {
+				ps.setInt(i++, accountId);
 			}
 			if(!"".equals(filterStr)) {
 				ps.setString(i++, filterStr);
@@ -189,7 +192,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 			while(rs.next()) {
 				long createTime = rs.getLong("createTime");
 				String devAddress = rs.getString("devAddress");
-				found.add(RecordFactory.create(type, createTime, devAddress));
+				found.add(RecordFactory.create(type, accountId, createTime, devAddress));
 			}			
 			return found;
 		} catch (SQLException e) {
@@ -201,8 +204,9 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	}
     
 	//------------------------------------------------------构造器
-    BasicRecord(RecordType type, long createTime, String devAddress) {
+    BasicRecord(RecordType type, int accountId, long createTime, String devAddress) {
     	this.type = type;
+    	this.accountId = accountId;
         this.createTime = createTime;
         this.devAddress = devAddress;
     	ver = DEFAULT_RECORD_VER;
@@ -220,6 +224,14 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	return ver;
     }
 
+    public int getAccountId() {
+    	return accountId;
+    }
+    
+    public void setAccountId(int accountId) {
+    	this.accountId = accountId;
+    }
+
     public long getCreateTime() {
         return createTime;
     }
@@ -229,7 +241,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     }
 
     public String getRecordName() {
-        return createTime + devAddress;
+        return accountId + createTime + devAddress;
     }
 
     public int getCreatorId() {
@@ -291,6 +303,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	public JSONObject toJson() {
     	JSONObject json = new JSONObject();
 		json.put("recordTypeCode", type.getCode());
+		json.put("accountId", accountId);
 		json.put("createTime", createTime);
 		json.put("devAddress", devAddress);
     	json.put("ver", ver);
@@ -334,6 +347,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     @Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = 1;
+		ps.setInt(begin++, accountId);
 		ps.setLong(begin++, createTime);
 		ps.setString(begin++, devAddress);
 		ps.setString(begin++, ver);
@@ -349,7 +363,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	}
 
 	/**
-	 * 获取该记录在数据表中的ID：用type, createTime和devAddress
+	 * 获取该记录在数据表中的ID：用type, accountId, createTime和devAddress
 	 */
     @Override
     public final int getId() {
@@ -361,11 +375,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from " + tableName + " where createTime = ? and devAddress = ?";
+		String sql = "select id from " + tableName + " where accountId = ? and createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setLong(1, createTime);
-			ps.setString(2, devAddress);
+			ps.setInt(1, accountId);
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				return rs.getInt("id");
@@ -417,11 +432,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select " + getPropertiesString() + " from " + tableName + " where createTime = ? and devAddress = ?";
+		String sql = "select " + getPropertiesString() + " from " + tableName + " where accountId = ? and createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setLong(1, createTime);
-			ps.setString(2, devAddress);
+			ps.setInt(1, accountId);
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);
 			rs = ps.executeQuery();
 			if(rs.next()) {
 				readPropertiesFromResultSet(rs);
@@ -447,22 +463,44 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		Connection conn = DbUtil.connect();		
 		if(conn == null) return false;
 		
+		// 先获取记录创建者ID
 		PreparedStatement ps = null;
-		String sql = "delete from " + tableName + " where createTime = ? and devAddress = ?";
+		ResultSet rs = null;
+		String sql = "select creatorId from " + tableName + " where accountId = ? and createTime = ? and devAddress = ?";
+		int creatorId = INVALID_ID;
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setLong(1, createTime);
-			ps.setString(2, devAddress);
-			if(ps.executeUpdate() != 0)
+			ps.setInt(1, accountId);
+			ps.setLong(2, createTime);
+			ps.setString(3, devAddress);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				creatorId = rs.getInt("creatorId");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, null);
+		}
+		
+		// 删除数据库中的记录
+		PreparedStatement ps1 = null;
+		String sql1 = "delete from " + tableName + " where accountId = ? and createTime = ? and devAddress = ?";
+		try {
+			ps1 = conn.prepareStatement(sql1);
+			ps1.setInt(1, accountId);
+			ps1.setLong(2, createTime);
+			ps1.setString(3, devAddress);
+			if(ps1.executeUpdate() != 0)
 				success = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			DbUtil.close(null, ps, conn);
+			DbUtil.close(null, ps1, conn);
 		}
 		
-		// 删除信号文件
-		if(success) {
+		// 删除记录的信号文件，只有记录创建者才有权删除信号文件
+		if(success && creatorId == accountId) {
 			File file = new File(getSigFilePath(), getSigFileName());
 			if(file.exists()) success = file.delete();
 		}
@@ -481,12 +519,13 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set note = ? where createTime = ? and devAddress = ?";
+		String sql = "update " + tableName + " set note = ? where accountId = ? and createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, note);
-			ps.setLong(2, createTime);
-			ps.setString(3, devAddress);
+			ps.setInt(2, accountId);
+			ps.setLong(3, createTime);
+			ps.setString(4, devAddress);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -505,11 +544,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName +" set reportStatus = ? where createTime = ? and devAddress = ? and reportStatus = ?";
+		String sql = "update " + tableName +" set reportStatus = ? where accountId = ? and createTime = ? and devAddress = ? and reportStatus = ?";
 		try {
 			int begin = 1;
 			ps = conn.prepareStatement(sql);
 			ps.setInt(begin++, toStatus);
+			ps.setInt(begin++, accountId);
 			ps.setLong(begin++, getCreateTime());
 			ps.setString(begin++, getDevAddress());
 			ps.setInt(begin++, fromStatus);
@@ -527,7 +567,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
 	@Override
     public String toString() {
-        return type + "-" + createTime + "-" + devAddress + "-" + creatorId + "-" + note;
+        return type + "-" + accountId + "-" +  createTime + "-" + devAddress + "-" + creatorId + "-" + note;
     }
 
     @Override

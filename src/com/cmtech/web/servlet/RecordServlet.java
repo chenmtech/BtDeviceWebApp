@@ -8,6 +8,7 @@ import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
+import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +25,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.btdevice.BasicRecord;
+import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.dbUtil.RecordWebUtil;
 
@@ -53,6 +56,9 @@ public class RecordServlet extends HttpServlet {
 	// 获取记录诊断报告
 	private static final String CMD_RETRIEVE_DIAGNOSE_REPORT = "retrieveDiagnoseReport";
 	
+	// 分享记录
+	private static final String CMD_SHARE = "share";
+	
 	
        
     /**
@@ -64,22 +70,24 @@ public class RecordServlet extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 * 	Query the record using recordTypeCode, createTime and devAddress
+	 * 	Query the record using recordTypeCode, accountId, createTime and devAddress
 	 *  Return the id of the record with json
 	 *  If not exist, return INVALID_ID
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String strRecordTypeCode = request.getParameter("recordTypeCode");
+		String strAccountId = request.getParameter("accountId");
 		String strCreateTime = request.getParameter("createTime");
 		String devAddress = request.getParameter("devAddress");
-		if(strRecordTypeCode == null || strCreateTime == null || devAddress == null) {
+		if(strRecordTypeCode == null || strAccountId == null || strCreateTime == null || devAddress == null) {
 			ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 			return;
 		}
 		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
+		int accountId = Integer.parseInt(strAccountId);
 		long createTime = Long.parseLong(strCreateTime);
 		
-		int id = RecordWebUtil.getId(type, createTime, devAddress);
+		int id = RecordWebUtil.getId(type, accountId, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
 		ServletUtil.contentResponse(response, json);
@@ -136,7 +144,7 @@ public class RecordServlet extends HttpServlet {
 				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
-				JSONObject json = RecordWebUtil.download(type, createTime, devAddress);
+				JSONObject json = RecordWebUtil.download(type, accountId, createTime, devAddress);
 				
 				if(json == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -150,7 +158,7 @@ public class RecordServlet extends HttpServlet {
 				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
 				createTime = inputJson.getLong("createTime");
 				devAddress = inputJson.getString("devAddress");
-				cmdResult = RecordWebUtil.delete(type, createTime, devAddress);
+				cmdResult = RecordWebUtil.delete(type, accountId, createTime, devAddress);
 				if(cmdResult) {
 					ServletUtil.codeResponse(response, SUCCESS);
 				} else {
@@ -166,10 +174,10 @@ public class RecordServlet extends HttpServlet {
 					types[i] = RecordType.fromCode(Integer.parseInt(typeStrArr[i]));
 				}
 				long fromTime = inputJson.getLong("fromTime");
-				int creatorId = inputJson.getInt("creatorId");
+				//int creatorId = inputJson.getInt("creatorId");
 				int num = inputJson.getInt("num");
 				String filterStr = inputJson.getString("filterStr");
-				JSONArray jsonRecords = RecordWebUtil.download(types, creatorId, fromTime, filterStr, num);
+				JSONArray jsonRecords = RecordWebUtil.download(types, accountId, fromTime, filterStr, num);
 				if(jsonRecords == null)
 					ServletUtil.codeResponse(response, SUCCESS);
 				else
@@ -179,7 +187,7 @@ public class RecordServlet extends HttpServlet {
 			case CMD_RETRIEVE_DIAGNOSE_REPORT:
 				createTime = inputJson.getLong("createTime");
 		        devAddress = inputJson.getString("devAddress");
-		        JSONObject reportJson = RecordWebUtil.retrieveDiagnoseReport(RecordType.ECG, createTime, devAddress);		        
+		        JSONObject reportJson = RecordWebUtil.retrieveDiagnoseReport(RecordType.ECG, accountId, createTime, devAddress);		        
 				
 				if(reportJson == null) {
 					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
@@ -192,6 +200,19 @@ public class RecordServlet extends HttpServlet {
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 					break;
+					
+			case CMD_SHARE:
+				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
+				createTime = inputJson.getLong("createTime");
+		        devAddress = inputJson.getString("devAddress");
+		        int shareId = inputJson.getInt("shareId");
+		        
+		        cmdResult = RecordWebUtil.share(type, accountId, createTime, devAddress, shareId);
+		        if(cmdResult)
+	        		ServletUtil.codeResponse(response, SUCCESS);
+	        	else
+	        		ServletUtil.codeResponse(response, SHARE_ERR);
+		        break;
 			}
         } catch (JSONException e) {
 			e.printStackTrace();
