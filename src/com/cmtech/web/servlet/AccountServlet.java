@@ -22,6 +22,7 @@ import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,9 +30,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
+import com.cmtech.web.btdevice.BasicRecord;
+import com.cmtech.web.btdevice.ShareInfo;
+import com.cmtech.web.dbUtil.RecordWebUtil;
 
 /**
  * ClassName: AccountServlet
@@ -156,9 +161,25 @@ public class AccountServlet extends HttpServlet {
 				}
 				break;
 				
+			case "downloadShareInfo":
+				List<ShareInfo> found = ShareInfo.retrieveShareInfo(id);
+				if(found == null || found.isEmpty()) 
+					ServletUtil.codeResponse(response, SUCCESS);
+				else {				
+					JSONArray jsonArray = new JSONArray();
+					for(ShareInfo shareInfo : found) {
+						jsonArray.put(shareInfo.toJson());
+					}
+					ServletUtil.contentResponse(response, jsonArray);
+				}
+				
+				break;
+				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
-					break;				
+					break;	
+					
+					
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
