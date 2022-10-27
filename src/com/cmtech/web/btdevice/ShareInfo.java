@@ -31,6 +31,28 @@ public class ShareInfo implements IJsonable {
 
     private int status;
     
+    public static boolean changeStatus(int fromId, int toId, int status) {
+    	Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "update ShareInfo set status = ? where fromId = ? and toId = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, status);
+			ps.setInt(2, fromId);
+			ps.setInt(3, toId);
+			if(ps.executeUpdate() != 0) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+    }
+    
     public static List<ShareInfo> retrieveShareInfo(int accountId) {
     	Connection conn = DbUtil.connect();		
 		if(conn == null) return null;		

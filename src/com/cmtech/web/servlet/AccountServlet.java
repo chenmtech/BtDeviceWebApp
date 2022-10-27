@@ -171,8 +171,17 @@ public class AccountServlet extends HttpServlet {
 						jsonArray.put(shareInfo.toJson());
 					}
 					ServletUtil.contentResponse(response, jsonArray);
-				}
+				}				
+				break;
 				
+			case "changeShareInfo":
+				int fromId = inputJson.getInt("fromId");
+				int status = inputJson.getInt("status");
+				boolean rlt = ShareInfo.changeStatus(fromId, id, status);
+				if(rlt)
+					ServletUtil.codeResponse(response, SUCCESS);
+				else
+					ServletUtil.codeResponse(response, DATA_ERR);
 				break;
 				
 				default:

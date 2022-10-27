@@ -499,7 +499,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 			DbUtil.close(null, ps1, conn);
 		}
 		
-		// 删除记录的信号文件，只有记录创建者才有权删除信号文件
+		// 只有记录创建者才有权删除信号文件
 		if(success && creatorId == accountId) {
 			File file = new File(getSigFilePath(), getSigFileName());
 			if(file.exists()) success = file.delete();
