@@ -177,12 +177,19 @@ public class AccountServlet extends HttpServlet {
 			case "changeShareInfo":
 				int fromId = inputJson.getInt("fromId");
 				int status = inputJson.getInt("status");
-				boolean rlt = ShareInfo.changeStatus(fromId, id, status);
-				if(rlt)
+				if(ShareInfo.changeStatus(fromId, id, status))
 					ServletUtil.codeResponse(response, SUCCESS);
 				else
 					ServletUtil.codeResponse(response, DATA_ERR);
 				break;
+				
+			case "addShare":
+				int toId = inputJson.getInt("toId");
+				if(Account.exist(toId) && ShareInfo.getId(id, toId) == INVALID_ID && ShareInfo.insert(id, toId))
+					ServletUtil.codeResponse(response, SUCCESS);
+				else
+					ServletUtil.codeResponse(response, DATA_ERR);
+				break;	
 				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);

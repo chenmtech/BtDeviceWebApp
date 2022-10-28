@@ -13,7 +13,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cmtech.web.dbUtil.DbUtil;
-import com.cmtech.web.util.Base64;
 
 public class ShareInfo implements IJsonable {
     public static final int DENY = 0;
@@ -30,6 +29,52 @@ public class ShareInfo implements IJsonable {
     private String toUserName;
 
     private int status;
+    
+
+	public static boolean insert(int fromId, int toId) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		PreparedStatement ps = null;
+		String sql = "insert into ShareInfo (fromId, toId, status) values (?, ?, ?)";
+		try {
+			ps = conn.prepareStatement(sql);
+			int begin = 1;
+			ps.setInt(begin++, fromId);
+			ps.setInt(begin++, toId);
+			ps.setInt(begin++, WAITING);
+			if(ps.executeUpdate() != 0)
+				return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+	}
+	
+    public static int getId(int fromId, int toId) {
+    	Connection conn = DbUtil.connect();
+		if(conn == null) return INVALID_ID;
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "select id from ShareInfo where fromId = ? and toId = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, fromId);
+			ps.setInt(2, toId);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				return rs.getInt("id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, ps, conn);
+		}
+		return INVALID_ID;	
+    }
     
     public static boolean changeStatus(int fromId, int toId, int status) {
     	Connection conn = DbUtil.connect();
@@ -82,6 +127,10 @@ public class ShareInfo implements IJsonable {
 			DbUtil.close(rs, ps, conn);
 		}
 		return null;
+    }
+    
+    public ShareInfo(int fromId, int toId, int status) {
+    	this(fromId, toId, "", "", status);
     }
 
     public ShareInfo(int fromId, int toId, String fromUserName, String toUserName, int status) {
@@ -152,4 +201,5 @@ public class ShareInfo implements IJsonable {
 	
 		return json;
     }
+
 }
