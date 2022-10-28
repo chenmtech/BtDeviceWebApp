@@ -191,6 +191,16 @@ public class AccountServlet extends HttpServlet {
 					ServletUtil.codeResponse(response, DATA_ERR);
 				break;	
 				
+			case "downloadContactPerson":
+				int contactId = inputJson.getInt("contactId");
+				Account contact = new Account(contactId);
+				if(contact.retrieve()) {
+					ServletUtil.contentResponse(response, contact.contactInfoToJson());
+				} else {
+					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
+				}
+				break;	
+				
 				default:
 					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
 					break;	

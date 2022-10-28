@@ -111,6 +111,18 @@ public class Account implements IDbOperation, IJsonable {
 		return json;
 	}
 	
+	public JSONObject contactInfoToJson() {
+		JSONObject json = new JSONObject();
+		json.put("accountId", id);
+		json.put("nickName", nickName);
+		json.put("note", note);
+		if(iconData == null)
+			json.put("iconStr", "");
+		else
+			json.put("iconStr", Base64.encodeToString(iconData, Base64.DEFAULT));	
+		return json;
+	}
+	
 	@Override
 	public int getId() {
 		return id;		
