@@ -47,7 +47,7 @@ public class RecordServlet extends HttpServlet {
 			return;
 		}
 		
-		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class RecordServlet extends HttpServlet {
 			reqJson = new JSONObject(strBuilder.toString());
         } catch (JSONException e) {
 			e.printStackTrace();
-			ServletUtil.codeResponse(resp, DATA_ERR);
+			ServletUtil.codeResponse(resp, DATA_ERR, "数据错误");
 			return;
 		} 
         
@@ -81,6 +81,6 @@ public class RecordServlet extends HttpServlet {
 			return;
 		}
 		
-		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);   
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");   
 	}
 }

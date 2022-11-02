@@ -23,13 +23,20 @@ public class ServletUtil {
 		doResponse(resp, json);
 	}
 	
-	public static void codeResponse(HttpServletResponse resp, ReturnCode code) throws IOException {
-		if(resp == null || code == null) {
+	
+	public static void codeResponse(HttpServletResponse resp, ReturnCode code)  throws IOException {
+		 codeResponse(resp, code, "");
+	}
+	 
+	
+	public static void codeResponse(HttpServletResponse resp, ReturnCode code, String msg) throws IOException {
+		if(resp == null || code == null || msg == null) {
 			throw new NullPointerException();
 		}
 		
 		JSONObject json = new JSONObject();
 		json.put("code", code.getCode());
+		json.put("content", msg);
 		doResponse(resp, json);
 	}
 	

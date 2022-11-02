@@ -58,7 +58,7 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
-		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class AccountServlet extends HttpServlet {
 			reqJson = new JSONObject(strBuilder.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
-			ServletUtil.codeResponse(resp, DATA_ERR);
+			ServletUtil.codeResponse(resp, DATA_ERR, "数据错误");
 			return;
 		}
 		
@@ -94,6 +94,6 @@ public class AccountServlet extends HttpServlet {
 			return;
 		}
 		
-		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");
 	}	
 }
