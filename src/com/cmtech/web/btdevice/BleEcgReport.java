@@ -2,7 +2,7 @@ package com.cmtech.web.btdevice;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.util.DbUtil;
 
 import static com.cmtech.web.MyConstant.*;
 

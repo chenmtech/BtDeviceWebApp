@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.util.DbUtil;
 
 /**
  * 心电记录类

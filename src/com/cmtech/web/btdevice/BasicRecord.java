@@ -16,7 +16,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.util.DbUtil;
 
 /**
  * 所有记录的基础类，包含各种记录共有的属性和基本操作

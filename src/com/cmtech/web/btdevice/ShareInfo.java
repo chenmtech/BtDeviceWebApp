@@ -12,7 +12,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.cmtech.web.dbUtil.DbUtil;
+import com.cmtech.web.util.DbUtil;
 
 public class ShareInfo implements IJsonable {
     public static final int DENY = 0;

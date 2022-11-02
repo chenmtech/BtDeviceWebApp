@@ -1,4 +1,4 @@
-package com.cmtech.web.dbUtil;
+package com.cmtech.web.util;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

@@ -1,4 +1,4 @@
-package com.cmtech.web.dbUtil;
+package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
@@ -13,14 +13,13 @@ import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.BleEcgRecord;
 import com.cmtech.web.btdevice.RecordFactory;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.servlet.ServletUtil;
 
 /**
  * 用于执行记录相关的网络操作类
  * @author gdmc
  *
  */
-public class RecordWebUtil {	
+public class RecordWebCommandService {	
 	/**
 	 * 获取记录的ID号
 	 * @param type：记录类型

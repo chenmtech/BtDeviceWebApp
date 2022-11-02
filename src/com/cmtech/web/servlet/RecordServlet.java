@@ -1,14 +1,7 @@
 package com.cmtech.web.servlet;
 
-import static com.cmtech.web.MyConstant.INVALID_TIME;
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
-import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,15 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.cmtech.web.btdevice.Account;
-import com.cmtech.web.btdevice.BasicRecord;
-import com.cmtech.web.btdevice.RecordFactory;
-import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.dbUtil.RecordWebUtil;
 
 
 /**
@@ -38,28 +24,7 @@ import com.cmtech.web.dbUtil.RecordWebUtil;
  */
 @WebServlet(name="RecordServlet", urlPatterns="/Record")
 public class RecordServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-	
-	//---------------------------------------------------------- 记录操作命令
-	// 上传记录
-	private static final String CMD_UPLOAD = "upload";
-	
-	// 下载记录
-	private static final String CMD_DOWNLOAD = "download";
-	
-	// 删除记录
-	private static final String CMD_DELETE = "delete";
-	
-	// 下载记录列表
-	private static final String CMD_DOWNLOAD_RECORDS= "downloadRecords";
-	
-	// 获取记录诊断报告
-	private static final String CMD_RETRIEVE_DIAGNOSE_REPORT = "retrieveDiagnoseReport";
-	
-	// 分享记录
-	private static final String CMD_SHARE = "share";
-	
-	
+	private static final long serialVersionUID = 1L;	
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -68,155 +33,54 @@ public class RecordServlet extends HttpServlet {
         super();
     }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 * 	Query the record using recordTypeCode, accountId, createTime and devAddress
-	 *  Return the id of the record with json
-	 *  If not exist, return INVALID_ID
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String strRecordTypeCode = request.getParameter("recordTypeCode");
-		String strAccountId = request.getParameter("accountId");
-		String strCreateTime = request.getParameter("createTime");
-		String devAddress = request.getParameter("devAddress");
-		if(strRecordTypeCode == null || strAccountId == null || strCreateTime == null || devAddress == null) {
-			ServletUtil.codeResponse(response, INVALID_PARA_ERR);
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String sver = req.getParameter("sver");
+		
+		if(sver == null || sver.equals("1.0")) {
+			WebCommandService10.doRecordGet(req, resp);
 			return;
 		}
-		RecordType type = RecordType.fromCode( Integer.parseInt(strRecordTypeCode) );
-		int accountId = Integer.parseInt(strAccountId);
-		long createTime = Long.parseLong(strCreateTime);
 		
-		int id = RecordWebUtil.getId(type, accountId, createTime, devAddress);
-		JSONObject json = new JSONObject();
-		json.put("id", id);
-		ServletUtil.contentResponse(response, json);
+		if(sver.equals("1.1")) {
+			WebCommandService11.doRecordGet(req, resp);
+			return;
+		}
+		
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 *  Upload a record
-	 *  Update the note of a record
-	 *  Download some record basic information
-	 *  Download a record
-	 *  Delete a record
-	 *  Return the result with json object
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String charEncoding = request.getCharacterEncoding();
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String charEncoding = req.getCharacterEncoding();
         if (charEncoding == null) {
             charEncoding = "UTF-8";
         }
-        try (BufferedReader streamReader = new BufferedReader(new InputStreamReader(request.getInputStream(), charEncoding))) {
+        
+        JSONObject reqJson = null;
+        try (BufferedReader streamReader = new BufferedReader(new InputStreamReader(req.getInputStream(), charEncoding))) {
         	StringBuilder strBuilder = new StringBuilder();
 			String s;
 			while ((s = streamReader.readLine()) != null)
 				strBuilder.append(s);
-			JSONObject inputJson = new JSONObject(strBuilder.toString());
-			//System.out.println(inputJson.toString());
-			
-			// 验证账户是否有效
-			int accountId = inputJson.getInt("accountId");
-			if(!Account.isAccountValid(accountId)) {
-				ServletUtil.codeResponse(response, ACCOUNT_ERR);
-				return;
-			}
-
-			// 执行命令
-			String cmd = inputJson.getString("cmd");
-			RecordType type;			
-			boolean cmdResult = false;
-			long createTime = INVALID_TIME;
-			String devAddress;
-			
-			switch(cmd) {
-			case CMD_UPLOAD:
-				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
-				cmdResult = RecordWebUtil.upload(type, inputJson);
-				if(cmdResult) {
-					ServletUtil.codeResponse(response, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(response, UPLOAD_ERR);
-				}
-				break;
-				
-			case CMD_DOWNLOAD:
-				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
-				createTime = inputJson.getLong("createTime");
-				devAddress = inputJson.getString("devAddress");
-				JSONObject json = RecordWebUtil.download(type, accountId, createTime, devAddress);
-				
-				if(json == null) {
-					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
-				} else {
-					//System.out.println(json.toString());
-					ServletUtil.contentResponse(response, json);
-				}
-				break;
-				
-			case CMD_DELETE:
-				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
-				createTime = inputJson.getLong("createTime");
-				devAddress = inputJson.getString("devAddress");
-				cmdResult = RecordWebUtil.delete(type, accountId, createTime, devAddress);
-				if(cmdResult) {
-					ServletUtil.codeResponse(response, SUCCESS);
-				} else {
-					ServletUtil.codeResponse(response, DELETE_ERR);
-				}
-				break;
-				
-			case CMD_DOWNLOAD_RECORDS:
-				String typeStr = inputJson.getString("recordTypeCode");
-				String[] typeStrArr = typeStr.split(",");
-				RecordType[] types = new RecordType[typeStrArr.length];
-				for(int i = 0; i < typeStrArr.length; i++) {
-					types[i] = RecordType.fromCode(Integer.parseInt(typeStrArr[i]));
-				}
-				long fromTime = inputJson.getLong("fromTime");
-				//int creatorId = inputJson.getInt("creatorId");
-				int num = inputJson.getInt("num");
-				String filterStr = inputJson.getString("filterStr");
-				JSONArray jsonRecords = RecordWebUtil.download(types, accountId, fromTime, filterStr, num);
-				if(jsonRecords == null)
-					ServletUtil.codeResponse(response, SUCCESS);
-				else
-					ServletUtil.contentResponse(response, jsonRecords);
-				break;
-				
-			case CMD_RETRIEVE_DIAGNOSE_REPORT:
-				createTime = inputJson.getLong("createTime");
-		        devAddress = inputJson.getString("devAddress");
-		        JSONObject reportJson = RecordWebUtil.retrieveDiagnoseReport(RecordType.ECG, accountId, createTime, devAddress);		        
-				
-				if(reportJson == null) {
-					ServletUtil.codeResponse(response, DOWNLOAD_ERR);
-				} else {
-					//System.out.println(reportJson.toString());
-					ServletUtil.contentResponse(response, reportJson);
-				}
-				break;
-				
-				default:
-					ServletUtil.codeResponse(response, INVALID_PARA_ERR);
-					break;
-					
-			case CMD_SHARE:
-				type = RecordType.fromCode(inputJson.getInt("recordTypeCode"));
-				createTime = inputJson.getLong("createTime");
-		        devAddress = inputJson.getString("devAddress");
-		        int shareId = inputJson.getInt("shareId");
-		        
-		        cmdResult = RecordWebUtil.share(type, accountId, createTime, devAddress, shareId);
-		        if(cmdResult)
-	        		ServletUtil.codeResponse(response, SUCCESS);
-	        	else
-	        		ServletUtil.codeResponse(response, SHARE_ERR);
-		        break;
-			}
+			reqJson = new JSONObject(strBuilder.toString());
         } catch (JSONException e) {
 			e.printStackTrace();
-			ServletUtil.codeResponse(response, DATA_ERR);
+			ServletUtil.codeResponse(resp, DATA_ERR);
+			return;
 		} 
+        
+        if(!reqJson.has("sver") || reqJson.getString("sver").equals("1.0")) {
+			WebCommandService10.doRecordPost(reqJson, resp);
+			return;
+		}
+        
+
+		if(reqJson.getString("sver").equals("1.1")) {
+			WebCommandService11.doRecordPost(reqJson, resp);
+			return;
+		}
+		
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);   
 	}
 }

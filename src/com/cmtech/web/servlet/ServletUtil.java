@@ -30,7 +30,7 @@ public class ServletUtil {
 		
 		JSONObject json = new JSONObject();
 		json.put("code", code.getCode());
-		ServletUtil.doResponse(resp, json);
+		doResponse(resp, json);
 	}
 	
 	public static void doResponse(HttpServletResponse resp, JSONObject json) throws IOException {
