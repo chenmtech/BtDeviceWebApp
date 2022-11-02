@@ -15,6 +15,7 @@ import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.AppUpdateInfo;
+import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.btdevice.ShareInfo;
 
@@ -169,14 +171,18 @@ public class WebCommandService11{
 				ServletUtil.codeResponse(resp, DATA_ERR);
 			break;	
 			
-		case "downloadContactPerson":
-			int contactId = reqJson.getInt("contactId");
-			Account contact = new Account(contactId);
-			if(contact.retrieve()) {
-				ServletUtil.contentResponse(resp, contact.contactInfoToJson());
-			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+		case "downloadContactPeople":
+			JSONArray jsonArray = new JSONArray();
+			String contactIdsStr = reqJson.getString("contactIds");
+			String[] strs = contactIdsStr.split(",");
+			for(String s : strs) {
+				int contactId = Integer.valueOf(s);
+				Account contact = new Account(contactId);
+				if(contact.retrieve()) {
+					jsonArray.put(contact.contactInfoToJson());
+				}
 			}
+			ServletUtil.contentResponse(resp, jsonArray);
 			break;	
 			
 			default:
