@@ -2,17 +2,9 @@ package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.MyConstant.INVALID_TIME;
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.CHANGE_PASSWORD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
-import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 
 import java.io.IOException;
 import java.util.List;
@@ -74,7 +66,7 @@ public class WebCommandService10{
 			if(Account.signUp(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
-				ServletUtil.codeResponse(resp, SIGNUP_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 			return;
 		}
@@ -84,7 +76,7 @@ public class WebCommandService10{
 			int id = Account.login(userName, password);
 			
 			if(id == INVALID_ID) {
-				ServletUtil.codeResponse(resp, LOGIN_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			} else {
 				JSONObject json = new JSONObject();
 				json.put("id", id);
@@ -98,7 +90,7 @@ public class WebCommandService10{
 			if(Account.changePassword(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
-				ServletUtil.codeResponse(resp, CHANGE_PASSWORD_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 			return;
 		}
@@ -111,7 +103,7 @@ public class WebCommandService10{
 		// 验证账户是否有效
 		int id = reqJson.getInt("id");
 		if(!Account.isAccountValid(id)) {
-			ServletUtil.codeResponse(resp, ACCOUNT_ERR);
+			ServletUtil.codeResponse(resp, DATA_ERR);
 			return;
 		}
 		
@@ -126,7 +118,7 @@ public class WebCommandService10{
 			if(account.update()) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
-				ServletUtil.codeResponse(resp, UPLOAD_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 			break;
 			
@@ -135,7 +127,7 @@ public class WebCommandService10{
 			if(account.retrieve()) {
 				ServletUtil.contentResponse(resp, account.toJson());
 			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 			break;
 			
@@ -175,7 +167,7 @@ public class WebCommandService10{
 			if(contact.retrieve()) {
 				ServletUtil.contentResponse(resp, contact.contactInfoToJson());
 			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 			break;	
 			
@@ -209,7 +201,7 @@ public class WebCommandService10{
 		// 验证账户是否有效
 		int accountId = reqJson.getInt("accountId");
 		if(!Account.isAccountValid(accountId)) {
-			ServletUtil.codeResponse(resp, ACCOUNT_ERR);
+			ServletUtil.codeResponse(resp, DATA_ERR);
 			return;
 		}
 
@@ -227,7 +219,7 @@ public class WebCommandService10{
 				if(cmdResult) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.codeResponse(resp, UPLOAD_ERR);
+					ServletUtil.codeResponse(resp, DATA_ERR);
 				}
 				break;
 				
@@ -238,7 +230,7 @@ public class WebCommandService10{
 				JSONObject json = RecordWebCommandService.download(type, accountId, createTime, devAddress);
 				
 				if(json == null) {
-					ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+					ServletUtil.codeResponse(resp, DATA_ERR);
 				} else {
 					//System.out.println(json.toString());
 					ServletUtil.contentResponse(resp, json);
@@ -253,7 +245,7 @@ public class WebCommandService10{
 				if(cmdResult) {
 					ServletUtil.codeResponse(resp, SUCCESS);
 				} else {
-					ServletUtil.codeResponse(resp, DELETE_ERR);
+					ServletUtil.codeResponse(resp, DATA_ERR);
 				}
 				break;
 				
@@ -281,7 +273,7 @@ public class WebCommandService10{
 		        JSONObject reportJson = RecordWebCommandService.retrieveDiagnoseReport(RecordType.ECG, accountId, createTime, devAddress);		        
 				
 				if(reportJson == null) {
-					ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+					ServletUtil.codeResponse(resp, DATA_ERR);
 				} else {
 					//System.out.println(reportJson.toString());
 					ServletUtil.contentResponse(resp, reportJson);
@@ -298,7 +290,7 @@ public class WebCommandService10{
 		        if(cmdResult)
 	        		ServletUtil.codeResponse(resp, SUCCESS);
 	        	else
-	        		ServletUtil.codeResponse(resp, SHARE_ERR);
+	        		ServletUtil.codeResponse(resp, DATA_ERR);
 		        break;     
 	
 				
@@ -317,7 +309,7 @@ public class WebCommandService10{
 			if(updateInfo.retrieve()) {
 				ServletUtil.contentResponse(resp, updateInfo.toJson());
 			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR);
+				ServletUtil.codeResponse(resp, DATA_ERR);
 			}
 		}
 	}

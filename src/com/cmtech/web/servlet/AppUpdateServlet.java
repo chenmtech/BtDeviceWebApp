@@ -1,7 +1,6 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 
 import java.io.BufferedReader;
@@ -15,8 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
-
-import com.cmtech.web.btdevice.AppUpdateInfo;
 
 @WebServlet(name="AppUpdateServlet", urlPatterns="/AppUpdateInfo")
 public class AppUpdateServlet extends HttpServlet {
@@ -37,6 +34,11 @@ public class AppUpdateServlet extends HttpServlet {
 		
 		if(sver == null || sver.equals("1.0")) {
 			WebCommandService10.doAppUpdateGet(req, resp);
+			return;
+		}
+		
+		if(sver.equals("1.1")) {
+			WebCommandService11.doAppUpdateGet(req, resp);
 			return;
 		}
 		

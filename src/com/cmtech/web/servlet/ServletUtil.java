@@ -11,23 +11,26 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.ReturnCode;
 
-public class ServletUtil {
+public class ServletUtil {	
 	
 	public static void contentResponse(HttpServletResponse resp, Object content) throws IOException {
-		if(resp == null) {
+		contentResponse(resp, "操作成功", content);
+	}	 
+	
+	public static void contentResponse(HttpServletResponse resp, String msg, Object content) throws IOException {
+		if(resp == null || msg == null) {
 			throw new NullPointerException();
 		}
 		JSONObject json = new JSONObject();
 		json.put("code", SUCCESS.getCode());
+		json.put("message", msg);
 		json.put("content", content);
 		doResponse(resp, json);
-	}
+	}	
 	
-	
-	public static void codeResponse(HttpServletResponse resp, ReturnCode code)  throws IOException {
-		 codeResponse(resp, code, "");
+	public static void codeResponse(HttpServletResponse resp, ReturnCode code) throws IOException {
+		codeResponse(resp, code, "");
 	}
-	 
 	
 	public static void codeResponse(HttpServletResponse resp, ReturnCode code, String msg) throws IOException {
 		if(resp == null || code == null || msg == null) {
@@ -36,7 +39,7 @@ public class ServletUtil {
 		
 		JSONObject json = new JSONObject();
 		json.put("code", code.getCode());
-		json.put("content", msg);
+		json.put("message", msg);
 		doResponse(resp, json);
 	}
 	

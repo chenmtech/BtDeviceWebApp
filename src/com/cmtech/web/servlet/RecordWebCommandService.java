@@ -1,8 +1,6 @@
 package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
-import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 
 import java.util.List;
 

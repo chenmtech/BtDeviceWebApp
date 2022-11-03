@@ -2,20 +2,11 @@ package com.cmtech.web.servlet;
 
 import static com.cmtech.web.MyConstant.INVALID_ID;
 import static com.cmtech.web.MyConstant.INVALID_TIME;
-import static com.cmtech.web.btdevice.ReturnCode.ACCOUNT_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.CHANGE_PASSWORD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.DATA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DELETE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.DOWNLOAD_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.LOGIN_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SHARE_ERR;
-import static com.cmtech.web.btdevice.ReturnCode.SIGNUP_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
-import static com.cmtech.web.btdevice.ReturnCode.UPLOAD_ERR;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -27,7 +18,6 @@ import org.json.JSONObject;
 
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.AppUpdateInfo;
-import com.cmtech.web.btdevice.BasicRecord;
 import com.cmtech.web.btdevice.RecordType;
 import com.cmtech.web.btdevice.ShareInfo;
 
@@ -96,9 +86,9 @@ public class WebCommandService11{
 		switch(cmd) {
 		case CMD_SIGNUP:			
 			if(Account.signUp(userName, password)) {
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "注册成功");
 			} else {
-				ServletUtil.codeResponse(resp, SIGNUP_ERR, "注册错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "注册错误");
 			}
 			return;
 		
@@ -107,7 +97,7 @@ public class WebCommandService11{
 			int id = Account.login(userName, password);
 			
 			if(id == INVALID_ID) {
-				ServletUtil.codeResponse(resp, LOGIN_ERR, "登录错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "登录错误");
 			} else {
 				JSONObject json = new JSONObject();
 				json.put("id", id);
@@ -118,9 +108,9 @@ public class WebCommandService11{
 		// 修改密码
 		case CMD_CHANGE_PASSWORD:
 			if(Account.changePassword(userName, password)) {
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "修改成功");
 			} else {
-				ServletUtil.codeResponse(resp, CHANGE_PASSWORD_ERR, "修改密码错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "修改错误");
 			}
 			return;
 		}
@@ -133,7 +123,7 @@ public class WebCommandService11{
 		// 验证账户是否有效
 		int accountId = reqJson.getInt("accountId");
 		if(!Account.isAccountValid(accountId)) {
-			ServletUtil.codeResponse(resp, ACCOUNT_ERR, "数据错误");
+			ServletUtil.codeResponse(resp, DATA_ERR, "数据错误");
 			return;
 		}
 		
@@ -146,9 +136,9 @@ public class WebCommandService11{
 		case CMD_UPLOAD_ACCOUNT:
 			account.fromJson(reqJson);
 			if(account.update()) {
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "更新成功");
 			} else {
-				ServletUtil.codeResponse(resp, UPLOAD_ERR, "上传账户信息错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "更新错误");
 			}
 			break;
 			
@@ -157,14 +147,14 @@ public class WebCommandService11{
 			if(account.retrieve()) {
 				ServletUtil.contentResponse(resp, account.toJson());
 			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR, "下载账户信息错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 			}
 			break;
 			
 		case CMD_DOWNLOAD_SHARE_INFO:
 			List<ShareInfo> found = ShareInfo.retrieveShareInfo(accountId);
 			if(found == null || found.isEmpty()) 
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "下载成功");
 			else {				
 				JSONArray jsonArray = new JSONArray();
 				for(ShareInfo shareInfo : found) {
@@ -178,17 +168,17 @@ public class WebCommandService11{
 			int fromId = reqJson.getInt("fromId");
 			int status = reqJson.getInt("status");
 			if(ShareInfo.changeStatus(fromId, accountId, status))
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "修改成功");
 			else
-				ServletUtil.codeResponse(resp, DATA_ERR,  "获取分享信息错误");
+				ServletUtil.codeResponse(resp, DATA_ERR,  "修改错误");
 			break;
 			
 		case CMD_ADD_SHARE_INFO:
 			int toId = reqJson.getInt("toId");
 			if(Account.exist(toId) && ShareInfo.getId(accountId, toId) == INVALID_ID && ShareInfo.insert(accountId, toId))
-				ServletUtil.codeResponse(resp, SUCCESS, "");
+				ServletUtil.codeResponse(resp, SUCCESS, "申请成功");
 			else
-				ServletUtil.codeResponse(resp, DATA_ERR, "添加分享信息错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "申请错误");
 			break;	
 			
 		case CMD_DOWNLOAD_CONTACT_PEOPLE:
@@ -235,7 +225,7 @@ public class WebCommandService11{
 		// 验证账户是否有效
 		int accountId = reqJson.getInt("accountId");
 		if(!Account.isAccountValid(accountId)) {
-			ServletUtil.codeResponse(resp, ACCOUNT_ERR, "数据错误");
+			ServletUtil.codeResponse(resp, DATA_ERR, "数据错误");
 			return;
 		}
 
@@ -251,9 +241,9 @@ public class WebCommandService11{
 				type = RecordType.fromCode(reqJson.getInt("recordTypeCode"));
 				cmdResult = RecordWebCommandService.upload(type, reqJson);
 				if(cmdResult) {
-					ServletUtil.codeResponse(resp, SUCCESS, "");
+					ServletUtil.codeResponse(resp, SUCCESS, "上传成功");
 				} else {
-					ServletUtil.codeResponse(resp, UPLOAD_ERR, "上传记录错误");
+					ServletUtil.codeResponse(resp, DATA_ERR, "上传错误");
 				}
 				break;
 				
@@ -264,10 +254,9 @@ public class WebCommandService11{
 				JSONObject json = RecordWebCommandService.download(type, accountId, createTime, devAddress);
 				
 				if(json == null) {
-					ServletUtil.codeResponse(resp, DOWNLOAD_ERR, "下载记录错误");
+					ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 				} else {
-					//System.out.println(json.toString());
-					ServletUtil.contentResponse(resp, json);
+					ServletUtil.contentResponse(resp, "更新成功", json);
 				}
 				break;
 				
@@ -277,9 +266,9 @@ public class WebCommandService11{
 				devAddress = reqJson.getString("devAddress");
 				cmdResult = RecordWebCommandService.delete(type, accountId, createTime, devAddress);
 				if(cmdResult) {
-					ServletUtil.codeResponse(resp, SUCCESS, "");
+					ServletUtil.codeResponse(resp, SUCCESS, "删除成功");
 				} else {
-					ServletUtil.codeResponse(resp, DELETE_ERR, "删除记录错误");
+					ServletUtil.codeResponse(resp, DATA_ERR, "删除记录错误");
 				}
 				break;
 				
@@ -295,10 +284,7 @@ public class WebCommandService11{
 				int num = reqJson.getInt("num");
 				String filterStr = reqJson.getString("filterStr");
 				JSONArray jsonRecords = RecordWebCommandService.download(types, accountId, fromTime, filterStr, num);
-				if(jsonRecords == null)
-					ServletUtil.codeResponse(resp, SUCCESS, "");
-				else
-					ServletUtil.contentResponse(resp, jsonRecords);
+				ServletUtil.contentResponse(resp, jsonRecords);
 				break;
 				
 			case CMD_RETRIEVE_DIAGNOSE_REPORT:
@@ -307,9 +293,8 @@ public class WebCommandService11{
 		        JSONObject reportJson = RecordWebCommandService.retrieveDiagnoseReport(RecordType.ECG, accountId, createTime, devAddress);		        
 				
 				if(reportJson == null) {
-					ServletUtil.codeResponse(resp, DOWNLOAD_ERR, "下载诊断报告错误");
+					ServletUtil.codeResponse(resp, DATA_ERR, "获取错误");
 				} else {
-					//System.out.println(reportJson.toString());
 					ServletUtil.contentResponse(resp, reportJson);
 				}
 				break;
@@ -322,9 +307,9 @@ public class WebCommandService11{
 		        
 		        cmdResult = RecordWebCommandService.share(type, accountId, createTime, devAddress, shareId);
 		        if(cmdResult)
-	        		ServletUtil.codeResponse(resp, SUCCESS, "");
+	        		ServletUtil.codeResponse(resp, SUCCESS, "分享成功");
 	        	else
-	        		ServletUtil.codeResponse(resp, SHARE_ERR, "分享记录错误");
+	        		ServletUtil.codeResponse(resp, DATA_ERR, "分享错误");
 		        break;     
 	
 				
@@ -349,7 +334,7 @@ public class WebCommandService11{
 			if(updateInfo.retrieve()) {
 				ServletUtil.contentResponse(resp, updateInfo.toJson());
 			} else {
-				ServletUtil.codeResponse(resp, DOWNLOAD_ERR, "下载APP更新信息错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "获取错误");
 			}
 			return;
 		}
