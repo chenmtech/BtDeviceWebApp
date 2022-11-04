@@ -71,6 +71,11 @@ public class AppUpdateServlet extends HttpServlet {
 			return;
 		}
 		
+		if(reqJson.getString("sver").equals("1.1")) {
+			WebCommandService11.doAppUpdatePost(reqJson, resp);
+			return;
+		}
+		
 		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");
 	}
 }

@@ -31,7 +31,7 @@ public class UploadDownloadFileServlet extends HttpServlet {
 	// 存放文件根路径
 	private final File rootPath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
 	
-	private static final String[] SUPPORT_FILE_TYPE = {"ECG", "EEG", "PPG", "PTT", "PIC"}; 
+	private static final String[] SUPPORT_FILE_TYPE = {"ECG", "EEG", "PPG", "PTT"}; 
     
 	@Override
 	public void init() throws ServletException{

@@ -339,6 +339,11 @@ public class WebCommandService11{
 			return;
 		}
 		
+		if(cmd == CMD_DOWNLOAD_APK) {
+			ServletUtil.codeResponse(resp, DATA_ERR, "获取错误");
+			return;
+		}
+		
 		ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");
 		return;
 	}
