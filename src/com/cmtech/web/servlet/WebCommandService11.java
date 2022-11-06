@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.AppUpdateInfo;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.btdevice.ShareInfo;
+import com.cmtech.web.btdevice.ContactInfo;
 
 public class WebCommandService11{	
 	//---------------------------------------------------------- 记录操作命令
@@ -48,17 +48,19 @@ public class WebCommandService11{
     // 修改账户密码
     public static final int CMD_CHANGE_PASSWORD = 12;
     // 下载账户分享信息
-    public static final int CMD_DOWNLOAD_SHARE_INFO = 13;
+    public static final int CMD_DOWNLOAD_CONTACT_INFO = 13;
     // 修改一条账户分享信息
-    public static final int CMD_CHANGE_SHARE_INFO = 14;
+    public static final int CMD_AGREE_CONTACT = 14;
     // 添加一条账户分享信息
-    public static final int CMD_ADD_SHARE_INFO = 15;
+    public static final int CMD_ADD_CONTACT = 15;
     // 下载账户联系人
-    public static final int CMD_DOWNLOAD_CONTACT_PEOPLE = 16;
+    public static final int CMD_DOWNLOAD_CONTACT_DETAIL_INFO = 16;
+    // 删除一条联系人信息
+    public static final int CMD_DELETE_CONTACT = 17;
     // 下载APP更新信息
-    public static final int CMD_DOWNLOAD_APP_INFO = 17;
+    public static final int CMD_DOWNLOAD_APP_INFO = 18;
     // 下载APK文件
-    public static final int CMD_DOWNLOAD_APK = 18;
+    public static final int CMD_DOWNLOAD_APK = 19;
 	
 	
 	private WebCommandService11() {
@@ -149,39 +151,32 @@ public class WebCommandService11{
 			} else {
 				ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 			}
-			break;
+			break;	
 			
-		case CMD_DOWNLOAD_SHARE_INFO:
-			List<ShareInfo> found = ShareInfo.retrieveShareInfo(accountId);
-			if(found == null || found.isEmpty()) 
-				ServletUtil.codeResponse(resp, SUCCESS, "下载成功");
-			else {				
-				JSONArray jsonArray = new JSONArray();
-				for(ShareInfo shareInfo : found) {
-					jsonArray.put(shareInfo.toJson());
-				}
-				ServletUtil.contentResponse(resp, jsonArray);
-			}				
-			break;
-			
-		case CMD_CHANGE_SHARE_INFO:
-			int fromId = reqJson.getInt("fromId");
-			int status = reqJson.getInt("status");
-			if(ShareInfo.changeStatus(fromId, accountId, status))
-				ServletUtil.codeResponse(resp, SUCCESS, "修改成功");
-			else
-				ServletUtil.codeResponse(resp, DATA_ERR,  "修改错误");
-			break;
-			
-		case CMD_ADD_SHARE_INFO:
+		case CMD_ADD_CONTACT:
 			int toId = reqJson.getInt("toId");
-			if(Account.exist(toId) && ShareInfo.getId(accountId, toId) == INVALID_ID && ShareInfo.insert(accountId, toId))
+			long time = reqJson.getLong("time");
+			if(Account.exist(toId) && ContactInfo.getId(accountId, toId) == INVALID_ID && ContactInfo.insert(accountId, toId, time))
 				ServletUtil.codeResponse(resp, SUCCESS, "申请成功");
 			else
 				ServletUtil.codeResponse(resp, DATA_ERR, "申请错误");
 			break;	
 			
-		case CMD_DOWNLOAD_CONTACT_PEOPLE:
+		case CMD_DOWNLOAD_CONTACT_INFO:
+			List<ContactInfo> found = ContactInfo.retrieveContactInfo(accountId);
+			if(found == null || found.isEmpty()) 
+				ServletUtil.codeResponse(resp, SUCCESS, "下载成功");
+			else {				
+				JSONArray jsonArray = new JSONArray();
+				for(ContactInfo ci : found) {
+					jsonArray.put(ci.toJson());
+				}
+				ServletUtil.contentResponse(resp, jsonArray);
+			}				
+			break;
+			
+
+		case CMD_DOWNLOAD_CONTACT_DETAIL_INFO:
 			JSONArray jsonArray = new JSONArray();
 			String contactIdsStr = reqJson.getString("contactIds");
 			String[] strs = contactIdsStr.split(",");
@@ -194,6 +189,23 @@ public class WebCommandService11{
 			}
 			ServletUtil.contentResponse(resp, jsonArray);
 			break;	
+			
+		case CMD_DELETE_CONTACT:
+			int contactId = reqJson.getInt("contactId");
+			if(ContactInfo.delete(accountId, contactId))
+				ServletUtil.codeResponse(resp, SUCCESS, "删除成功");
+			else
+				ServletUtil.codeResponse(resp, DATA_ERR,  "删除错误");
+			break;
+			
+		case CMD_AGREE_CONTACT:
+			int fromId = reqJson.getInt("fromId");
+			if(ContactInfo.agree(fromId, accountId))
+				ServletUtil.codeResponse(resp, SUCCESS, "建立联系成功");
+			else
+				ServletUtil.codeResponse(resp, DATA_ERR,  "建立联系失败");
+			break;
+			
 			
 			default:
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR, "数据错误");

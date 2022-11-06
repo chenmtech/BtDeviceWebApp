@@ -7,7 +7,6 @@ import static com.cmtech.web.btdevice.ReturnCode.INVALID_PARA_ERR;
 import static com.cmtech.web.btdevice.ReturnCode.SUCCESS;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,6 @@ import org.json.JSONObject;
 import com.cmtech.web.btdevice.Account;
 import com.cmtech.web.btdevice.AppUpdateInfo;
 import com.cmtech.web.btdevice.RecordType;
-import com.cmtech.web.btdevice.ShareInfo;
 
 public class WebCommandService10{	
 	//---------------------------------------------------------- 记录操作命令
@@ -107,6 +105,7 @@ public class WebCommandService10{
 			return;
 		}
 		
+		/*
 		Account account = new Account(id);
 		
 		String cmd = reqJson.getString("cmd");
@@ -132,12 +131,12 @@ public class WebCommandService10{
 			break;
 			
 		case "downloadShareInfo":
-			List<ShareInfo> found = ShareInfo.retrieveShareInfo(id);
+			List<ContactInfo> found = ContactInfo.retrieveContactInfo(id);
 			if(found == null || found.isEmpty()) 
 				ServletUtil.codeResponse(resp, SUCCESS);
 			else {				
 				JSONArray jsonArray = new JSONArray();
-				for(ShareInfo shareInfo : found) {
+				for(ContactInfo shareInfo : found) {
 					jsonArray.put(shareInfo.toJson());
 				}
 				ServletUtil.contentResponse(resp, jsonArray);
@@ -147,7 +146,7 @@ public class WebCommandService10{
 		case "changeShareInfo":
 			int fromId = reqJson.getInt("fromId");
 			int status = reqJson.getInt("status");
-			if(ShareInfo.changeStatus(fromId, id, status))
+			if(ContactInfo.agree(fromId, id, status))
 				ServletUtil.codeResponse(resp, SUCCESS);
 			else
 				ServletUtil.codeResponse(resp, DATA_ERR);
@@ -155,7 +154,7 @@ public class WebCommandService10{
 			
 		case "addShare":
 			int toId = reqJson.getInt("toId");
-			if(Account.exist(toId) && ShareInfo.getId(id, toId) == INVALID_ID && ShareInfo.insert(id, toId))
+			if(Account.exist(toId) && ContactInfo.getId(id, toId) == INVALID_ID && ContactInfo.insert(id, toId))
 				ServletUtil.codeResponse(resp, SUCCESS);
 			else
 				ServletUtil.codeResponse(resp, DATA_ERR);
@@ -174,7 +173,9 @@ public class WebCommandService10{
 			default:
 				ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 				break;
-		}		
+		}	
+		*/	
+		ServletUtil.codeResponse(resp, INVALID_PARA_ERR);
 	}	
 
 	public static void doRecordGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

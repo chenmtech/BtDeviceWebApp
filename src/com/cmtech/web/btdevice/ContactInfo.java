@@ -14,35 +14,57 @@ import org.json.JSONObject;
 
 import com.cmtech.web.util.DbUtil;
 
-public class ShareInfo implements IJsonable {
-    public static final int DENY = 0;
-    public static final int WAITING = 1;
-    public static final int AGREE = 2;
+public class ContactInfo implements IJsonable {
+    public static final int WAITING = 0;
+    public static final int AGREE = 1;
 
     //-----------------------------------------实例变量
     private int fromId;
 
     private int toId;
 
-    private String fromUserName;
-
-    private String toUserName;
-
     private int status;
+
+    private long time;
     
 
-	public static boolean insert(int fromId, int toId) {
+	public static boolean insert(int fromId, int toId, long time) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "insert into ShareInfo (fromId, toId, status) values (?, ?, ?)";
+		String sql = "insert into ContactInfo (fromId, toId, status, time) values (?, ?, ?, ?)";
 		try {
 			ps = conn.prepareStatement(sql);
 			int begin = 1;
 			ps.setInt(begin++, fromId);
 			ps.setInt(begin++, toId);
 			ps.setInt(begin++, WAITING);
+			ps.setLong(begin++, time);
+			if(ps.executeUpdate() != 0)
+				return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(null, ps, conn);
+		}
+		return false;
+	}
+	
+	public static boolean delete(int accountId, int contactId) {
+		Connection conn = DbUtil.connect();
+		if(conn == null) return false;
+		
+		// 删除数据库中的记录
+		PreparedStatement ps = null;
+		String sql = "delete from ContactInfo where ((fromId = ? and toId = ?) or (fromId = ? and toId = ?)) and status = ?";
+		try {
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, accountId);
+			ps.setInt(2, contactId);
+			ps.setInt(3, contactId);
+			ps.setInt(4, accountId);
+			ps.setInt(5, AGREE);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -59,7 +81,7 @@ public class ShareInfo implements IJsonable {
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select id from ShareInfo where fromId = ? and toId = ?";
+		String sql = "select id from ContactInfo where fromId = ? and toId = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, fromId);
@@ -76,17 +98,18 @@ public class ShareInfo implements IJsonable {
 		return INVALID_ID;	
     }
     
-    public static boolean changeStatus(int fromId, int toId, int status) {
+    public static boolean agree(int fromId, int toId) {
     	Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update ShareInfo set status = ? where fromId = ? and toId = ?";
+		String sql = "update ContactInfo set status = ? where fromId = ? toId = ? and status = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, status);
+			ps.setInt(1, AGREE);
 			ps.setInt(2, fromId);
 			ps.setInt(3, toId);
+			ps.setInt(4, WAITING);
 			if(ps.executeUpdate() != 0) {
 				return true;
 			}
@@ -98,27 +121,29 @@ public class ShareInfo implements IJsonable {
 		return false;
     }
     
-    public static List<ShareInfo> retrieveShareInfo(int accountId) {
+    public static List<ContactInfo> retrieveContactInfo(int accountId) {
     	Connection conn = DbUtil.connect();		
 		if(conn == null) return null;		
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
-			String sql = "select * from ShareInfo where fromId = ? or toId = ?";			
+			String sql = "select * from ContactInfo where fromId = ? or toId = ?";			
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, accountId);
 			ps.setInt(2, accountId);
 			rs = ps.executeQuery();
 
-			List<ShareInfo> found = new ArrayList<>();
+			List<ContactInfo> found = new ArrayList<>();
 			while(rs.next()) {
 				int fromId = rs.getInt("fromId");
 				int toId = rs.getInt("toId");
-				String fromUserName = rs.getString("fromUserName");
-				String toUserName = rs.getString("toUserName");
 				int status = rs.getInt("status");
-				found.add(new ShareInfo(fromId, toId, fromUserName, toUserName, status));
+				long time = rs.getLong("time");
+				// 如果是账户发起的申请，且还在等待对方审核，就不返回了
+				if(fromId == accountId && status==WAITING)
+					continue;
+				found.add(new ContactInfo(fromId, toId, status, time));
 			}			
 			return found;
 		} catch (SQLException e) {
@@ -129,16 +154,11 @@ public class ShareInfo implements IJsonable {
 		return null;
     }
     
-    public ShareInfo(int fromId, int toId, int status) {
-    	this(fromId, toId, "", "", status);
-    }
-
-    public ShareInfo(int fromId, int toId, String fromUserName, String toUserName, int status) {
+    public ContactInfo(int fromId, int toId, int status, long time) {
         this.fromId = fromId;
         this.toId = toId;
-        this.fromUserName = fromUserName;
-        this.toUserName = toUserName;
         this.status = status;
+        this.time = time;
     }
 
     public int getFromId() {
@@ -157,37 +177,29 @@ public class ShareInfo implements IJsonable {
         this.toId = toId;
     }
 
-    public String getFromUserName() {
-        return fromUserName;
-    }
-
-    public void setFromUserName(String fromUserName) {
-        this.fromUserName = fromUserName;
-    }
-
-    public String getToUserName() {
-        return toUserName;
-    }
-
-    public void setToUserName(String toUserName) {
-        this.toUserName = toUserName;
-    }
-
     public int getStatus() {
         return status;
     }
 
     public void setStatus(int status) {
         this.status = status;
+    }    
+
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     @Override
     public void fromJson(JSONObject json) throws JSONException {
     	fromId = json.getInt("fromId");
     	toId = json.getInt("toId");
-		fromUserName = json.getString("fromUserName");
-		toUserName = json.getString("toUserName");
 		status = json.getInt("status");
+		time = json.getLong("time");
     }
 
     @Override
@@ -195,9 +207,8 @@ public class ShareInfo implements IJsonable {
     	JSONObject json = new JSONObject();
 		json.put("fromId", fromId);
 		json.put("toId", toId);
-		json.put("fromUserName", fromUserName);
-		json.put("toUserName", toUserName);
 		json.put("status", status);
+		json.put("time", time);
 	
 		return json;
     }
