@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONException;
@@ -24,11 +25,9 @@ public class ContactInfo implements IJsonable {
     private int toId;
 
     private int status;
-
-    private long time;
     
 
-	public static boolean insert(int fromId, int toId, long time) {
+	public static boolean insert(int fromId, int toId) {
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;
 		
@@ -40,7 +39,7 @@ public class ContactInfo implements IJsonable {
 			ps.setInt(begin++, fromId);
 			ps.setInt(begin++, toId);
 			ps.setInt(begin++, WAITING);
-			ps.setLong(begin++, time);
+			ps.setLong(begin++, new Date().getTime());
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -57,14 +56,16 @@ public class ContactInfo implements IJsonable {
 		
 		// 删除数据库中的记录
 		PreparedStatement ps = null;
-		String sql = "delete from ContactInfo where ((fromId = ? and toId = ?) or (fromId = ? and toId = ?)) and status = ?";
+		String sql = "delete from ContactInfo where (fromId = ? and toId = ? and status = ?) or (fromId = ? and toId = ? and status = ?)";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setInt(1, accountId);
-			ps.setInt(2, contactId);
-			ps.setInt(3, contactId);
-			ps.setInt(4, accountId);
-			ps.setInt(5, AGREE);
+			int begin = 1;
+			ps.setInt(begin++, accountId);
+			ps.setInt(begin++, contactId);
+			ps.setInt(begin++, AGREE);
+			ps.setInt(begin++, contactId);
+			ps.setInt(begin++, accountId);
+			ps.setInt(begin++, AGREE);
 			if(ps.executeUpdate() != 0)
 				return true;
 		} catch (SQLException e) {
@@ -103,7 +104,7 @@ public class ContactInfo implements IJsonable {
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update ContactInfo set status = ? where fromId = ? toId = ? and status = ?";
+		String sql = "update ContactInfo set status = ? where fromId = ? and toId = ? and status = ?";
 		try {
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, AGREE);
@@ -143,7 +144,7 @@ public class ContactInfo implements IJsonable {
 				// 如果是账户发起的申请，且还在等待对方审核，就不返回了
 				if(fromId == accountId && status==WAITING)
 					continue;
-				found.add(new ContactInfo(fromId, toId, status, time));
+				found.add(new ContactInfo(fromId, toId, status));
 			}			
 			return found;
 		} catch (SQLException e) {
@@ -154,11 +155,10 @@ public class ContactInfo implements IJsonable {
 		return null;
     }
     
-    public ContactInfo(int fromId, int toId, int status, long time) {
+    public ContactInfo(int fromId, int toId, int status) {
         this.fromId = fromId;
         this.toId = toId;
         this.status = status;
-        this.time = time;
     }
 
     public int getFromId() {
@@ -183,23 +183,13 @@ public class ContactInfo implements IJsonable {
 
     public void setStatus(int status) {
         this.status = status;
-    }    
-
-
-    public long getTime() {
-        return time;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
+    }   
 
     @Override
     public void fromJson(JSONObject json) throws JSONException {
     	fromId = json.getInt("fromId");
     	toId = json.getInt("toId");
 		status = json.getInt("status");
-		time = json.getLong("time");
     }
 
     @Override
@@ -208,7 +198,6 @@ public class ContactInfo implements IJsonable {
 		json.put("fromId", fromId);
 		json.put("toId", toId);
 		json.put("status", status);
-		json.put("time", time);
 	
 		return json;
     }
