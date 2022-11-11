@@ -182,16 +182,16 @@ public class WebCommandService11{
 			break;	
 			
 		case CMD_ADD_CONTACT:
-			int toId = reqJson.getInt("toId");
-			if(Account.exist(toId) && ContactInfo.getId(accountId, toId) == INVALID_ID && ContactInfo.insert(accountId, toId))
+			int addId = reqJson.getInt("contactId");
+			if(Account.exist(addId) && ContactInfo.getId(accountId, addId) == INVALID_ID && ContactInfo.insert(accountId, addId))
 				ServletUtil.codeResponse(resp, SUCCESS, "申请成功");
 			else
 				ServletUtil.codeResponse(resp, DATA_ERR, "申请错误");
 			break;	
 			
 		case CMD_AGREE_CONTACT:
-			int fromId = reqJson.getInt("fromId");
-			if(ContactInfo.agree(fromId, accountId))
+			int agreeId = reqJson.getInt("contactId");
+			if(ContactInfo.agree(agreeId, accountId))
 				ServletUtil.codeResponse(resp, SUCCESS, "建立联系成功");
 			else
 				ServletUtil.codeResponse(resp, DATA_ERR,  "建立联系失败");
