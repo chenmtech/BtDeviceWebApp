@@ -85,7 +85,7 @@ public class WebCommandService10{
 		
 		// 修改密码
 		if(cmd.equals("changePassword")) {
-			if(Account.changePassword(userName, password)) {
+			if(Account.resetPassword(userName, password)) {
 				ServletUtil.codeResponse(resp, SUCCESS);
 			} else {
 				ServletUtil.codeResponse(resp, DATA_ERR);

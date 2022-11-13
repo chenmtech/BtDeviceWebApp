@@ -270,12 +270,12 @@ public class Account implements IDbOperation, IJsonable {
 	}
 	
 	/**
-	 * 修改密码
+	 * 重置密码
 	 * @param userName
 	 * @param newPassword：新密码
 	 * @return
 	 */
-	public static boolean changePassword(String userName, String newPassword) {
+	public static boolean resetPassword(String userName, String newPassword) {
 		newPassword = MD5Utils.generate(newPassword);
 		Connection conn = DbUtil.connect();
 		if(conn == null) return false;

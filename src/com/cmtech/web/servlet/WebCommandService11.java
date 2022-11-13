@@ -44,8 +44,8 @@ public class WebCommandService11{
     public static final int CMD_SIGNUP = 10;
     // 登录账户
     public static final int CMD_LOGIN = 11;
-    // 修改账户密码
-    public static final int CMD_CHANGE_PASSWORD = 12;
+    // 重置账户密码
+    public static final int CMD_RESET_PASSWORD = 12;
     // 下载账户联系人信息，仅包括发起者ID，接收者ID，以及申请状态
     public static final int CMD_DOWNLOAD_CONTACT_INFO = 13;
     // 下载联系人的账户信息，包括账户ID，昵称，简介和头像
@@ -106,12 +106,12 @@ public class WebCommandService11{
 			}
 			return;
 		
-		// 修改密码
-		case CMD_CHANGE_PASSWORD:
-			if(Account.changePassword(userName, password)) {
-				ServletUtil.codeResponse(resp, SUCCESS, "修改成功");
+		// 重置密码
+		case CMD_RESET_PASSWORD:
+			if(Account.resetPassword(userName, password)) {
+				ServletUtil.codeResponse(resp, SUCCESS, "重置成功");
 			} else {
-				ServletUtil.codeResponse(resp, DATA_ERR, "修改错误");
+				ServletUtil.codeResponse(resp, DATA_ERR, "重置错误");
 			}
 			return;
 		}
