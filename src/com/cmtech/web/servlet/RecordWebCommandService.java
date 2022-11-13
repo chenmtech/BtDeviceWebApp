@@ -107,15 +107,15 @@ public class RecordWebCommandService {
 	 * @param devAddress
 	 * @return
 	 */
-	public static boolean share(RecordType type, int accountId, long createTime, String devAddress, int shareId) {
-		if(accountId == shareId) return false;
+	public static boolean share(RecordType type, int accountId, long createTime, String devAddress, int contactId) {
+		if(accountId == contactId) return false;
 		BasicRecord record = RecordFactory.create(type, accountId, createTime, devAddress);
 		if(record == null) return false;
 		
 		boolean rlt = record.retrieve();
 		if(!rlt) return false;
 		if(accountId != record.getCreatorId()) return false;
-		record.setAccountId(shareId);
+		record.setAccountId(contactId);
 		if(record.getId() == INVALID_ID)
 			return record.insert();
 		else

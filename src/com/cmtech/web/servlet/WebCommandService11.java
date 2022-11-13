@@ -313,9 +313,9 @@ public class WebCommandService11{
 				type = RecordType.fromCode(reqJson.getInt("recordTypeCode"));
 				createTime = reqJson.getLong("createTime");
 		        devAddress = reqJson.getString("devAddress");
-		        int shareId = reqJson.getInt("shareId");
+		        int contactId = reqJson.getInt("contactId");
 		        
-		        cmdResult = RecordWebCommandService.share(type, accountId, createTime, devAddress, shareId);
+		        cmdResult = RecordWebCommandService.share(type, accountId, createTime, devAddress, contactId);
 		        if(cmdResult)
 	        		ServletUtil.codeResponse(resp, SUCCESS, "分享成功");
 	        	else
