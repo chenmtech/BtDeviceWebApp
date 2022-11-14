@@ -78,7 +78,7 @@ public class WebCommandService10{
 			} else {
 				JSONObject json = new JSONObject();
 				json.put("id", id);
-				ServletUtil.contentResponse(resp, json);
+				ServletUtil.dataResponse(resp, json);
 			}
 			return;
 		}
@@ -195,7 +195,7 @@ public class WebCommandService10{
 		int id = RecordWebCommandService.getId(type, accountId, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
-		ServletUtil.contentResponse(resp, json);
+		ServletUtil.dataResponse(resp, json);
 	}
 	
 	public static void doRecordPost(JSONObject reqJson, HttpServletResponse resp) throws ServletException, IOException {
@@ -234,7 +234,7 @@ public class WebCommandService10{
 					ServletUtil.codeResponse(resp, DATA_ERR);
 				} else {
 					//System.out.println(json.toString());
-					ServletUtil.contentResponse(resp, json);
+					ServletUtil.dataResponse(resp, json);
 				}
 				break;
 				
@@ -265,7 +265,7 @@ public class WebCommandService10{
 				if(jsonRecords == null)
 					ServletUtil.codeResponse(resp, SUCCESS);
 				else
-					ServletUtil.contentResponse(resp, jsonRecords);
+					ServletUtil.dataResponse(resp, jsonRecords);
 				break;
 				
 			case CMD_RETRIEVE_DIAGNOSE_REPORT:
@@ -277,7 +277,7 @@ public class WebCommandService10{
 					ServletUtil.codeResponse(resp, DATA_ERR);
 				} else {
 					//System.out.println(reportJson.toString());
-					ServletUtil.contentResponse(resp, reportJson);
+					ServletUtil.dataResponse(resp, reportJson);
 				}
 				break;
 					
@@ -308,7 +308,7 @@ public class WebCommandService10{
 		} else {
 			AppUpdateInfo updateInfo = new AppUpdateInfo();
 			if(updateInfo.retrieve()) {
-				ServletUtil.contentResponse(resp, updateInfo.toJson());
+				ServletUtil.dataResponse(resp, updateInfo.toJson());
 			} else {
 				ServletUtil.codeResponse(resp, DATA_ERR);
 			}

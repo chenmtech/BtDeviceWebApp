@@ -13,18 +13,18 @@ import com.cmtech.web.btdevice.ReturnCode;
 
 public class ServletUtil {	
 	
-	public static void contentResponse(HttpServletResponse resp, Object content) throws IOException {
-		contentResponse(resp, "操作成功", content);
+	public static void dataResponse(HttpServletResponse resp, Object data) throws IOException {
+		dataResponse(resp, "操作成功", data);
 	}	 
 	
-	public static void contentResponse(HttpServletResponse resp, String msg, Object content) throws IOException {
+	public static void dataResponse(HttpServletResponse resp, String msg, Object data) throws IOException {
 		if(resp == null || msg == null) {
 			throw new NullPointerException();
 		}
 		JSONObject json = new JSONObject();
 		json.put("code", SUCCESS.getCode());
 		json.put("message", msg);
-		json.put("content", content);
+		json.put("data", data);
 		doResponse(resp, json);
 	}	
 	

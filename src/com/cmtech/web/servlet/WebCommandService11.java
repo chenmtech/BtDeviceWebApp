@@ -102,7 +102,7 @@ public class WebCommandService11{
 			} else {
 				JSONObject json = new JSONObject();
 				json.put("id", id);
-				ServletUtil.contentResponse(resp, json);
+				ServletUtil.dataResponse(resp, json);
 			}
 			return;
 		
@@ -146,7 +146,7 @@ public class WebCommandService11{
 		// 下载	
 		case CMD_DOWNLOAD_ACCOUNT:
 			if(account.retrieve()) {
-				ServletUtil.contentResponse(resp, account.toJson());
+				ServletUtil.dataResponse(resp, account.toJson());
 			} else {
 				ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 			}
@@ -162,7 +162,7 @@ public class WebCommandService11{
 				for(ContactInfo ci : found) {
 					jsonArray.put(ci.toJson());
 				}
-				ServletUtil.contentResponse(resp, jsonArray);
+				ServletUtil.dataResponse(resp, jsonArray);
 			}				
 			break;
 			
@@ -178,7 +178,7 @@ public class WebCommandService11{
 					jsonArray.put(contact.contactInfoToJson());
 				}
 			}
-			ServletUtil.contentResponse(resp, jsonArray);
+			ServletUtil.dataResponse(resp, jsonArray);
 			break;	
 			
 		case CMD_ADD_CONTACT:
@@ -228,7 +228,7 @@ public class WebCommandService11{
 		int id = RecordWebCommandService.getId(type, accountId, createTime, devAddress);
 		JSONObject json = new JSONObject();
 		json.put("id", id);
-		ServletUtil.contentResponse(resp, json);
+		ServletUtil.dataResponse(resp, json);
 	}
 	
 	public static void doRecordPost(JSONObject reqJson, HttpServletResponse resp) throws ServletException, IOException {
@@ -266,7 +266,7 @@ public class WebCommandService11{
 				if(json == null) {
 					ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 				} else {
-					ServletUtil.contentResponse(resp, "更新成功", json);
+					ServletUtil.dataResponse(resp, "更新成功", json);
 				}
 				break;
 				
@@ -294,7 +294,7 @@ public class WebCommandService11{
 				int num = reqJson.getInt("num");
 				String filterStr = reqJson.getString("filterStr");
 				JSONArray jsonRecords = RecordWebCommandService.download(types, accountId, fromTime, filterStr, num);
-				ServletUtil.contentResponse(resp, jsonRecords);
+				ServletUtil.dataResponse(resp, jsonRecords);
 				break;
 				
 			case CMD_RETRIEVE_DIAGNOSE_REPORT:
@@ -305,7 +305,7 @@ public class WebCommandService11{
 				if(reportJson == null) {
 					ServletUtil.codeResponse(resp, DATA_ERR, "获取错误");
 				} else {
-					ServletUtil.contentResponse(resp, reportJson);
+					ServletUtil.dataResponse(resp, reportJson);
 				}
 				break;
 					
@@ -342,7 +342,7 @@ public class WebCommandService11{
 		if(cmd == CMD_DOWNLOAD_APP_INFO ) {
 			AppUpdateInfo updateInfo = new AppUpdateInfo();
 			if(updateInfo.retrieve()) {
-				ServletUtil.contentResponse(resp, updateInfo.toJson());
+				ServletUtil.dataResponse(resp, updateInfo.toJson());
 			} else {
 				ServletUtil.codeResponse(resp, DATA_ERR, "获取错误");
 			}
