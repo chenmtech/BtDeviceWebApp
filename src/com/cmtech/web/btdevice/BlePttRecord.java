@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BlePttRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "ecgCaliValue", "ppgCaliValue"};
+	private static final String[] PROPERTIES = {"sampleRate", "ecgGain", "ppgGain"};
 	private int sampleRate; // sample rate
-    private int ecgCaliValue; // ecg calibration value
-    private int ppgCaliValue; // ppg calibration value
+    private int ecgGain; // ecg calibration value
+    private int ppgGain; // ppg calibration value
     
     public BlePttRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.PTT, accountId, createTime, devAddress);
@@ -21,20 +21,20 @@ public class BlePttRecord extends BasicRecord{
 		return sampleRate;
 	}
 
-	public int getEcgCaliValue() {
-		return ecgCaliValue;
+	public int getEcgGain() {
+		return ecgGain;
 	}
 
-	public void setEcgCaliValue(int ecgCaliValue) {
-		this.ecgCaliValue = ecgCaliValue;
+	public void setEcgGain(int ecgGain) {
+		this.ecgGain = ecgGain;
 	}
 
-	public int getPpgCaliValue() {
-		return ppgCaliValue;
+	public int getPpgGain() {
+		return ppgGain;
 	}
 
-	public void setPpgCaliValue(int ppgCaliValue) {
-		this.ppgCaliValue = ppgCaliValue;
+	public void setPpgGain(int ppgGain) {
+		this.ppgGain = ppgGain;
 	}
 	
 	public void setSampleRate(int sampleRate) {
@@ -55,16 +55,16 @@ public class BlePttRecord extends BasicRecord{
 	public void fromJson(JSONObject json) {
 		super.fromJson(json);		
 		sampleRate = json.getInt("sampleRate");
-		ecgCaliValue = json.getInt("ecgCaliValue");
-		ppgCaliValue = json.getInt("ppgCaliValue");
+		ecgGain = json.getInt("ecgGain");
+		ppgGain = json.getInt("ppgGain");
 	}
 	
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
-		json.put("ecgCaliValue", ecgCaliValue);
-		json.put("ppgCaliValue", ppgCaliValue);
+		json.put("ecgGain", ecgGain);
+		json.put("ppgGain", ppgGain);
 		return json;
 	}
 	
@@ -72,16 +72,16 @@ public class BlePttRecord extends BasicRecord{
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
-		ecgCaliValue = rs.getInt("ecgCaliValue");
-		ppgCaliValue = rs.getInt("ppgCaliValue");
+		ecgGain = rs.getInt("ecgGain");
+		ppgGain = rs.getInt("ppgGain");
 	}
 
 	@Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, ecgCaliValue);
-		ps.setInt(begin++, ppgCaliValue);
+		ps.setInt(begin++, ecgGain);
+		ps.setInt(begin++, ppgGain);
 		return begin;
 	}
 	

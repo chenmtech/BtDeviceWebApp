@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BleEegRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode"};
+	private static final String[] PROPERTIES = {"sampleRate", "gain", "leadTypeCode"};
 	private int sampleRate; // sample rate
-    private int caliValue; // calibration value of 1mV
+    private int gain; // calibration value of 1mV
     private int leadTypeCode; // lead type code
     
     public BleEegRecord(int accountId, long createTime, String devAddress) {
@@ -21,8 +21,8 @@ public class BleEegRecord extends BasicRecord{
 		return sampleRate;
 	}
 
-	public int getCaliValue() {
-		return caliValue;
+	public int getGain() {
+		return gain;
 	}
 
 	public int getLeadTypeCode() {
@@ -33,8 +33,8 @@ public class BleEegRecord extends BasicRecord{
 		this.sampleRate = sampleRate;
 	}
 
-	public void setCaliValue(int caliValue) {
-		this.caliValue = caliValue;
+	public void setGain(int gain) {
+		this.gain = gain;
 	}
 
 	public void setLeadTypeCode(int leadTypeCode) {
@@ -55,7 +55,7 @@ public class BleEegRecord extends BasicRecord{
 	public void fromJson(JSONObject json) {
 		super.fromJson(json);		
 		sampleRate = json.getInt("sampleRate");
-		caliValue = json.getInt("caliValue");
+		gain = json.getInt("gain");
 		leadTypeCode = json.getInt("leadTypeCode");
 	}
 	
@@ -63,7 +63,7 @@ public class BleEegRecord extends BasicRecord{
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
-		json.put("caliValue", caliValue);
+		json.put("gain", gain);
 		json.put("leadTypeCode", leadTypeCode);
 		return json;
 	}
@@ -72,7 +72,7 @@ public class BleEegRecord extends BasicRecord{
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
-		caliValue = rs.getInt("caliValue");
+		gain = rs.getInt("gain");
 		leadTypeCode = rs.getInt("leadTypeCode");
 	}
 
@@ -80,7 +80,7 @@ public class BleEegRecord extends BasicRecord{
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, caliValue);
+		ps.setInt(begin++, gain);
 		ps.setInt(begin++, leadTypeCode);
 		return begin;
 	}

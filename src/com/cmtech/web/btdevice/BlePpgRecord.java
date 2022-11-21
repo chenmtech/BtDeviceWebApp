@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BlePpgRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue"};
+	private static final String[] PROPERTIES = {"sampleRate", "gain"};
 	private int sampleRate; // sample rate
-    private int caliValue; // calibration value
+    private int gain; // calibration value
     
     public BlePpgRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.PPG, accountId, createTime, devAddress);
@@ -20,16 +20,16 @@ public class BlePpgRecord extends BasicRecord{
 		return sampleRate;
 	}
 
-	public int getCaliValue() {
-		return caliValue;
+	public int getGain() {
+		return gain;
 	}
 	
 	public void setSampleRate(int sampleRate) {
 		this.sampleRate = sampleRate;
 	}
 
-	public void setCaliValue(int caliValue) {
-		this.caliValue = caliValue;
+	public void setGain(int gain) {
+		this.gain = gain;
 	}
 
 	@Override
@@ -46,14 +46,14 @@ public class BlePpgRecord extends BasicRecord{
 	public void fromJson(JSONObject json) {
 		super.fromJson(json);		
 		sampleRate = json.getInt("sampleRate");
-		caliValue = json.getInt("caliValue");
+		gain = json.getInt("gain");
 	}
 	
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
-		json.put("caliValue", caliValue);
+		json.put("gain", gain);
 		return json;
 	}
 	
@@ -61,14 +61,14 @@ public class BlePpgRecord extends BasicRecord{
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
-		caliValue = rs.getInt("caliValue");
+		gain = rs.getInt("gain");
 	}
 
 	@Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, caliValue);
+		ps.setInt(begin++, gain);
 		return begin;
 	}
 	

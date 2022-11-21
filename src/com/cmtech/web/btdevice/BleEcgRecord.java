@@ -18,29 +18,29 @@ import com.cmtech.web.util.DbUtil;
  */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"sampleRate", "caliValue", "leadTypeCode", "aveHr",  
-			"breakPos", "breakTime", "rhythmItemStartTime", "rhythmItemLabel"};
+	private static final String[] PROPERTIES = {"sampleRate", "gain", "leadTypeCode", "aveHr",  
+			"segPoses", "segTimes", "rhythmTimes", "rhythmLabels"};
     
 	// 信号采样率
 	private int sampleRate; // sample rate
 	
 	// 信号标定值
-    private int caliValue; // calibration value of 1mV
+    private int gain; // calibration value of 1mV
     
     // 导联类型
     private int leadTypeCode; // lead type code
     
     // 心电采集时断点的数据位置字符串
-    private String breakPos;
+    private String segPoses;
     
     // 心电采集时断点的时刻点
-    private String breakTime;
+    private String segTimes;
     
     // 心律异常条目起始时间列表字符串
-    private String rhythmItemStartTime;
+    private String rhythmTimes;
     
     // 心律异常条目标签列表字符串
-    private String rhythmItemLabel;
+    private String rhythmLabels;
     
     // 平均心率：次/分钟
     private int aveHr = 0; // average hr
@@ -54,8 +54,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return sampleRate;
 	}
 
-	public int getCaliValue() {
-		return caliValue;
+	public int getGain() {
+		return gain;
 	}
 
 	public int getLeadTypeCode() {
@@ -66,8 +66,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		this.sampleRate = sampleRate;
 	}
 
-	public void setCaliValue(int caliValue) {
-		this.caliValue = caliValue;
+	public void setGain(int gain) {
+		this.gain = gain;
 	}
 
 	public void setLeadTypeCode(int leadTypeCode) {
@@ -89,26 +89,26 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public void fromJson(JSONObject json) {
 		super.fromJson(json);		
 		sampleRate = json.getInt("sampleRate");
-		caliValue = json.getInt("caliValue");
+		gain = json.getInt("gain");
 		leadTypeCode = json.getInt("leadTypeCode");
 		aveHr = json.getInt("aveHr");
-		breakPos = json.getString("breakPos");
-		breakTime = json.getString("breakTime");
-		rhythmItemStartTime = json.getString("rhythmItemStartTime");
-		rhythmItemLabel = json.getString("rhythmItemLabel");
+		segPoses = json.getString("segPoses");
+		segTimes = json.getString("segTimes");
+		rhythmTimes = json.getString("rhythmTimes");
+		rhythmLabels = json.getString("rhythmLabels");
 	}
 	
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
 		json.put("sampleRate", sampleRate);
-		json.put("caliValue", caliValue);
+		json.put("gain", gain);
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("aveHr", aveHr);
-		json.put("breakPos", breakPos);
-		json.put("breakTime", breakTime);
-		json.put("rhythmItemStartTime", rhythmItemStartTime);
-		json.put("rhythmItemLabel", rhythmItemLabel);
+		json.put("segPoses", segPoses);
+		json.put("segTimes", segTimes);
+		json.put("rhythmTimes", rhythmTimes);
+		json.put("rhythmLabels", rhythmLabels);
 		return json;
 	}
 	
@@ -116,26 +116,26 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
 		sampleRate = rs.getInt("sampleRate");
-		caliValue = rs.getInt("caliValue");
+		gain = rs.getInt("gain");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		aveHr = rs.getInt("aveHr");
-		breakPos = rs.getString("breakPos");
-		breakTime = rs.getString("breakTime");
-		rhythmItemStartTime = rs.getString("rhythmItemStartTime");
-		rhythmItemLabel = rs.getString("rhythmItemLabel");
+		segPoses = rs.getString("segPoses");
+		segTimes = rs.getString("segTimes");
+		rhythmTimes = rs.getString("rhythmTimes");
+		rhythmLabels = rs.getString("rhythmLabels");
 	}
 	
 	@Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
 		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, caliValue);
+		ps.setInt(begin++, gain);
 		ps.setInt(begin++, leadTypeCode);
 		ps.setInt(begin++, aveHr);
-		ps.setString(begin++, breakPos);
-		ps.setString(begin++, breakTime);
-		ps.setString(begin++, rhythmItemStartTime);
-		ps.setString(begin++, rhythmItemLabel);
+		ps.setString(begin++, segPoses);
+		ps.setString(begin++, segTimes);
+		ps.setString(begin++, rhythmTimes);
+		ps.setString(begin++, rhythmLabels);
 		return begin;
 	}
 	

@@ -26,7 +26,7 @@ import com.cmtech.web.util.DbUtil;
 public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
 	// 记录中可以进行数据库读写的基本属性字段字符串数组
-	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "note", 
+	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
 			"sigSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
@@ -64,7 +64,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     private int creatorId;
     
     // 记录备注
-    private String note;
+    private String comment;
     
     // 信号长度秒数
     private int sigSecond;
@@ -171,7 +171,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 				where += "accountId = ? and "; 
 			}
 			if(!"".equals(filterStr)) {
-				where += "note REGEXP ? and ";
+				where += "comment REGEXP ? and ";
 			}
 			where += "createTime < ? order by createTime desc limit ?";
 			sql += where;
@@ -211,7 +211,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
         this.devAddress = devAddress;
     	ver = DEFAULT_RECORD_VER;
         creatorId = INVALID_ID;
-        note = "";
+        comment = "";
         sigSecond = 0;
     }
     
@@ -248,8 +248,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	return creatorId;
     }
 
-    public String getNote() {
-    	return note;
+    public String getComment() {
+    	return comment;
     }
 
     public int getSigSecond() {
@@ -289,7 +289,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
 		creatorId = json.getInt("creatorId");
-		note = json.getString("note");
+		comment = json.getString("comment");
 		sigSecond = json.getInt("sigSecond");
 		
 		reportVer = json.getString("reportVer");
@@ -308,7 +308,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		json.put("devAddress", devAddress);
     	json.put("ver", ver);
 		json.put("creatorId", creatorId);
-		json.put("note", note);
+		json.put("comment", comment);
 		json.put("sigSecond", sigSecond);
 		json.put("reportVer", reportVer);
 		json.put("reportProvider", reportProvider);
@@ -328,7 +328,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		ver = rs.getString("ver");
 		creatorId = rs.getInt("creatorId");
-		note = rs.getString("note");
+		comment = rs.getString("comment");
 		sigSecond = rs.getInt("sigSecond");
 		reportVer = rs.getString("reportVer");
 		reportProvider = rs.getString("reportProvider");
@@ -352,7 +352,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		ps.setString(begin++, devAddress);
 		ps.setString(begin++, ver);
 		ps.setInt(begin++, creatorId);
-		ps.setString(begin++, note);
+		ps.setString(begin++, comment);
 		ps.setInt(begin++, sigSecond);
 		ps.setString(begin++, reportVer);
 		ps.setString(begin++, reportProvider);
@@ -508,7 +508,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	}
 
 	/**
-	 * 更新记录，目前只能更新note字段
+	 * 更新记录，目前只能更新comment字段
 	 */
     @Override
 	public boolean update() {
@@ -519,10 +519,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		if(conn == null) return false;
 		
 		PreparedStatement ps = null;
-		String sql = "update " + tableName + " set note = ? where accountId = ? and createTime = ? and devAddress = ?";
+		String sql = "update " + tableName + " set comment = ? where accountId = ? and createTime = ? and devAddress = ?";
 		try {
 			ps = conn.prepareStatement(sql);
-			ps.setString(1, note);
+			ps.setString(1, comment);
 			ps.setInt(2, accountId);
 			ps.setLong(3, createTime);
 			ps.setString(4, devAddress);
@@ -567,7 +567,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
 	@Override
     public String toString() {
-        return type + "-" + accountId + "-" +  createTime + "-" + devAddress + "-" + creatorId + "-" + note;
+        return type + "-" + accountId + "-" +  createTime + "-" + devAddress + "-" + creatorId + "-" + comment;
     }
 
     @Override
