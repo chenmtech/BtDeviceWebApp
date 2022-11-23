@@ -27,7 +27,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
 	// 记录中可以进行数据库读写的基本属性字段字符串数组
 	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
-			"sigSecond", "sigChannel", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
+			"sampleRate", "sigChannel", "sigLen", "bytePerDatum", "gain", "unit",
+			"reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
 	private static final String DEFAULT_RECORD_VER = "1.0";
@@ -64,12 +65,23 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     private int creatorId;
     
     // 记录备注
-    private String comment;
-    
-    // 信号长度秒数
-    private int sigSecond;
+    private String comment;    
+
+	// 信号采样率
+	private int sampleRate = 0; // sample rate
     
     private int sigChannel;
+
+    // 信号长度
+    private int sigLen = 0;
+    
+	// 
+	private int bytePerDatum = 1;	
+	
+	// 信号增益值
+    private int gain = 1; //   
+    
+    private String unit = "unknown";
     
     // ------------------------------------------------------------诊断报告相关实例变量 
     
@@ -214,8 +226,9 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	ver = DEFAULT_RECORD_VER;
         creatorId = INVALID_ID;
         comment = "";
-        sigSecond = 0;
+        sigLen = 0;
         sigChannel = 1;
+        bytePerDatum = 2;
     }
     
     //-------------------------------------------------------实例方法
@@ -254,14 +267,34 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     public String getComment() {
     	return comment;
     }
+    
+    public int getSampleRate() {
+		return sampleRate;
+	}
+    
+    public int getBytePerDatum() {
+    	return bytePerDatum;
+    }
 
-    public int getSigSecond() {
-		return sigSecond;
+	public int getGain() {
+		return gain;
+	}
+
+    public int getSigLen() {
+		return sigLen;
 	}
     
     public int getSigChannel() {
     	return sigChannel;
     }
+	
+	public void setSampleRate(int sampleRate) {
+		this.sampleRate = sampleRate;
+	}
+
+	public void setGain(int gain) {
+		this.gain = gain;
+	}
     
 	public String getReportVer() {
 		return reportVer;
@@ -296,9 +329,13 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     public void fromJson(JSONObject json) {
 		ver = json.getString("ver");
 		creatorId = json.getInt("creatorId");
-		comment = json.getString("comment");
-		sigSecond = json.getInt("sigSecond");
+		comment = json.getString("comment");	
+		sampleRate = json.getInt("sampleRate");
 		sigChannel = json.getInt("sigChannel");
+		sigLen = json.getInt("sigLen");
+		bytePerDatum = json.getInt("bytePerDatum");
+		gain = json.getInt("gain");
+		unit = json.getString("unit");
 		reportVer = json.getString("reportVer");
 		reportProvider = json.getString("reportProvider");
 		reportTime = json.getLong("reportTime");
@@ -316,8 +353,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	json.put("ver", ver);
 		json.put("creatorId", creatorId);
 		json.put("comment", comment);
-		json.put("sigSecond", sigSecond);
+		json.put("sampleRate", sampleRate);
 		json.put("sigChannel", sigChannel);
+		json.put("sigLen", sigLen);
+		json.put("bytePerDatum", bytePerDatum);
+		json.put("gain", gain);
+		json.put("unit", unit);
 		json.put("reportVer", reportVer);
 		json.put("reportProvider", reportProvider);
 		json.put("reportTime", reportTime);
@@ -337,8 +378,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		ver = rs.getString("ver");
 		creatorId = rs.getInt("creatorId");
 		comment = rs.getString("comment");
-		sigSecond = rs.getInt("sigSecond");
+		sampleRate = rs.getInt("sampleRate");
 		sigChannel = rs.getInt("sigChannel");
+		sigLen = rs.getInt("sigLen");
+		bytePerDatum = rs.getInt("bytePerDatum");
+		gain = rs.getInt("gain");
+		unit = rs.getString("unit");
 		reportVer = rs.getString("reportVer");
 		reportProvider = rs.getString("reportProvider");
 		reportTime = rs.getLong("reportTime");
@@ -362,8 +407,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		ps.setString(begin++, ver);
 		ps.setInt(begin++, creatorId);
 		ps.setString(begin++, comment);
-		ps.setInt(begin++, sigSecond);
+		ps.setInt(begin++, sampleRate);
 		ps.setInt(begin++, sigChannel);
+		ps.setInt(begin++, sigLen);
+		ps.setInt(begin++, bytePerDatum);
+		ps.setInt(begin++, gain);
+		ps.setString(begin++, unit);
 		ps.setString(begin++, reportVer);
 		ps.setString(begin++, reportProvider);
 		ps.setLong(begin++, reportTime);

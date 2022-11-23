@@ -8,33 +8,15 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BleEegRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {"sampleRate", "gain", "leadTypeCode"};
-	private int sampleRate; // sample rate
-    private int gain; // calibration value of 1mV
+	private static final String[] PROPERTIES = {"leadTypeCode"};
     private int leadTypeCode; // lead type code
     
     public BleEegRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.EEG, accountId, createTime, devAddress);
     }
 
-	public int getSampleRate() {
-		return sampleRate;
-	}
-
-	public int getGain() {
-		return gain;
-	}
-
 	public int getLeadTypeCode() {
 		return leadTypeCode;
-	}
-	
-	public void setSampleRate(int sampleRate) {
-		this.sampleRate = sampleRate;
-	}
-
-	public void setGain(int gain) {
-		this.gain = gain;
 	}
 
 	public void setLeadTypeCode(int leadTypeCode) {
@@ -53,17 +35,13 @@ public class BleEegRecord extends BasicRecord{
 
     @Override
 	public void fromJson(JSONObject json) {
-		super.fromJson(json);		
-		sampleRate = json.getInt("sampleRate");
-		gain = json.getInt("gain");
+		super.fromJson(json);	
 		leadTypeCode = json.getInt("leadTypeCode");
 	}
 	
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
-		json.put("sampleRate", sampleRate);
-		json.put("gain", gain);
 		json.put("leadTypeCode", leadTypeCode);
 		return json;
 	}
@@ -71,16 +49,12 @@ public class BleEegRecord extends BasicRecord{
 	@Override
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
-		sampleRate = rs.getInt("sampleRate");
-		gain = rs.getInt("gain");
 		leadTypeCode = rs.getInt("leadTypeCode");
 	}
 
 	@Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
-		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, gain);
 		ps.setInt(begin++, leadTypeCode);
 		return begin;
 	}

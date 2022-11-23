@@ -18,14 +18,8 @@ import com.cmtech.web.util.DbUtil;
  */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"sampleRate", "gain", "leadTypeCode", "aveHr",  
+	private static final String[] PROPERTIES = {"leadTypeCode", "aveHr",  
 			"segPoses", "segTimes", "rhythmTimes", "rhythmLabels"};
-    
-	// 信号采样率
-	private int sampleRate; // sample rate
-	
-	// 信号标定值
-    private int gain; // calibration value of 1mV
     
     // 导联类型
     private int leadTypeCode; // lead type code
@@ -49,25 +43,9 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     public BleEcgRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.ECG, accountId, createTime, devAddress);
     }
-    
-    public int getSampleRate() {
-		return sampleRate;
-	}
-
-	public int getGain() {
-		return gain;
-	}
 
 	public int getLeadTypeCode() {
 		return leadTypeCode;
-	}
-	
-	public void setSampleRate(int sampleRate) {
-		this.sampleRate = sampleRate;
-	}
-
-	public void setGain(int gain) {
-		this.gain = gain;
 	}
 
 	public void setLeadTypeCode(int leadTypeCode) {
@@ -87,9 +65,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	
     @Override
 	public void fromJson(JSONObject json) {
-		super.fromJson(json);		
-		sampleRate = json.getInt("sampleRate");
-		gain = json.getInt("gain");
+		super.fromJson(json);	
 		leadTypeCode = json.getInt("leadTypeCode");
 		aveHr = json.getInt("aveHr");
 		segPoses = json.getString("segPoses");
@@ -101,8 +77,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	@Override
 	public JSONObject toJson() {
 		JSONObject json = super.toJson();
-		json.put("sampleRate", sampleRate);
-		json.put("gain", gain);
 		json.put("leadTypeCode", leadTypeCode);
 		json.put("aveHr", aveHr);
 		json.put("segPoses", segPoses);
@@ -115,8 +89,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	@Override
 	public void readPropertiesFromResultSet(ResultSet rs) throws SQLException {
 		super.readPropertiesFromResultSet(rs);
-		sampleRate = rs.getInt("sampleRate");
-		gain = rs.getInt("gain");
 		leadTypeCode = rs.getInt("leadTypeCode");
 		aveHr = rs.getInt("aveHr");
 		segPoses = rs.getString("segPoses");
@@ -128,8 +100,6 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	@Override
 	public int writePropertiesToPreparedStatement(PreparedStatement ps) throws SQLException {
 		int begin = super.writePropertiesToPreparedStatement(ps);
-		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, gain);
 		ps.setInt(begin++, leadTypeCode);
 		ps.setInt(begin++, aveHr);
 		ps.setString(begin++, segPoses);
