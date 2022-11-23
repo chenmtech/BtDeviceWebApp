@@ -27,7 +27,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
 	// 记录中可以进行数据库读写的基本属性字段字符串数组
 	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
-			"sigSecond", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
+			"sigSecond", "sigChannel", "reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
 	private static final String DEFAULT_RECORD_VER = "1.0";
@@ -68,6 +68,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
     // 信号长度秒数
     private int sigSecond;
+    
+    private int sigChannel;
     
     // ------------------------------------------------------------诊断报告相关实例变量 
     
@@ -213,6 +215,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
         creatorId = INVALID_ID;
         comment = "";
         sigSecond = 0;
+        sigChannel = 1;
     }
     
     //-------------------------------------------------------实例方法
@@ -256,6 +259,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		return sigSecond;
 	}
     
+    public int getSigChannel() {
+    	return sigChannel;
+    }
+    
 	public String getReportVer() {
 		return reportVer;
 	}
@@ -291,7 +298,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		creatorId = json.getInt("creatorId");
 		comment = json.getString("comment");
 		sigSecond = json.getInt("sigSecond");
-		
+		sigChannel = json.getInt("sigChannel");
 		reportVer = json.getString("reportVer");
 		reportProvider = json.getString("reportProvider");
 		reportTime = json.getLong("reportTime");
@@ -310,6 +317,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		json.put("creatorId", creatorId);
 		json.put("comment", comment);
 		json.put("sigSecond", sigSecond);
+		json.put("sigChannel", sigChannel);
 		json.put("reportVer", reportVer);
 		json.put("reportProvider", reportProvider);
 		json.put("reportTime", reportTime);
@@ -330,6 +338,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		creatorId = rs.getInt("creatorId");
 		comment = rs.getString("comment");
 		sigSecond = rs.getInt("sigSecond");
+		sigChannel = rs.getInt("sigChannel");
 		reportVer = rs.getString("reportVer");
 		reportProvider = rs.getString("reportProvider");
 		reportTime = rs.getLong("reportTime");
@@ -354,6 +363,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		ps.setInt(begin++, creatorId);
 		ps.setString(begin++, comment);
 		ps.setInt(begin++, sigSecond);
+		ps.setInt(begin++, sigChannel);
 		ps.setString(begin++, reportVer);
 		ps.setString(begin++, reportProvider);
 		ps.setLong(begin++, reportTime);
