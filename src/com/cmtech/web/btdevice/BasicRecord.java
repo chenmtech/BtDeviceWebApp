@@ -27,7 +27,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	//------------------------------------------------常量
 	// 记录中可以进行数据库读写的基本属性字段字符串数组
 	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
-			"sampleRate", "sigChannel", "sigLen", "bytePerDatum", "gain", "unit",
+			"sampleRate", "channelNum", "sigLen", "bytePerDatum", "gain", "unit",
 			"reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
 	// 缺省记录版本号
@@ -46,42 +46,44 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	
     
     //------------------------------------------------------实例变量
-	// 记录类型
+	// 类型
 	private final RecordType type;
-
-    // 记录拥有者ID
-    private int accountId;
 	
-	// 记录创建时间
-    private final long createTime;
-    
-    // 记录获取设备蓝牙地址
-    private final String devAddress;
-    
-    // 记录版本号
+    // 版本号
     private String ver;
 
-    // 记录创建者ID
-    private int creatorId;
+    // 拥有者账户ID
+    private int accountId;
+	
+	// 创建时间
+    private final long createTime;
     
-    // 记录备注
-    private String comment;    
+    // 设备蓝牙地址
+    private final String devAddress;    
 
-	// 信号采样率
-	private int sampleRate = 0; // sample rate
+    // 创建者账户ID
+    private int creatorId;
+
+	// 采样率
+	private int sampleRate = 0; 
     
-    private int sigChannel;
+	// 通道数
+    private int channelNum;
 
     // 信号长度
     private int sigLen = 0;
     
-	// 
+	// 每个数据占用字节数
 	private int bytePerDatum = 1;	
 	
-	// 信号增益值
-    private int gain = 1; //   
+	// 每个通道信号的一个物理单位对应的ADU值，即增益值字符串
+    private String gain = "1"; 
     
+    // 每个通道信号物理量单位字符串，形式为："mV,C"
     private String unit = "unknown";
+    
+    // 备注
+    private String comment;    
     
     // ------------------------------------------------------------诊断报告相关实例变量 
     
@@ -227,7 +229,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
         creatorId = INVALID_ID;
         comment = "";
         sigLen = 0;
-        sigChannel = 1;
+        channelNum = 1;
         bytePerDatum = 2;
     }
     
@@ -276,7 +278,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	return bytePerDatum;
     }
 
-	public int getGain() {
+	public String getGain() {
 		return gain;
 	}
 
@@ -284,15 +286,15 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		return sigLen;
 	}
     
-    public int getSigChannel() {
-    	return sigChannel;
+    public int getChannelNum() {
+    	return channelNum;
     }
 	
 	public void setSampleRate(int sampleRate) {
 		this.sampleRate = sampleRate;
 	}
 
-	public void setGain(int gain) {
+	public void setGain(String gain) {
 		this.gain = gain;
 	}
     
@@ -331,10 +333,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		creatorId = json.getInt("creatorId");
 		comment = json.getString("comment");	
 		sampleRate = json.getInt("sampleRate");
-		sigChannel = json.getInt("sigChannel");
+		channelNum = json.getInt("channelNum");
 		sigLen = json.getInt("sigLen");
 		bytePerDatum = json.getInt("bytePerDatum");
-		gain = json.getInt("gain");
+		gain = json.getString("gain");
 		unit = json.getString("unit");
 		reportVer = json.getString("reportVer");
 		reportProvider = json.getString("reportProvider");
@@ -354,7 +356,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		json.put("creatorId", creatorId);
 		json.put("comment", comment);
 		json.put("sampleRate", sampleRate);
-		json.put("sigChannel", sigChannel);
+		json.put("channelNum", channelNum);
 		json.put("sigLen", sigLen);
 		json.put("bytePerDatum", bytePerDatum);
 		json.put("gain", gain);
@@ -379,10 +381,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		creatorId = rs.getInt("creatorId");
 		comment = rs.getString("comment");
 		sampleRate = rs.getInt("sampleRate");
-		sigChannel = rs.getInt("sigChannel");
+		channelNum = rs.getInt("channelNum");
 		sigLen = rs.getInt("sigLen");
 		bytePerDatum = rs.getInt("bytePerDatum");
-		gain = rs.getInt("gain");
+		gain = rs.getString("gain");
 		unit = rs.getString("unit");
 		reportVer = rs.getString("reportVer");
 		reportProvider = rs.getString("reportProvider");
@@ -408,10 +410,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		ps.setInt(begin++, creatorId);
 		ps.setString(begin++, comment);
 		ps.setInt(begin++, sampleRate);
-		ps.setInt(begin++, sigChannel);
+		ps.setInt(begin++, channelNum);
 		ps.setInt(begin++, sigLen);
 		ps.setInt(begin++, bytePerDatum);
-		ps.setInt(begin++, gain);
+		ps.setString(begin++, gain);
 		ps.setString(begin++, unit);
 		ps.setString(begin++, reportVer);
 		ps.setString(begin++, reportProvider);
