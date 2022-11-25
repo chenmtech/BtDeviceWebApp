@@ -658,11 +658,12 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     	
     	String[] properties = getProperties();
     	len = properties.length;
-    	for(int i = 0; i < len-1; i++) {
-    		builder.append(properties[i]).append(',');
+    	if(len > 0) {
+	    	for(int i = 0; i < len; i++) {
+	    		builder.append(properties[i]).append(',');
+	    	}
     	}
-    	builder.append(properties[len-1]);
-    	
+    	builder.deleteCharAt(builder.length()-1);    	
     	return builder.toString();
     }
     
@@ -673,10 +674,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     private String getInsertQuestionMark() {
     	int num = BASIC_PROPERTIES.length + getProperties().length;
     	StringBuilder builder = new StringBuilder();
-		for(int i = 0; i < num-1; i++) {
+		for(int i = 0; i < num; i++) {
 			builder.append('?').append(',');
 		}
-		builder.append('?');
+		builder.deleteCharAt(builder.length()-1);
 		return builder.toString();
     }
     

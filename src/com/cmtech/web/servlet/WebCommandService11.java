@@ -266,7 +266,7 @@ public class WebCommandService11{
 				if(json == null) {
 					ServletUtil.codeResponse(resp, DATA_ERR, "下载错误");
 				} else {
-					ServletUtil.dataResponse(resp, "更新成功", json);
+					ServletUtil.dataResponse(resp, "下载成功", json);
 				}
 				break;
 				

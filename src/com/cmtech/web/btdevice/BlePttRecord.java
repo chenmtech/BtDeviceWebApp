@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import org.json.JSONObject;
 
 public class BlePttRecord extends BasicRecord{
-	private static final String[] PROPERTIES = {};
+	private static final String[] PROPERTIES = new String[0];
     
     public BlePttRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.PTT, accountId, createTime, devAddress);
