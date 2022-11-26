@@ -12,6 +12,7 @@ import com.cmtech.web.util.DbUtil;
 public class AppUpdateInfo implements IJsonable{
 	private int verCode;
 	private String verName;
+    private int supportedVerCode; // 支持的最小版本号，如果当前版本号比这个要小，就必须升级，否则无法使用
 	private String note;
 	private String url;
     private double size; // unit: MB
@@ -30,6 +31,7 @@ public class AppUpdateInfo implements IJsonable{
 		JSONObject json = new JSONObject();
 		json.put("verCode", verCode);
 		json.put("verName", verName);
+		json.put("supportedVerCode", supportedVerCode);
 		json.put("note", note);
 		json.put("url", url);
 		json.put("size", size);
@@ -43,7 +45,7 @@ public class AppUpdateInfo implements IJsonable{
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
-		String sql = "select verCode, verName, note, url, size from AppUpdateInfo order by verCode desc limit 1";
+		String sql = "select verCode, verName, supportedVerCode, note, url, size from AppUpdateInfo order by verCode desc limit 1";
 		try {
 			ps = conn.prepareStatement(sql);
 			rs = ps.executeQuery();
@@ -63,6 +65,7 @@ public class AppUpdateInfo implements IJsonable{
 	private void getFromResultSet(ResultSet rs) throws SQLException {
 		verCode = rs.getInt("verCode");
 		verName = rs.getString("verName");
+		supportedVerCode = rs.getInt("supportedVerCode");
 		note = rs.getString("note");
 		url = rs.getString("url");
 		size = rs.getDouble("size");
