@@ -19,7 +19,7 @@ import com.cmtech.web.util.DbUtil;
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
 	private static final String[] PROPERTIES = {"leadTypeCode", "aveHr",  
-			"segPoses", "segTimes", "rhythmTimes", "rhythmLabels"};
+			"segPoses", "segTimes", "annPoses", "annSymbols"};
     
     // 导联类型
     private int leadTypeCode; // lead type code
@@ -31,10 +31,10 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     private String segTimes;
     
     // 心律异常条目起始时间列表字符串
-    private String rhythmTimes;
+    private String annPoses;
     
     // 心律异常条目标签列表字符串
-    private String rhythmLabels;
+    private String annSymbols;
     
     // 平均心率：次/分钟
     private int aveHr = 0; // average hr
@@ -70,8 +70,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		aveHr = json.getInt("aveHr");
 		segPoses = json.getString("segPoses");
 		segTimes = json.getString("segTimes");
-		rhythmTimes = json.getString("rhythmTimes");
-		rhythmLabels = json.getString("rhythmLabels");
+		annPoses = json.getString("annPoses");
+		annSymbols = json.getString("annSymbols");
 	}
 	
 	@Override
@@ -81,8 +81,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("aveHr", aveHr);
 		json.put("segPoses", segPoses);
 		json.put("segTimes", segTimes);
-		json.put("rhythmTimes", rhythmTimes);
-		json.put("rhythmLabels", rhythmLabels);
+		json.put("annPoses", annPoses);
+		json.put("annSymbols", annSymbols);
 		return json;
 	}
 	
@@ -93,8 +93,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		aveHr = rs.getInt("aveHr");
 		segPoses = rs.getString("segPoses");
 		segTimes = rs.getString("segTimes");
-		rhythmTimes = rs.getString("rhythmTimes");
-		rhythmLabels = rs.getString("rhythmLabels");
+		annPoses = rs.getString("annPoses");
+		annSymbols = rs.getString("annSymbols");
 	}
 	
 	@Override
@@ -104,8 +104,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setInt(begin++, aveHr);
 		ps.setString(begin++, segPoses);
 		ps.setString(begin++, segTimes);
-		ps.setString(begin++, rhythmTimes);
-		ps.setString(begin++, rhythmLabels);
+		ps.setString(begin++, annPoses);
+		ps.setString(begin++, annSymbols);
 		return begin;
 	}
 	
