@@ -19,7 +19,7 @@ import com.cmtech.web.util.DbUtil;
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	// 心电记录中要进行数据库读写的属性字段名数组
 	private static final String[] PROPERTIES = {"leadTypeCode", "aveHr",  
-			"segPoses", "segTimes", "annPoses", "annSymbols"};
+			"segPoses", "segTimes", "annPoses", "annSymbols", "annContents"};
     
     // 导联类型
     private int leadTypeCode; // lead type code
@@ -35,6 +35,8 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
     
     // 心律异常条目标签列表字符串
     private String annSymbols;
+    
+    private String annContents;
     
     // 平均心率：次/分钟
     private int aveHr = 0; // average hr
@@ -72,6 +74,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		segTimes = json.getString("segTimes");
 		annPoses = json.getString("annPoses");
 		annSymbols = json.getString("annSymbols");
+		annContents = json.getString("annContents");
 	}
 	
 	@Override
@@ -83,6 +86,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		json.put("segTimes", segTimes);
 		json.put("annPoses", annPoses);
 		json.put("annSymbols", annSymbols);
+		json.put("annContents", annContents);
 		return json;
 	}
 	
@@ -95,6 +99,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		segTimes = rs.getString("segTimes");
 		annPoses = rs.getString("annPoses");
 		annSymbols = rs.getString("annSymbols");
+		annContents = rs.getString("annContents");
 	}
 	
 	@Override
@@ -106,6 +111,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		ps.setString(begin++, segTimes);
 		ps.setString(begin++, annPoses);
 		ps.setString(begin++, annSymbols);
+		ps.setString(begin++, annContents);
 		return begin;
 	}
 	
