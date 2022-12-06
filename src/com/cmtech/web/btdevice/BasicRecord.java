@@ -24,9 +24,10 @@ import com.cmtech.web.util.DbUtil;
  *
  */
 public abstract class BasicRecord implements IRecord, IJsonable{
-	//------------------------------------------------常量
-	// 记录中可以进行数据库读写的基本属性字段字符串数组
-	private static final String[] BASIC_PROPERTIES = {"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
+	//------------------------------------------------------------------------常量
+	// 记录中要进行数据库读写的基本属性字段字符串数组
+	private static final String[] BASIC_PROPERTIES = {
+			"accountId", "createTime", "devAddress", "ver", "creatorId", "comment", 
 			"sampleRate", "channelNum", "sigLen", "bytePerDatum", "gain", "unit",
 			"reportVer", "reportProvider", "reportTime", "reportContent", "reportStatus"};
 	
@@ -58,7 +59,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	// 创建时间
     private final long createTime;
     
-    // 设备蓝牙地址
+    // 设备地址
     private final String devAddress;    
 
     // 创建者账户ID
@@ -76,10 +77,10 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 	// 每个数据占用字节数
 	private int bytePerDatum = 1;	
 	
-	// 每个通道信号的一个物理单位对应的ADU值，即增益值字符串
+	// 每个通道的增益值数组构成的字符串，增益值是指信号的一个物理单位对应的ADU值
     private String gain = "1"; 
     
-    // 每个通道信号物理量单位字符串，形式为："mV,C"
+    // 每个通道的物理单位数组构成的字符串，比如："mV,C"代表通道1的物理量为毫伏，通道2的物理量为摄氏度
     private String unit = "unknown";
     
     // 备注
@@ -104,7 +105,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 
     
     //--------------------------------------------------------静态变量
-    // 信号文件存放路径
+    // 信号文件存放根路径
     private static File sigFileRootPath = new File(System.getProperty("catalina.home")+File.separator + "MY_FILE");
     
 
@@ -112,8 +113,8 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     //-----------------------------------------------------静态函数
     
     /**
-     * 
-     * @return
+     * 获取信号文件存储的根路径File
+     * @return 根路径File
      */
 	public static File getSigFileRootPath() {
 		return sigFileRootPath;
@@ -129,7 +130,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
 
     /**
-     * 用于从数据库中查找满足条件的记录，按创建时间排序，并获取记录信息
+     * 用于从数据库中查找满足条件的记录，并按创建时间排序
      * @param types：要查找的记录类型
      * @param creatorId：记录创建者ID
      * @param fromTime：记录起始创建时间
@@ -169,13 +170,21 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 		return found;
     }
 
-    // 获取一种记录类型的记录列表，仅包含accountId, createTime和devAddress字段信息
+    /**
+     * 获取一种记录类型的记录列表，仅包含accountId, createTime和devAddress字段信息
+     * @param type 类型
+     * @param accountId 拥有者ID
+     * @param fromTime 其实时间
+     * @param filterStr 筛选字符串
+     * @param num 记录数量
+     * @return 记录列表
+     */
 	private static List<BasicRecord> searchOneTypeRecordList(RecordType type, int accountId, long fromTime, String filterStr, int num) {
 		if(num <= 0) return null;
 		String tableName = type.getTableName();
 		if("".equals(tableName)) return null;
 		
-		Connection conn = DbUtil.connect();		
+		Connection conn = DbUtil.connect();
 		if(conn == null) return null;		
 		
 		PreparedStatement ps = null;
@@ -258,7 +267,11 @@ public abstract class BasicRecord implements IRecord, IJsonable{
         return devAddress;
     }
 
-    public String getRecordName() {
+    /**
+     * 获取记录的全局唯一标识符
+     * @return
+     */
+    public String getRecordUuid() {
         return accountId + createTime + devAddress;
     }
 
@@ -482,6 +495,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
     /**
      * 从数据库中获取该记录的属性字段值，属性应包含于getPropertiesString()的字符串中
+     * 一般包括BasicRecord基类和子类中的所有属性
      */
     @Override
 	public final boolean retrieve() {
@@ -514,6 +528,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
     
 	/**
 	 * 从数据库中删除该记录
+	 * 当该账号是记录的创建者时，同时删除记录信号文件
 	 */
     @Override
 	public boolean delete() {
@@ -560,7 +575,7 @@ public abstract class BasicRecord implements IRecord, IJsonable{
 			DbUtil.close(null, ps1, conn);
 		}
 		
-		// 只有记录创建者才有权删除信号文件
+		// 如果拥有者也是记录的创建者，才删除信号文件
 		if(success && creatorId == accountId) {
 			File file = new File(getSigFilePath(), getSigFileName());
 			if(file.exists()) success = file.delete();
@@ -637,17 +652,17 @@ public abstract class BasicRecord implements IRecord, IJsonable{
         if(otherObject == null) return false;
         if(getClass() != otherObject.getClass()) return false;
         BasicRecord other = (BasicRecord) otherObject;
-        return getRecordName().equals(other.getRecordName());
+        return getRecordUuid().equals(other.getRecordUuid());
     }
 
     @Override
     public int hashCode() {
-        return getRecordName().hashCode();
+        return getRecordUuid().hashCode();
     }
 
     /**
      * 获取属性字段用于数据库操作的String
-     * @return
+     * @return 属性字符串
      */
     private String getPropertiesString() {
     	StringBuilder builder = new StringBuilder();

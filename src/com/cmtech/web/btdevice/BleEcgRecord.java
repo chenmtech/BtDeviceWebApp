@@ -17,42 +17,47 @@ import com.cmtech.web.util.DbUtil;
  *
  */
 public class BleEcgRecord extends BasicRecord implements IDiagnosable{
+	//-------------------------------------------------------------------常量
 	// 心电记录中要进行数据库读写的属性字段名数组
-	private static final String[] PROPERTIES = {"leadTypeCode", "aveHr",  
-			"segPoses", "segTimes", "annPoses", "annSymbols", "annContents"};
+	private static final String[] PROPERTIES = {
+			"leadTypeCode", "aveHr",  
+			"segPoses", "segTimes", 
+			"annPoses", "annSymbols", "annContents"};
     
+
+	//-------------------------------------------------------------------实例变量
     // 导联类型
     private int leadTypeCode; // lead type code
     
-    // 心电采集时断点的数据位置字符串
+    // 采集时每个断点的数据样本位置构成的字符串
     private String segPoses;
     
-    // 心电采集时断点的时刻点
+    // 采集时每个断点的时刻点构成的字符串
     private String segTimes;
     
-    // 心律异常条目起始时间列表字符串
+    // 每个注释的数据样本位置构成的字符串
     private String annPoses;
     
-    // 心律异常条目标签列表字符串
+    // 每个注释的符号构成的字符串
     private String annSymbols;
     
+    // 每个注释的内容构成的字符串
     private String annContents;
     
-    // 平均心率：次/分钟
-    private int aveHr = 0; // average hr
+    // 平均心率值，bmp
+    private int aveHr = 0;
 
 
+	//-------------------------------------------------------------------构造器
+    /**
+     * 构造一个心电记录
+     * @param accountId 记录的拥有者ID
+     * @param createTime 创建时间
+     * @param devAddress 创建的设备地址
+     */
     public BleEcgRecord(int accountId, long createTime, String devAddress) {
     	super(RecordType.ECG, accountId, createTime, devAddress);
     }
-
-	public int getLeadTypeCode() {
-		return leadTypeCode;
-	}
-
-	public void setLeadTypeCode(int leadTypeCode) {
-		this.leadTypeCode = leadTypeCode;
-	}
 	
 	// 获取该记录中包含的要进行数据库操作的属性字段名数组
 	@Override
@@ -60,10 +65,14 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 		return PROPERTIES;
     }
 	
+	/**
+	 * 获取信号文件的存储路径File
+	 */
 	@Override
 	public File getSigFilePath() {
 		return new File(getSigFileRootPath(), "ECG");
 	}	
+	
 	
     @Override
 	public void fromJson(JSONObject json) {
@@ -171,7 +180,7 @@ public class BleEcgRecord extends BasicRecord implements IDiagnosable{
 	 * 是否需要诊断，依据记录的报告状态reportStatus是否为DONE，以及reportVer是否比newReportVer小
 	 * 排序按照ID，最小的ID最先诊断
 	 * @param newReportVer：心电诊断报告版本
-	 * @return
+	 * @return 得到的心电记录实例
 	 */
 	public static BleEcgRecord getFirstNeedDiagnoseRecord(String newReportVer) {
 		String tableName = RecordType.ECG.getTableName();

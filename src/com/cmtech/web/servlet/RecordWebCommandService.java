@@ -20,9 +20,9 @@ import com.cmtech.web.btdevice.RecordType;
 public class RecordWebCommandService {	
 	/**
 	 * 获取记录的ID号
-	 * @param type：记录类型
-	 * @param createTime：记录创建时间
-	 * @param devAddress：记录设备
+	 * @param type 记录类型
+	 * @param createTime 记录创建时间
+	 * @param devAddress 记录设备
 	 * @return 记录在数据表中的ID号
 	 */
 	public static int getId(RecordType type, int accountId, long createTime, String devAddress) {
@@ -33,9 +33,9 @@ public class RecordWebCommandService {
 	
 	/**
 	 * 上传一条记录，如果记录存在，则更新；如果记录不存在，则插入
-	 * @param type：记录类型
-	 * @param json：包含记录属性值的JSON Obj
-	 * @return
+	 * @param type 记录类型
+	 * @param json 包含记录属性值的JSON Obj
+	 * @return 操作是否成功
 	 */
 	public static boolean upload(RecordType type, JSONObject json) {
 		int accountId = json.getInt("accountId");
@@ -68,7 +68,7 @@ public class RecordWebCommandService {
 	/**
 	 * 下载满足条件的记录，将其打包为JSON Array
 	 * @param types:记录类型
-	 * @param accountId：记录拥有者ID
+	 * @param accountId：拥有者ID
 	 * @param fromTime: 起始采集时间
 	 * @param filterStr：过滤字符串
 	 * @param num：记录数
